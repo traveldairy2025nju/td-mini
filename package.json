@@ -54,7 +54,8 @@
     "@taro-hooks/plugin-react": "2",
     "react-dom": "^18.0.0",
     "react": "^18.0.0",
-    "taro-hooks": "2"
+    "taro-hooks": "2",
+    "@vant/weapp": "^1.11.4"
   },
   "devDependencies": {
     "babel-plugin-import": "^1.13.3",
