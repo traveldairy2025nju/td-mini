@@ -1,0 +1,49 @@
+.login {
+  padding: 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #fff;
+
+  &__header {
+    margin: 120px 0 80px;
+  }
+
+  &__title {
+    font-size: 48px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  &__subtitle {
+    font-size: 28px;
+    color: #666;
+  }
+
+  &__form {
+    padding: 0 20px;
+  }
+
+  &__submit {
+    width: 100%;
+    height: 88px;
+    line-height: 88px;
+    background: #1890FF;
+    color: #fff;
+    font-size: 32px;
+    border-radius: 8px;
+    margin-top: 60px;
+    border: none;
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+
+  &__register {
+    text-align: center;
+    font-size: 28px;
+    color: #1890FF;
+    margin-top: 32px;
+  }
+} 
