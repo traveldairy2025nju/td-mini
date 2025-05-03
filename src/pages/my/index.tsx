@@ -26,6 +26,7 @@ function My() {
   
   // 更新头像
   const handleUpdateAvatar = () => {
+    if (checkLogin()) {
     Taro.chooseImage({
       count: 1,
       sizeType: ['compressed'],
@@ -55,26 +56,16 @@ function My() {
         }
       }
     });
+    }
   };
   
   // 更新昵称
   const handleUpdateNickname = () => {
-    const currentNickname = userInfo?.nickname || '';
-    
-    // 简单的方式处理昵称更新
-    Taro.showModal({
-      title: '修改昵称',
-      content: '当前昵称: ' + currentNickname,
-      success: (res) => {
-        if (res.confirm) {
-          // 跳转到表单页面或直接在当前页面处理
-          Taro.showToast({
-            title: '暂未实现',
-            icon: 'none'
+    if (checkLogin()) {
+      Taro.navigateTo({
+        url: '/pages/edit-nickname/index'
           });
         }
-      }
-    });
   };
   
   // 前往我的游记列表

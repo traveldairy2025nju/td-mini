@@ -44,13 +44,31 @@ const userApi = {
   },
   
   // 更新用户头像
-  updateAvatar: (filePath) => {
-    return uploadFile({
-      url: '/api/users/avatar',
-      method: 'PUT',
-      filePath,
-      name: 'avatar'
-    });
+  updateAvatar: async (filePath) => {
+    try {
+      // 第一步：先使用通用上传接口上传文件
+      const uploadRes = await uploadFile({
+        url: '/api/upload',
+        filePath,
+        name: 'file'
+      });
+      
+      if (!uploadRes.success || !uploadRes.data || !uploadRes.data.url) {
+        throw new Error('文件上传失败');
+      }
+      
+      // 第二步：发送PUT请求更新用户头像URL
+      const updateRes = await request({
+        url: '/api/users/avatar',
+        method: 'PUT',
+        data: { avatarUrl: uploadRes.data.url }
+      });
+      
+      return updateRes;
+    } catch (error) {
+      console.error('头像上传错误:', error);
+      throw error;
+    }
   },
   
   // 更新用户昵称

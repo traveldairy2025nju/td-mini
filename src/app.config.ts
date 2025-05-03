@@ -3,7 +3,8 @@ export default {
     "pages/index/index",
     "pages/login/index",
     "pages/register/index",
-    "pages/my/index"
+    "pages/my/index",
+    "pages/edit-nickname/index"
   ],
   window: {
     backgroundTextStyle: "light",

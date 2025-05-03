@@ -65,7 +65,7 @@ export const uploadFile = (options) => {
     url: `${BASE_URL}${options.url}`,
     filePath: options.filePath,
     name: options.name,
-    formData: options.formData,
+    formData: options.formData || {},
     header
   }).then(res => {
     if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -76,7 +76,14 @@ export const uploadFile = (options) => {
         return { success: false, message: '响应数据解析失败' };
       }
     } else {
-      throw new Error('上传失败');
+      let errorMsg = '上传失败';
+      try {
+        const errorData = JSON.parse(res.data);
+        errorMsg = errorData.message || errorMsg;
+      } catch (e) {
+        // 解析失败，使用默认错误信息
+      }
+      throw new Error(errorMsg);
     }
   }).catch(error => {
     throw error;
