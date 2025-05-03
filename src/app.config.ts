@@ -5,7 +5,8 @@ export default {
     "pages/register/index",
     "pages/my/index",
     "pages/edit-nickname/index",
-    "pages/settings/index"
+    "pages/settings/index",
+    "pages/create-diary/index"
   ],
   window: {
     backgroundTextStyle: "light",
@@ -14,6 +15,7 @@ export default {
     navigationBarTextStyle: "black",
   },
   tabBar: {
+    custom: true,
     color: "#999",
     selectedColor: "#1296db",
     backgroundColor: "#fff",
