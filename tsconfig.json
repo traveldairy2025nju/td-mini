@@ -13,19 +13,16 @@
     "noUnusedParameters": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "baseUrl": "./travel_diary",
+    "baseUrl": ".",
     "rootDir": ".",
     "jsx": "react-jsx",
-
+    
     "allowJs": true,
     "resolveJsonModule": true,
     "typeRoots": [
       "node_modules/@types"
     ]
   },
-  "include": [
-    "./src",
-    "./types"
-  ],
+  "include": ["./src", "./types"],
   "compileOnSave": false
 }

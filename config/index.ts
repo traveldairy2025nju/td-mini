@@ -6,8 +6,8 @@ import prodConfig from './prod'
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
   const baseConfig: UserConfigExport<'webpack5'> = {
-    projectName: 'travel_diary',
-    date: '2025-5-2',
+    projectName: 'td-mini',
+    date: '2025-5-3',
     designWidth: 750,
     deviceRatio: {
       640: 2.34 / 2,
@@ -18,16 +18,12 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     sourceRoot: 'src',
     outputRoot: 'dist',
     plugins: [
-      '@taro-hooks/plugin-react'
+       '@taro-hooks/plugin-react' 
     ],
     defineConstants: {
     },
     copy: {
       patterns: [
-        {
-          from: 'node_modules/@vant/weapp/dist/wxs',
-          to: 'dist/wxs'
-        }
       ],
       options: {
       }
@@ -42,7 +38,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
         pxtransform: {
           enable: true,
           config: {
-            selectorBlackList: [/van-/]
+
           }
         },
         cssModules: {
@@ -55,23 +51,6 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       },
       webpackChain(chain) {
         chain.resolve.plugin('tsconfig-paths').use(TsconfigPathsPlugin)
-        // 添加 @vant/weapp 编译支持
-        chain.module
-          .rule('script')
-          .use('babel')
-          .tap(options => {
-            options.plugins = options.plugins || []
-            options.plugins.push([
-              'import',
-              {
-                libraryName: '@vant/weapp',
-                libraryDirectory: 'dist',
-                style: true
-              },
-              '@vant/weapp'
-            ])
-            return options
-          })
       }
     },
     h5: {

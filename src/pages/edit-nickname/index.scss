@@ -1,39 +1,36 @@
-.register-container {
+.edit-nickname-container {
   padding: 40px 30px;
   background-color: #f8f8f8;
   min-height: 100vh;
 }
 
-.register-header {
+.edit-nickname-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.register-title {
+.edit-nickname-title {
   font-size: 36px;
   font-weight: bold;
   color: #333;
 }
 
-.register-form {
+.edit-nickname-form {
   background-color: #fff;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.register-button {
+.edit-nickname-error {
+  font-size: 24px;
+  color: #ff4d4f;
+  margin: 10px 0 20px;
+  padding-left: 170px;
+}
+
+.edit-nickname-button {
   margin-top: 40px;
   width: 100%;
   border-radius: 8px;
-}
-
-.register-footer {
-  margin-top: 30px;
-  text-align: center;
-}
-
-.register-login-link {
-  font-size: 26px;
-  color: #1296db;
 } 

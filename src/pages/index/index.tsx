@@ -1,49 +1,51 @@
-import React, { useCallback } from "react";
-import { View, Text, Button, Image } from "@tarojs/components";
-import { useEnv, useNavigationBar, useModal, useToast } from "taro-hooks";
-import logo from "./hook.png";
+import { View, Text, Button } from '@tarojs/components';
+import { useEffect } from 'react';
+import Taro from '@tarojs/taro';
+import { isLoggedIn } from '../../utils/auth';
+import './index.scss';
 
-import './index.scss'
+function Index() {
+  useEffect(() => {
+    // 可以在这里做一些首页初始化的工作
+    console.log('首页加载完成');
+  }, []);
 
-const Index = () => {
-  const env = useEnv();
-  const { setTitle } = useNavigationBar({ title: "Taro Hooks" });
-  const showModal = useModal({
-    title: "Taro Hooks Canary!",
-    showCancel: false,
-    confirmColor: "#8c2de9",
-    confirmText: "支持一下"
-  });
-  const { show } = useToast({ mask: true });
-
-  const handleModal = useCallback(() => {
-    showModal({ content: "不如给一个star⭐️!" }).then(() => {
-      show({ title: "点击了支持!" });
-    });
-  }, [show, showModal]);
+  // 创建游记，需要先检查登录状态
+  const handleCreateDiary = () => {
+    if (isLoggedIn()) {
+      Taro.navigateTo({ url: '/pages/diary/create/index' });
+    } else {
+      Taro.showModal({
+        title: '提示',
+        content: '您需要先登录才能创建游记',
+        confirmText: '去登录',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            Taro.navigateTo({ url: '/pages/login/index' });
+          }
+        }
+      });
+    }
+  };
 
   return (
-    <View className='index'>
-      <View className='index__content'>
-        <Image className="logo" src={logo} />
-        <Text className="title">为Taro而设计的Hooks Library</Text>
-        <Text className="desc">
-          目前覆盖70%官方API. 抹平部分API在H5端短板. 提供近40+Hooks!
-          并结合ahook适配Taro! 更多信息可以查看新版文档: https://next-version-taro-hooks.vercel.app/
-        </Text>
-        <View className="list">
-          <Text className="label">运行环境</Text>
-          <Text className="note">{env}</Text>
-        </View>
-        <Button className="button" onClick={() => setTitle("Taro Hooks Nice!")}>
-          设置标题
-        </Button>
-        <Button className="button" onClick={handleModal}>
-          使用Modal
+    <View className='index-container'>
+      <View className='index-header'>
+        <Text className='index-title'>旅行日记</Text>
+        <Text className='index-subtitle'>记录美好旅行时刻</Text>
+      </View>
+
+      <View className='index-content'>
+        <Text className='index-welcome'>欢迎使用旅行日记小程序</Text>
+        <Text className='index-desc'>这里将展示最新的旅行游记</Text>
+        
+        <Button type='primary' className='index-button' onClick={handleCreateDiary}>
+          创建游记
         </Button>
       </View>
     </View>
   );
-};
+}
 
 export default Index;

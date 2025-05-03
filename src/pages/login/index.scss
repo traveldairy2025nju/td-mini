@@ -1,49 +1,66 @@
-.login {
-  padding: 40px;
+.login-container {
+  padding: 40px 30px;
+  background-color: #f8f8f8;
   min-height: 100vh;
-  box-sizing: border-box;
-  background: #fff;
+}
 
-  &__header {
-    margin: 120px 0 80px;
-  }
+.login-header {
+  text-align: center;
+  margin-bottom: 60px;
+  margin-top: 40px;
+}
 
-  &__title {
-    font-size: 48px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 16px;
-  }
+.login-title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #1296db;
+  display: block;
+  margin-bottom: 20px;
+}
 
-  &__subtitle {
-    font-size: 28px;
-    color: #666;
-  }
+.login-subtitle {
+  font-size: 28px;
+  color: #666;
+  display: block;
+}
 
-  &__form {
-    padding: 0 20px;
-  }
+.login-form {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
 
-  &__submit {
-    width: 100%;
-    height: 88px;
-    line-height: 88px;
-    background: #1890FF;
-    color: #fff;
-    font-size: 32px;
-    border-radius: 8px;
-    margin-top: 60px;
-    border: none;
+.login-button {
+  margin-top: 40px;
+  width: 100%;
+  border-radius: 8px;
+}
 
-    &:active {
-      opacity: 0.8;
-    }
-  }
+.login-footer {
+  margin-top: 30px;
+  text-align: center;
+}
 
-  &__register {
-    text-align: center;
-    font-size: 28px;
-    color: #1890FF;
-    margin-top: 32px;
-  }
+.login-register-link {
+  font-size: 26px;
+  color: #1296db;
+}
+
+/* 调试信息区域 */
+.debug-info {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.debug-text {
+  font-size: 24px;
+  color: #666;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block;
+  margin-top: 10px;
 } 
