@@ -16,8 +16,7 @@ const userApi = {
       return request({
         url: '/api/users/register',
         method: 'POST',
-        data,
-        contentType: 'multipart/form-data'
+        data
       });
     }
   },
