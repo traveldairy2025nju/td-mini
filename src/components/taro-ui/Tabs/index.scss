@@ -1,0 +1,24 @@
+/* Tabs样式 */
+.at-tabs {
+  &__header {
+    background-color: #fff;
+  }
+  
+  &__item {
+    color: #666;
+    
+    &--active {
+      color: #1296db;
+    }
+    
+    &-underline {
+      background-color: #1296db;
+    }
+  }
+  
+  &-pane {
+    &__item {
+      padding: 20px;
+    }
+  }
+} 

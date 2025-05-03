@@ -1,0 +1,44 @@
+/* 输入框样式 */
+.at-input {
+  margin: 0 !important;
+  
+  &__overlay {
+    flex: 1;
+  }
+  
+  &__container {
+    display: flex;
+    align-items: center;
+    padding: 24px 10px 24px 50px !important;
+    background-color: #f8f8f8 !important;
+    border-radius: 10px !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    margin-bottom: 15px;
+  
+    &--error {
+      background-color: rgba(255, 73, 73, 0.05) !important;
+      color: #FF4949;
+    }
+  }
+  
+  &__title {
+    display: none !important; /* 隐藏标题，改用placeholder */
+  }
+  
+  &__input {
+    font-size: 28px !important;
+    padding: 0 !important;
+    height: 1.5em !important;
+    flex: 1;
+  }
+  
+  &__icon {
+    font-size: 32px !important;
+  }
+  
+  &__placeholder {
+    font-size: 28px !important;
+    color: #aaa !important;
+  }
+} 

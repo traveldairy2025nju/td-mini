@@ -1,0 +1,39 @@
+/* 导入 Taro UI 样式 */
+@import "~taro-ui/dist/style/index.scss";
+
+/* 全局样式 */
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei',
+    sans-serif;
+  font-size: 28px;
+  line-height: 1.5;
+  color: #333;
+  background-color: #f8f8f8;
+}
+
+/* 微信小程序下特有的样式修复 */
+.taro_page {
+  width: 100%;
+  height: 100%;
+}
+
+/* 修复在微信小程序上一些常见的样式问题 */
+.at-button--primary {
+  background-color: #1296db !important;
+}
+
+.at-button--primary::after {
+  border: none !important;
+}
+
+/* 确保图标能够显示 */
+.at-icon {
+  width: 1em !important;
+  height: 1em !important;
+}
+
+/* 确保各种输入框在小程序中正确显示 */
+.at-input {
+  margin: 0 !important;
+}

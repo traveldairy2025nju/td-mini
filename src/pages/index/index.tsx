@@ -1,47 +1,95 @@
-import React, { useCallback } from "react";
-import { View, Text, Button, Image } from "@tarojs/components";
-import { useEnv, useNavigationBar, useModal, useToast } from "taro-hooks";
-import logo from "./hook.png";
+import { View, Text } from '@tarojs/components';
+import { useEffect, useState } from 'react';
+import Taro from '@tarojs/taro';
+import { isLoggedIn } from '../../utils/auth';
+import Button from '../../components/taro-ui/Button';
+import WaterfallFlow from '../../components/WaterfallFlow';
+import { getDiaryList, DiaryItem } from '../../services/diaryService';
+import './index.scss';
 
-import './index.scss'
+function Index() {
+  const [diaryList, setDiaryList] = useState<DiaryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const Index = () => {
-  const env = useEnv();
-  const { setTitle } = useNavigationBar({ title: "Taro Hooks" });
-  const showModal = useModal({
-    title: "Taro Hooks Canary!",
-    showCancel: false,
-    confirmColor: "#8c2de9",
-    confirmText: "支持一下"
-  });
-  const { show } = useToast({ mask: true });
+  useEffect(() => {
+    // 获取游记列表数据
+    fetchDiaryList();
+  }, []);
 
-  const handleModal = useCallback(() => {
-    showModal({ content: "不如给一个star⭐️!" }).then(() => {
-      show({ title: "点击了支持!" });
-    });
-  }, [show, showModal]);
+  // 获取游记列表
+  const fetchDiaryList = async () => {
+    try {
+      setLoading(true);
+      const data = await getDiaryList();
+      setDiaryList(data);
+    } catch (error) {
+      console.error('获取游记列表失败', error);
+      Taro.showToast({
+        title: '获取游记列表失败',
+        icon: 'none'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 创建游记，需要先检查登录状态
+  const handleCreateDiary = () => {
+    if (isLoggedIn()) {
+      Taro.navigateTo({ url: '/pages/diary/create/index' });
+    } else {
+      Taro.showModal({
+        title: '提示',
+        content: '您需要先登录才能创建游记',
+        confirmText: '去登录',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            Taro.navigateTo({ url: '/pages/login/index' });
+          }
+        }
+      });
+    }
+  };
+
+  // 点击游记项目，跳转到详情页
+  const handleDiaryItemClick = (id: string) => {
+    Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
+  };
 
   return (
-    <View className="wrapper">
-      <Image className="logo" src={logo} />
-      <Text className="title">为Taro而设计的Hooks Library</Text>
-      <Text className="desc">
-        目前覆盖70%官方API. 抹平部分API在H5端短板. 提供近40+Hooks!
-        并结合ahook适配Taro! 更多信息可以查看新版文档: https://next-version-taro-hooks.vercel.app/
-      </Text>
-      <View className="list">
-        <Text className="label">运行环境</Text>
-        <Text className="note">{env}</Text>
+    <View className='index-container'>
+      <View className='index-header'>
+        <Text className='index-title'>旅行日记</Text>
+        <Text className='index-subtitle'>记录美好旅行时刻</Text>
       </View>
-      <Button className="button" onClick={() => setTitle("Taro Hooks Nice!")}>
-        设置标题
-      </Button>
-      <Button className="button" onClick={handleModal}>
-        使用Modal
-      </Button>
+
+      {/* 创建游记按钮 */}
+      <View className='action-bar'>
+        <Button type='primary' className='create-diary-btn' onClick={handleCreateDiary}>
+          创建游记
+        </Button>
+      </View>
+
+      {/* 游记列表瀑布流 */}
+      <View className='diary-list-section'>
+        <View className='section-title'>
+          <Text>最新游记</Text>
+        </View>
+        
+        {loading ? (
+          <View className='loading-container'>加载中...</View>
+        ) : diaryList.length > 0 ? (
+          <WaterfallFlow 
+            diaryList={diaryList} 
+            onItemClick={handleDiaryItemClick} 
+          />
+        ) : (
+          <View className='empty-container'>暂无游记，快来创建第一篇吧！</View>
+        )}
+      </View>
     </View>
   );
-};
+}
 
 export default Index;

@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "dist/",
-  "projectname": "travel_diary",
+  "projectname": "td-mini",
   "description": "",
   "appid": "touristappid",
   "setting": {
