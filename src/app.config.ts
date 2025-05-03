@@ -19,11 +19,15 @@ export default {
     list: [
       {
         pagePath: "pages/index/index",
-        text: "首页"
+        text: "首页",
+        iconPath: "./assets/icons/home.png",
+        selectedIconPath: "./assets/icons/home-active.png"
       },
       {
         pagePath: "pages/my/index",
-        text: "我的"
+        text: "我的",
+        iconPath: "./assets/icons/user.png",
+        selectedIconPath: "./assets/icons/user-active.png"
       }
     ]
   }
