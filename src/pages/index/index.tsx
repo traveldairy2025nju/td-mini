@@ -8,7 +8,6 @@ import './index.scss';
 function Index() {
   useEffect(() => {
     // 可以在这里做一些首页初始化的工作
-    console.log('首页加载完成');
   }, []);
 
   // 创建游记，需要先检查登录状态

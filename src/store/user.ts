@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '../services/api';
+import api from '../services';
 import { UserInfo, setUserInfo as setUserInfoUtil, clearUserInfo } from '../utils/auth';
 
 type UserState = {
@@ -107,7 +107,7 @@ const useUserStore = create<UserState>((set, get) => ({
         set({ userInfo, isLogin: true });
       }
     } catch (error) {
-      console.error('获取用户信息失败:', error);
+      // 错误处理
     }
   },
   
