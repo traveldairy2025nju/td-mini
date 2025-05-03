@@ -1,0 +1,14 @@
+/* 卡片样式 */
+.at-card {
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  
+  &__header {
+    border-bottom: 1px solid #f1f1f1;
+  }
+  
+  &__content {
+    padding: 20px;
+  }
+} 

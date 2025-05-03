@@ -1,8 +1,10 @@
-import { View, Text, Button, Input } from '@tarojs/components';
+import { View, Text } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import { isLoggedIn } from '../../utils/auth';
+import Button from '../../components/taro-ui/Button';
+import Input from '../../components/taro-ui/Input';
 import './index.scss';
 
 interface FormData {
@@ -125,20 +127,16 @@ function Login() {
       
       <View className='login-form'>
         <View className='input-field'>
-          <View className='input-field__label'>
-            <Text className='input-field__required'>*</Text>
-            <Text>用户名</Text>
-          </View>
-          <View className={`input-field__input-container ${errors.username ? 'input-field__input-container--error' : ''}`}>
-            <Input
-              className='input-field__input'
-              name='username'
-              type='text'
-              value={formData.username}
-              placeholder='请输入用户名'
-              onInput={(e) => handleChange('username', e.detail.value)}
-            />
-          </View>
+          <Input
+            name='username'
+            title='用户名'
+            type='text'
+            value={formData.username}
+            placeholder='请输入用户名'
+            error={!!errors.username}
+            required
+            onChange={(value) => handleChange('username', value)}
+          />
           {errors.username && (
             <View className='input-field__error'>
               <Text>{errors.username}</Text>
@@ -147,20 +145,16 @@ function Login() {
         </View>
         
         <View className='input-field'>
-          <View className='input-field__label'>
-            <Text className='input-field__required'>*</Text>
-            <Text>密码</Text>
-          </View>
-          <View className={`input-field__input-container ${errors.password ? 'input-field__input-container--error' : ''}`}>
-            <Input
-              className='input-field__input'
-              name='password'
-              password
-              value={formData.password}
-              placeholder='请输入密码'
-              onInput={(e) => handleChange('password', e.detail.value)}
-            />
-          </View>
+          <Input
+            name='password'
+            title='密码'
+            type='password'
+            value={formData.password}
+            placeholder='请输入密码'
+            error={!!errors.password}
+            required
+            onChange={(value) => handleChange('password', value)}
+          />
           {errors.password && (
             <View className='input-field__error'>
               <Text>{errors.password}</Text>

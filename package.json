@@ -52,11 +52,11 @@
     "@tarojs/runtime": "4.0.12",
     "@tarojs/shared": "4.0.12",
     "@tarojs/taro": "4.0.12",
-    "@vant/weapp": "^1.11.7",
     "ajv": "^8.17.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "taro-hooks": "2",
+    "taro-ui": "^3.3.0",
     "zustand": "^5.0.4"
   },
   "devDependencies": {

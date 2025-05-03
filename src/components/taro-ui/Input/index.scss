@@ -1,0 +1,14 @@
+/* 输入框样式 */
+.at-input {
+  margin: 0 !important;
+  
+  &__overlay {
+    flex: 1;
+  }
+  
+  &__container {
+    &--error {
+      color: #FF4949;
+    }
+  }
+} 

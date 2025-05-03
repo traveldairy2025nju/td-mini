@@ -1,7 +1,8 @@
-import { View, Text, Button } from '@tarojs/components';
+import { View, Text } from '@tarojs/components';
 import { useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { isLoggedIn } from '../../utils/auth';
+import Button from '../../components/taro-ui/Button';
 import './index.scss';
 
 function Index() {
