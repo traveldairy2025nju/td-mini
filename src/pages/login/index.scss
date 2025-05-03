@@ -57,17 +57,19 @@
   position: relative;
 }
 
+/* 修改图标容器样式 */
 .input-icon {
   position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  left: 20px; /* 增加左边距 */
+  top: 50%; /* 设为垂直居中 */
+  transform: translateY(-30%); /* 向下偏移 */
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  z-index: 10; /* 提高层级 */
+  pointer-events: none; /* 避免捕获点击事件 */
 }
 
 .input-icon .iconfont {
@@ -93,6 +95,24 @@
 .input-field__error text {
   font-size: 24px;
   color: #ff4d4f;
+}
+
+/* 改进 AtInput 组件在登录页面的样式 */
+.login-form .at-input__container {
+  padding-left: 60px !important; /* 为图标留出空间 */
+  background-color: #fff !important;
+  border: 1px solid #e9e9e9 !important;
+}
+
+.login-form .at-input__input {
+  color: #333 !important;
+  font-size: 30px !important;
+  padding: 0 !important;
+}
+
+.login-form .at-input__placeholder {
+  color: #999 !important;
+  font-size: 28px !important;
 }
 
 .login-button {
@@ -158,4 +178,4 @@
   word-break: break-all;
   display: block;
   margin-top: 10px;
-} 
+}

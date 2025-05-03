@@ -1,5 +1,10 @@
-/* 导入 Taro UI 样式 */
+/* 导入 Taro UI 基础样式 */
 @import "~taro-ui/dist/style/index.scss";
+@import "~taro-ui/dist/style/components/button.scss";
+@import "~taro-ui/dist/style/components/input.scss";
+@import "~taro-ui/dist/style/components/tabs.scss";
+@import "~taro-ui/dist/style/components/card.scss";
+@import "~taro-ui/dist/style/components/icon.scss";
 
 /* 全局样式 */
 page {
@@ -36,4 +41,59 @@ page {
 /* 确保各种输入框在小程序中正确显示 */
 .at-input {
   margin: 0 !important;
+}
+
+/* 微信小程序输入框特定修复 */
+.weui-input,
+.at-input__input,
+input {
+  color: #333 !important;
+  background-color: transparent !important;
+  z-index: 100 !important;
+  position: relative !important;
+}
+
+/* 微信小程序的占位符文本修复 */
+.weui-input-placeholder,
+.input-placeholder,
+.placeholder {
+  color: #999 !important;
+  font-size: 28px !important;
+}
+
+/* 修复各页面的图标显示 */
+.iconfont {
+  display: inline-block;
+  font-family: "iconfont" !important;
+  position: relative;
+  z-index: 9;
+}
+
+/* 全局输入框图标位置修复 - 改为垂直居中并向下偏移 */
+.input-icon {
+  position: absolute !important;
+  left: 20px !important;
+  top: 50% !important; /* 将固定高度改为50% */
+  transform: translateY(-30%) !important; /* 修改偏移量，使图标向下移动 */
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+}
+
+/* 全局输入框容器样式 */
+.at-input__container {
+  padding-left: 60px !important;
+  background-color: #fff !important;
+  border: 1px solid #e9e9e9 !important;
+  position: relative !important;
+}
+
+/* 引入系统图标 */
+@font-face {
+  font-family: "iconfont";
+  src: url('data:font/woff2;charset=utf-8;base64,') format('woff2');
 }

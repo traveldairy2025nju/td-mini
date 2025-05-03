@@ -1,6 +1,6 @@
 .input-field {
   margin-bottom: 20px;
-  
+
   &__label {
     font-size: 28px;
     color: #333;
@@ -8,12 +8,12 @@
     display: flex;
     align-items: center;
   }
-  
+
   &__required {
     color: #ff4d4f;
     margin-right: 4px;
   }
-  
+
   &__input-container {
     display: flex;
     align-items: center;
@@ -23,26 +23,32 @@
     padding: 0 20px;
     background-color: #fff;
     transition: all 0.3s;
-    
+    position: relative;
+    z-index: 1;
+
     &--error {
       border-color: #ff4d4f;
     }
   }
-  
+
   &__icon {
     margin-right: 10px;
     color: #999;
   }
-  
+
   &__input {
     flex: 1;
     height: 100%;
     font-size: 28px;
+    color: #333 !important;
+    position: relative;
+    z-index: 2;
+    background-color: transparent !important;
   }
-  
+
   &__error {
     font-size: 24px;
     color: #ff4d4f;
     margin-top: 8px;
   }
-} 
+}

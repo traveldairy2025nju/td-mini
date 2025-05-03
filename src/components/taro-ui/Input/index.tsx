@@ -1,5 +1,7 @@
 import React from 'react';
 import { AtInput } from 'taro-ui';
+import Taro from '@tarojs/taro';
+import { View, Input as TaroInput, Text } from '@tarojs/components';
 import './index.scss';
 
 interface InputProps {
@@ -20,7 +22,7 @@ interface InputProps {
   style?: React.CSSProperties;
 }
 
-const Input: React.FC<InputProps> = ({
+const InputComponent: React.FC<InputProps> = ({
   name,
   title,
   type = 'text',
@@ -28,7 +30,7 @@ const Input: React.FC<InputProps> = ({
   value,
   error = false,
   clear = false,
-  border = true, 
+  border = true,
   disabled = false,
   required = false,
   onChange,
@@ -37,14 +39,57 @@ const Input: React.FC<InputProps> = ({
   className,
   style
 }) => {
-  // 处理onChange事件
-  const handleChange = (value: string, event): void => {
+  // 检查是否是微信小程序环境
+  const isWeapp = Taro.getEnv() === Taro.ENV_TYPE.WEAPP;
+
+  // 处理输入框变化
+  const handleChange = (e: any): any => {
+    const newValue = e.detail.value;
     if (onChange) {
-      onChange(value, event);
+      onChange(newValue, e);
     }
-    return value;
+    return newValue;
   };
 
+  // 在微信小程序环境下使用原生组件以确保兼容性
+  if (isWeapp) {
+    const containerClass = `custom-input ${error ? 'custom-input--error' : ''} ${className || ''}`;
+
+    // 根据type类型设置password属性
+    const isPassword = type === 'password';
+
+    // 转换输入框类型为微信小程序支持的类型
+    let inputType = type;
+    if (type === 'password') {
+      inputType = 'text';
+    } else if (type === 'phone') {
+      inputType = 'number';
+    }
+
+    return (
+      <View className={containerClass} style={style}>
+        {title && <Text className='custom-input__title'>{title}</Text>}
+        <TaroInput
+          name={name}
+          type={inputType as any}
+          password={isPassword}
+          className='custom-input__input'
+          value={value}
+          placeholder={placeholder}
+          placeholderClass='custom-input__placeholder'
+          onInput={handleChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          disabled={disabled}
+        />
+        {clear && value && (
+          <View className='custom-input__clear' onClick={() => onChange && onChange('', {} as any)}>×</View>
+        )}
+      </View>
+    );
+  }
+
+  // 非微信环境则使用AtInput
   return (
     <AtInput
       name={name}
@@ -57,13 +102,22 @@ const Input: React.FC<InputProps> = ({
       border={border}
       disabled={disabled}
       required={required}
-      onChange={handleChange}
+      onChange={(newValue: string, event: any) => {
+        if (onChange) {
+          onChange(newValue, event);
+        }
+        return newValue;
+      }}
       onFocus={onFocus}
       onBlur={onBlur}
       className={className}
-      customStyle={style}
+      customStyle={{
+        ...style,
+        color: '#333',
+        zIndex: 10,
+      }}
     />
   );
 };
 
-export default Input; 
+export default InputComponent;
