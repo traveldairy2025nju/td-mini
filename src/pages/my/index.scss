@@ -22,12 +22,19 @@
   width: 300px;
 }
 
+.my-profile-section {
+  position: relative;
+}
+
 .my-header {
-  background-color: #1296db;
+  background: linear-gradient(135deg, #6ec6ff 0%, #1296db 100%);
   padding: 40px 30px;
   display: flex;
   align-items: center;
   color: #fff;
+  position: relative;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 12px rgba(18, 150, 219, 0.2);
 }
 
 .my-avatar-wrapper {
@@ -78,46 +85,132 @@
   opacity: 0.8;
 }
 
+.settings-icon {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-icon .iconfont {
+  font-size: 36px;
+  color: #fff;
+}
+
+/* 设置图标用的是伪元素，因为没有实际的图标字体 */
+.icon-settings:before {
+  content: '⚙️';
+}
+
 .my-content {
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 0;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+}
+
+/* 内容标签栏 */
+.content-tabs {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 24px 0;
+  position: relative;
+}
+
+.tab-item text {
+  font-size: 32px;
+  font-weight: 500;
+  color: #666;
+}
+
+.tab-item.active text {
+  color: #1296db;
+  font-weight: bold;
+}
+
+.tab-line {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 6px;
+  background-color: #1296db;
+  border-radius: 6px;
+}
+
+/* 状态过滤器 */
+.status-filter {
+  display: flex;
+  padding: 20px 20px;
+  background-color: #f8f8f8;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.status-filter-item {
+  padding: 10px 20px;
+  font-size: 28px;
+  color: #666;
+  background-color: #fff;
+  border-radius: 30px;
+  margin-right: 16px;
+  border: 1px solid #eee;
+}
+
+.status-filter-item.active {
+  background-color: #1296db;
+  color: #fff;
+  border-color: #1296db;
+}
+
+/* 游记列表区域 */
+.tab-content {
+  padding-bottom: 20px;
+}
+
+.diary-list {
   padding: 20px;
 }
 
-.menu-list {
-  background-color: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+/* 空状态 */
+.empty-container {
+  padding: 40px 0;
+  text-align: center;
 }
 
-.menu-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px 20px;
-  border-bottom: 1px solid #f0f0f0;
+.empty-text {
+  font-size: 28px;
+  color: #999;
+  margin-bottom: 30px;
+  display: block;
 }
 
-.menu-item:last-child {
-  border-bottom: none;
+.create-diary-btn {
+  width: 60%;
+  margin: 0 auto;
 }
 
-.menu-item-title {
-  font-size: 32px;
-  color: #333;
-}
-
-.menu-item-arrow {
-  font-size: 38px;
-  color: #ccc;
-}
-
-.my-logout-button {
-  margin-top: 60px;
-  background-color: #fff;
-  color: #ff4d4f;
-  border: none;
-  
-  &::after {
-    border: none;
-  }
+/* 加载状态 */
+.loading-container {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 28px;
+  color: #999;
 } 

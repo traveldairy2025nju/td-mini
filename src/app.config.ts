@@ -4,7 +4,8 @@ export default {
     "pages/login/index",
     "pages/register/index",
     "pages/my/index",
-    "pages/edit-nickname/index"
+    "pages/edit-nickname/index",
+    "pages/settings/index"
   ],
   window: {
     backgroundTextStyle: "light",
