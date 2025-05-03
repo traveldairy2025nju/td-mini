@@ -22,11 +22,11 @@ interface DiaryItem {
 
 function My() {
   // 从zustand中获取状态和方法
-  const { 
-    userInfo, 
-    isLogin, 
-    isLoading, 
-    updateProfile 
+  const {
+    userInfo,
+    isLogin,
+    isLoading,
+    updateProfile
   } = useUserStore();
 
   // 活动标签状态
@@ -37,7 +37,7 @@ function My() {
   const [loadingDiaries, setLoadingDiaries] = useState(false);
   // 游记状态过滤
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
-  
+
   useEffect(() => {
     // 检查登录状态
     if (checkLogin()) {
@@ -55,11 +55,11 @@ function My() {
         sourceType: ['album', 'camera'],
         success: async (res) => {
           const tempFilePath = res.tempFilePaths[0];
-          
+
           try {
             Taro.showLoading({ title: '上传中...' });
             await useUserStore.getState().updateAvatar(tempFilePath);
-            
+
             Taro.showToast({
               title: '头像更新成功',
               icon: 'success',
@@ -129,13 +129,13 @@ function My() {
   const handleDiaryClick = (id: string) => {
     Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
   };
-  
+
   // 渲染未登录状态
   const renderNotLoggedIn = () => (
     <View className='my-not-login'>
       <Text className='my-login-tip'>您还未登录</Text>
-      <Button 
-        type='primary' 
+      <Button
+        type='primary'
         className='my-login-button'
         onClick={() => Taro.navigateTo({ url: '/pages/login/index' })}
       >
@@ -149,9 +149,9 @@ function My() {
     <View className='my-profile-section'>
       <View className='my-header'>
         <View className='my-avatar-wrapper' onClick={handleUpdateAvatar}>
-          <Image 
-            className='my-avatar' 
-            src={userInfo?.avatar || 'https://placeholder.com/150'} 
+          <Image
+            className='my-avatar'
+            src={userInfo?.avatar || 'https://placeholder.com/150'}
             mode='aspectFill'
           />
           <View className='my-avatar-edit'>
@@ -172,25 +172,25 @@ function My() {
   // 渲染状态过滤器
   const renderStatusFilter = () => (
     <View className='status-filter'>
-      <Text 
+      <Text
         className={`status-filter-item ${statusFilter === 'all' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('all')}
       >
         全部
       </Text>
-      <Text 
+      <Text
         className={`status-filter-item ${statusFilter === 'pending' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('pending')}
       >
         待审核
       </Text>
-      <Text 
+      <Text
         className={`status-filter-item ${statusFilter === 'approved' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('approved')}
       >
         已通过
       </Text>
-      <Text 
+      <Text
         className={`status-filter-item ${statusFilter === 'rejected' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('rejected')}
       >
@@ -202,14 +202,14 @@ function My() {
   // 渲染我的游记/收藏Tabbar
   const renderContentTabs = () => (
     <View className='content-tabs'>
-      <View 
+      <View
         className={`tab-item ${activeTab === 'diaries' ? 'active' : ''}`}
         onClick={() => setActiveTab('diaries')}
       >
         <Text>我的游记</Text>
         {activeTab === 'diaries' && <View className='tab-line'></View>}
       </View>
-      <View 
+      <View
         className={`tab-item ${activeTab === 'favorites' ? 'active' : ''}`}
         onClick={() => setActiveTab('favorites')}
       >
@@ -225,15 +225,15 @@ function My() {
       {loadingDiaries ? (
         <View className='loading-container'>加载中...</View>
       ) : diaries.length > 0 ? (
-        <WaterfallFlow 
-          diaryList={diaries} 
-          onItemClick={handleDiaryClick} 
+        <WaterfallFlow
+          diaryList={diaries}
+          onItemClick={handleDiaryClick}
         />
       ) : (
         <View className='empty-container'>
           <Text className='empty-text'>暂无游记，快去创建一篇吧！</Text>
-          <Button 
-            type='primary' 
+          <Button
+            type='primary'
             className='create-diary-btn'
             onClick={() => Taro.navigateTo({ url: '/pages/diary/create/index' })}
           >
@@ -252,7 +252,7 @@ function My() {
       </View>
     </View>
   );
-  
+
   return (
     <View className='my-container'>
       {/* 未登录状态 */}
@@ -268,18 +268,18 @@ function My() {
           <View className='my-content'>
             {/* 切换标签 */}
             {renderContentTabs()}
-            
+
             {/* 游记内容区域 */}
             {activeTab === 'diaries' && (
               <View className='tab-content'>
                 {/* 状态过滤器 */}
                 {renderStatusFilter()}
-                
+
                 {/* 游记列表 */}
                 {renderDiaryList()}
               </View>
             )}
-            
+
             {/* 收藏内容区域 */}
             {activeTab === 'favorites' && (
               <View className='tab-content'>
@@ -293,4 +293,4 @@ function My() {
   );
 }
 
-export default My; 
+export default My;

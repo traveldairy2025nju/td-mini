@@ -23,61 +23,61 @@ function Login() {
     password: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  
+
   // 从zustand中获取状态和方法
   const { login, isLoading, error } = useUserStore();
-  
+
   // 如果已登录，直接跳转到首页
   useEffect(() => {
     const loggedIn = isLoggedIn();
-    
+
     if (loggedIn) {
       Taro.switchTab({ url: '/pages/index/index' });
     }
   }, []);
-  
+
   // 处理表单变化
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // 清除对应的错误信息
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-  
+
   // 表单验证
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     if (!formData.username.trim()) {
       newErrors.username = '请输入用户名';
     }
-    
+
     if (!formData.password) {
       newErrors.password = '请输入密码';
     } else if (formData.password.length < 6) {
       newErrors.password = '密码长度不能小于6位';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   // 提交表单
   const handleSubmit = async () => {
     if (!validate()) return;
-    
+
     try {
       const success = await login(formData.username, formData.password);
-      
+
       if (success) {
         Taro.showToast({
           title: '登录成功',
           icon: 'success',
           duration: 2000
         });
-        
+
         // 跳转到首页
         setTimeout(() => {
           Taro.switchTab({ url: '/pages/index/index' });
@@ -97,26 +97,26 @@ function Login() {
       });
     }
   };
-  
+
   // 前往注册页
   const goToRegister = () => {
     Taro.navigateTo({ url: '/pages/register/index' });
   };
-  
+
   return (
     <View className='login-container'>
       <View className='login-header'>
-        <Image 
+        <Image
           className='login-logo'
           src='https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=200&auto=format&fit=crop'
         />
         <Text className='login-title'>旅行日记</Text>
         <Text className='login-subtitle'>记录你的每一次旅行</Text>
       </View>
-      
+
       <View className='login-form'>
         <View className='form-title'>登录账号</View>
-        
+
         <View className='input-field'>
           <View className='input-icon'>
             <Text className='iconfont icon-user'></Text>
@@ -137,7 +137,7 @@ function Login() {
             </View>
           )}
         </View>
-        
+
         <View className='input-field'>
           <View className='input-icon'>
             <Text className='iconfont icon-lock'></Text>
@@ -158,16 +158,16 @@ function Login() {
             </View>
           )}
         </View>
-        
-        <Button 
-          type='primary' 
+
+        <Button
+          type='primary'
           className='login-button'
           loading={isLoading}
           onClick={handleSubmit}
         >
           登 录
         </Button>
-        
+
         <View className='login-footer'>
           <Text className='login-register-link' onClick={goToRegister}>
             没有账号？立即注册
@@ -178,4 +178,4 @@ function Login() {
   );
 }
 
-export default Login; 
+export default Login;

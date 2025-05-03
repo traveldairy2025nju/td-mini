@@ -25,7 +25,7 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick })
   useEffect(() => {
     const left: DiaryItem[] = [];
     const right: DiaryItem[] = [];
-    
+
     // 简单的左右分列
     diaryList.forEach((item, index) => {
       if (index % 2 === 0) {
@@ -34,15 +34,15 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick })
         right.push(item);
       }
     });
-    
+
     setLeftColumn(left);
     setRightColumn(right);
   }, [diaryList]);
 
   const renderDiaryItem = (item: DiaryItem) => {
     return (
-      <View 
-        className='diary-item' 
+      <View
+        className='diary-item'
         key={item.id}
         onClick={() => onItemClick(item.id)}
       >
@@ -73,4 +73,4 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick })
   );
 };
 
-export default WaterfallFlow; 
+export default WaterfallFlow;

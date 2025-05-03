@@ -7,7 +7,7 @@ function interceptor(chain) {
   const requestParams = chain.requestParams;
   const { url } = requestParams;
   const token = Taro.getStorageSync('token');
-  
+
   // 添加token到请求头
   if (token) {
     requestParams.header = {
@@ -44,7 +44,7 @@ export const request = (options) => {
     }
   }).then(res => {
     const { statusCode, data } = res;
-    
+
     if (statusCode >= 200 && statusCode < 300) {
       return data;
     } else {
@@ -60,7 +60,7 @@ export const request = (options) => {
 export const uploadFile = (options) => {
   const token = Taro.getStorageSync('token');
   const header = token ? { Authorization: `Bearer ${token}` } : {};
-  
+
   return Taro.uploadFile({
     url: `${BASE_URL}${options.url}`,
     filePath: options.filePath,
@@ -88,4 +88,4 @@ export const uploadFile = (options) => {
   }).catch(error => {
     throw error;
   });
-}; 
+};

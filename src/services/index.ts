@@ -7,4 +7,4 @@ const api = {
   diary: diaryApi
 };
 
-export default api; 
+export default api;

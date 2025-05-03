@@ -36,7 +36,7 @@ function Index() {
   // 创建游记，需要先检查登录状态
   const handleCreateDiary = () => {
     if (isLoggedIn()) {
-      Taro.navigateTo({ url: '/pages/diary/create/index' });
+      Taro.navigateTo({ url: '/pages/create-diary/index' });
     } else {
       Taro.showModal({
         title: '提示',
@@ -76,13 +76,13 @@ function Index() {
         <View className='section-title'>
           <Text>最新游记</Text>
         </View>
-        
+
         {loading ? (
           <View className='loading-container'>加载中...</View>
         ) : diaryList.length > 0 ? (
-          <WaterfallFlow 
-            diaryList={diaryList} 
-            onItemClick={handleDiaryItemClick} 
+          <WaterfallFlow
+            diaryList={diaryList}
+            onItemClick={handleDiaryItemClick}
           />
         ) : (
           <View className='empty-container'>暂无游记，快来创建第一篇吧！</View>
