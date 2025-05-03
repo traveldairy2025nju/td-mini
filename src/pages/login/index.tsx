@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components';
+import { View, Text, Image } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
@@ -23,7 +23,6 @@ function Login() {
     password: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [debugInfo, setDebugInfo] = useState<string>('');
   
   // 从zustand中获取状态和方法
   const { login, isLoading, error } = useUserStore();
@@ -31,7 +30,6 @@ function Login() {
   // 如果已登录，直接跳转到首页
   useEffect(() => {
     const loggedIn = isLoggedIn();
-    setDebugInfo(prev => prev + `\n已登录状态：${loggedIn}`);
     
     if (loggedIn) {
       Taro.switchTab({ url: '/pages/index/index' });
@@ -70,18 +68,10 @@ function Login() {
   const handleSubmit = async () => {
     if (!validate()) return;
     
-    setDebugInfo(prev => prev + `\n尝试登录: ${formData.username}`);
-    
     try {
       const success = await login(formData.username, formData.password);
-    
-      setDebugInfo(prev => prev + `\n登录结果: ${success ? '成功' : '失败'}`);
       
       if (success) {
-        // 检查token是否保存成功
-        const token = Taro.getStorageSync('token');
-        setDebugInfo(prev => prev + `\n保存的Token: ${token ? '已保存' : '未保存'}`);
-        
         Taro.showToast({
           title: '登录成功',
           icon: 'success',
@@ -93,8 +83,6 @@ function Login() {
           Taro.switchTab({ url: '/pages/index/index' });
         }, 2000);
       } else if (error) {
-        setDebugInfo(prev => prev + `\n错误信息: ${error}`);
-        
         Taro.showToast({
           title: '用户名或密码错误',
           icon: 'none',
@@ -102,9 +90,6 @@ function Login() {
         });
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      setDebugInfo(prev => prev + `\n发生异常: ${errorMsg}`);
-      
       Taro.showToast({
         title: '登录时发生错误',
         icon: 'none',
@@ -121,12 +106,21 @@ function Login() {
   return (
     <View className='login-container'>
       <View className='login-header'>
+        <Image 
+          className='login-logo'
+          src='https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=200&auto=format&fit=crop'
+        />
         <Text className='login-title'>旅行日记</Text>
         <Text className='login-subtitle'>记录你的每一次旅行</Text>
       </View>
       
       <View className='login-form'>
+        <View className='form-title'>登录账号</View>
+        
         <View className='input-field'>
+          <View className='input-icon'>
+            <Text className='iconfont icon-user'></Text>
+          </View>
           <Input
             name='username'
             title='用户名'
@@ -145,6 +139,9 @@ function Login() {
         </View>
         
         <View className='input-field'>
+          <View className='input-icon'>
+            <Text className='iconfont icon-lock'></Text>
+          </View>
           <Input
             name='password'
             title='密码'
@@ -168,7 +165,7 @@ function Login() {
           loading={isLoading}
           onClick={handleSubmit}
         >
-          登录
+          登 录
         </Button>
         
         <View className='login-footer'>
@@ -176,14 +173,6 @@ function Login() {
             没有账号？立即注册
           </Text>
         </View>
-        
-        {/* 调试信息区域，仅开发使用 */}
-        {debugInfo && (
-          <View className='debug-info'>
-            <Text>调试信息：</Text>
-            <Text className='debug-text'>{debugInfo}</Text>
-          </View>
-        )}
       </View>
     </View>
   );

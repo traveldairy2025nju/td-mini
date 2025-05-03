@@ -1,0 +1,70 @@
+.waterfall-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.waterfall-column {
+  width: 48%; // 左右两列，各占48%，中间留有间距
+}
+
+.diary-item {
+  margin-bottom: 16px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.diary-cover {
+  width: 100%;
+  height: 240px; // 固定高度，使图片变成长方形
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  object-fit: cover; // 保持比例裁剪显示
+}
+
+.diary-info {
+  padding: 16px; // 增加内边距
+}
+
+.diary-title {
+  font-size: 28px; // 增大字体
+  font-weight: bold;
+  color: #333;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 12px; // 增加间距
+}
+
+.diary-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 24px; // 增大字体
+  color: #999;
+}
+
+.diary-author {
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diary-stats {
+  display: flex;
+}
+
+.diary-likes {
+  margin-right: 12px; // 增加间距
+}
+
+.diary-views {
+  // 没有特殊样式，使用基础样式
+} 
