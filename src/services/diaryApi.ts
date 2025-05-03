@@ -62,6 +62,15 @@ const diaryApi = {
     });
   },
   
+  // 获取当前用户的游记
+  getUserDiaries: (status) => {
+    return request({
+      url: '/api/diaries/user/me',
+      method: 'GET',
+      data: status ? { status } : {}
+    });
+  },
+  
   // 上传游记照片
   uploadPhoto: (diaryId, filePath, description) => {
     return uploadFile({

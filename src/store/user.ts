@@ -121,9 +121,11 @@ const useUserStore = create<UserState>((set, get) => ({
         // 更新状态
         const userInfo = get().userInfo;
         if (userInfo) {
+          // 确保从响应中获取新头像URL
+          const avatar = res.data && res.data.avatar ? res.data.avatar : userInfo.avatar;
           const updatedUserInfo = {
             ...userInfo,
-            avatar: res.data.avatar
+            avatar
           };
           setUserInfoUtil(updatedUserInfo);
           set({ userInfo: updatedUserInfo, isLoading: false });
@@ -133,6 +135,7 @@ const useUserStore = create<UserState>((set, get) => ({
       set({ isLoading: false });
       return false;
     } catch (error) {
+      console.error('头像更新错误:', error);
       set({ 
         isLoading: false, 
         error: error instanceof Error ? error.message : '更新头像失败' 

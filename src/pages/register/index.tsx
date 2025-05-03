@@ -1,7 +1,9 @@
-import { View, Text, Button, Input, Image } from '@tarojs/components';
+import { View, Text, Image } from '@tarojs/components';
 import { useState } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
+import Button from '../../components/taro-ui/Button';
+import Input from '../../components/taro-ui/Input';
 import './index.scss';
 
 interface FormData {
@@ -135,10 +137,17 @@ function Register() {
   return (
     <View className='register-container'>
       <View className='register-header'>
-        <Text className='register-title'>注册账号</Text>
+        <Image 
+          className='register-logo'
+          src='https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=200&auto=format&fit=crop'
+        />
+        <Text className='register-title'>旅行日记</Text>
+        <Text className='register-subtitle'>记录你的每一次旅行</Text>
       </View>
       
       <View className='register-form'>
+        <View className='form-title'>注册账号</View>
+        
         <View className='avatar-upload' onClick={handleChooseImage}>
           {avatarPath ? (
             <Image 
@@ -148,26 +157,26 @@ function Register() {
             />
           ) : (
             <View className='avatar-upload__placeholder'>
-              <View className='avatar-upload__text'>点击上传头像</View>
+              <Text className='iconfont icon-camera'></Text>
+              <View className='avatar-upload__text'>上传头像</View>
             </View>
           )}
         </View>
         
         <View className='input-field'>
-          <View className='input-field__label'>
-            <Text className='input-field__required'>*</Text>
-            <Text>用户名</Text>
+          <View className='input-icon'>
+            <Text className='iconfont icon-user'></Text>
           </View>
-          <View className={`input-field__input-container ${errors.username ? 'input-field__input-container--error' : ''}`}>
-            <Input
-              className='input-field__input'
-              name='username'
-              type='text'
-              value={formData.username}
-              placeholder='请输入用户名(至少3位)'
-              onInput={(e) => handleChange('username', e.detail.value)}
-            />
-          </View>
+          <Input
+            name='username'
+            title='用户名'
+            type='text'
+            value={formData.username}
+            placeholder='请输入用户名(至少3位)'
+            error={!!errors.username}
+            required
+            onChange={(value) => handleChange('username', value)}
+          />
           {errors.username && (
             <View className='input-field__error'>
               <Text>{errors.username}</Text>
@@ -176,20 +185,19 @@ function Register() {
         </View>
         
         <View className='input-field'>
-          <View className='input-field__label'>
-            <Text className='input-field__required'>*</Text>
-            <Text>密码</Text>
+          <View className='input-icon'>
+            <Text className='iconfont icon-lock'></Text>
           </View>
-          <View className={`input-field__input-container ${errors.password ? 'input-field__input-container--error' : ''}`}>
-            <Input
-              className='input-field__input'
-              name='password'
-              password
-              value={formData.password}
-              placeholder='请输入密码(至少6位)'
-              onInput={(e) => handleChange('password', e.detail.value)}
-            />
-          </View>
+          <Input
+            name='password'
+            title='密码'
+            type='password'
+            value={formData.password}
+            placeholder='请输入密码(至少6位)'
+            error={!!errors.password}
+            required
+            onChange={(value) => handleChange('password', value)}
+          />
           {errors.password && (
             <View className='input-field__error'>
               <Text>{errors.password}</Text>
@@ -198,20 +206,19 @@ function Register() {
         </View>
         
         <View className='input-field'>
-          <View className='input-field__label'>
-            <Text className='input-field__required'>*</Text>
-            <Text>确认密码</Text>
+          <View className='input-icon'>
+            <Text className='iconfont icon-lock'></Text>
           </View>
-          <View className={`input-field__input-container ${errors.confirmPassword ? 'input-field__input-container--error' : ''}`}>
-            <Input
-              className='input-field__input'
-              name='confirmPassword'
-              password
-              value={formData.confirmPassword}
-              placeholder='请再次输入密码'
-              onInput={(e) => handleChange('confirmPassword', e.detail.value)}
-            />
-          </View>
+          <Input
+            name='confirmPassword'
+            title='确认密码'
+            type='password'
+            value={formData.confirmPassword}
+            placeholder='请再次输入密码'
+            error={!!errors.confirmPassword}
+            required
+            onChange={(value) => handleChange('confirmPassword', value)}
+          />
           {errors.confirmPassword && (
             <View className='input-field__error'>
               <Text>{errors.confirmPassword}</Text>
@@ -220,20 +227,19 @@ function Register() {
         </View>
         
         <View className='input-field'>
-          <View className='input-field__label'>
-            <Text className='input-field__required'>*</Text>
-            <Text>昵称</Text>
+          <View className='input-icon'>
+            <Text className='iconfont icon-nickname'></Text>
           </View>
-          <View className={`input-field__input-container ${errors.nickname ? 'input-field__input-container--error' : ''}`}>
-            <Input
-              className='input-field__input'
-              name='nickname'
-              type='text'
-              value={formData.nickname}
-              placeholder='请输入昵称'
-              onInput={(e) => handleChange('nickname', e.detail.value)}
-            />
-          </View>
+          <Input
+            name='nickname'
+            title='昵称'
+            type='text'
+            value={formData.nickname}
+            placeholder='请输入昵称'
+            error={!!errors.nickname}
+            required
+            onChange={(value) => handleChange('nickname', value)}
+          />
           {errors.nickname && (
             <View className='input-field__error'>
               <Text>{errors.nickname}</Text>
@@ -247,7 +253,7 @@ function Register() {
           loading={isLoading}
           onClick={handleSubmit}
         >
-          注册
+          注 册
         </Button>
         
         <View className='register-footer'>

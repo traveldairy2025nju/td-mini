@@ -14,6 +14,9 @@
     },
     {
       "name": "用户"
+    },
+    {
+      "name": "文件上传"
     }
   ],
   "paths": {
@@ -22,6 +25,7 @@
         "summary": "获取待审核游记列表",
         "deprecated": false,
         "description": "",
+        "operationId": "AdminController_findPendingDiaries",
         "tags": [
           "管理员"
         ],
@@ -32,8 +36,7 @@
             "description": "页码",
             "required": false,
             "schema": {
-              "type": "integer",
-              "default": 1
+              "type": "number"
             }
           },
           {
@@ -42,8 +45,7 @@
             "description": "每页数量",
             "required": false,
             "schema": {
-              "type": "integer",
-              "default": 10
+              "type": "number"
             }
           }
         ],
@@ -93,6 +95,7 @@
         "summary": "审核通过游记",
         "deprecated": false,
         "description": "",
+        "operationId": "AdminController_approveDiary",
         "tags": [
           "管理员"
         ],
@@ -178,6 +181,7 @@
         "summary": "拒绝游记",
         "deprecated": false,
         "description": "",
+        "operationId": "AdminController_rejectDiary",
         "tags": [
           "管理员"
         ],
@@ -197,19 +201,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "rejectReason"
-                ],
-                "properties": {
-                  "rejectReason": {
-                    "type": "string",
-                    "description": "拒绝原因",
-                    "examples": [
-                      "内容不符合规范"
-                    ]
-                  }
-                }
+                "$ref": "#/components/schemas/RejectDiaryDto"
               },
               "example": ""
             }
@@ -285,6 +277,7 @@
         "summary": "管理员删除游记",
         "deprecated": false,
         "description": "",
+        "operationId": "AdminController_removeDiary",
         "tags": [
           "管理员"
         ],
@@ -574,147 +567,22 @@
       }
     },
     "/api/diaries": {
-      "get": {
-        "summary": "获取已批准的游记列表",
-        "deprecated": false,
-        "description": "",
-        "tags": [
-          "游记"
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "页码",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "每页数量",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 10
-            }
-          },
-          {
-            "name": "keyword",
-            "in": "query",
-            "description": "搜索关键词",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "lat",
-            "in": "query",
-            "description": "纬度（与lng和distance一起使用）",
-            "required": false,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "lng",
-            "in": "query",
-            "description": "经度（与lat和distance一起使用）",
-            "required": false,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "distance",
-            "in": "query",
-            "description": "距离，单位：公里",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "获取成功",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      },
       "post": {
         "summary": "创建新游记",
         "deprecated": false,
         "description": "",
+        "operationId": "DiariesController_create",
         "tags": [
           "游记"
         ],
         "parameters": [],
         "requestBody": {
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "description": "游记标题",
-                    "examples": [
-                      "我的北京之旅"
-                    ],
-                    "example": "我的北京之旅"
-                  },
-                  "content": {
-                    "type": "string",
-                    "description": "游记内容",
-                    "examples": [
-                      "这是一段游记内容描述..."
-                    ],
-                    "example": "这是一段游记内容描述..."
-                  },
-                  "images": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "description": "游记图片(可多张)",
-                    "example": ""
-                  },
-                  "video": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "视频(可选)",
-                    "example": ""
-                  },
-                  "location": {
-                    "type": "string",
-                    "description": "位置信息(JSON格式)",
-                    "examples": [
-                      "{\"type\":\"Point\",\"coordinates\":[116.397,39.908],\"name\":\"北京市\"}"
-                    ],
-                    "example": "{\"type\":\"Point\",\"coordinates\":[116.397,39.908],\"name\":\"北京市\"}"
-                  }
-                },
-                "required": [
-                  "title",
-                  "content",
-                  "images"
-                ]
-              }
+                "$ref": "#/components/schemas/CreateDiaryDto"
+              },
+              "example": ""
             }
           }
         },
@@ -757,6 +625,131 @@
           }
         },
         "security": []
+      },
+      "get": {
+        "summary": "获取已批准的游记列表",
+        "deprecated": false,
+        "description": "",
+        "operationId": "DiariesController_findAll",
+        "tags": [
+          "游记"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/diaries/user/me": {
+      "get": {
+        "summary": "获取当前用户的游记",
+        "deprecated": false,
+        "description": "",
+        "operationId": "DiariesController_findUserDiaries",
+        "tags": [
+          "游记"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "状态过滤",
+            "required": false,
+            "schema": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
       }
     },
     "/api/diaries/{id}": {
@@ -764,6 +757,7 @@
         "summary": "获取游记详情",
         "deprecated": false,
         "description": "",
+        "operationId": "DiariesController_findOne",
         "tags": [
           "游记"
         ],
@@ -811,6 +805,7 @@
         "summary": "更新游记",
         "deprecated": false,
         "description": "",
+        "operationId": "DiariesController_update",
         "tags": [
           "游记"
         ],
@@ -828,37 +823,11 @@
         ],
         "requestBody": {
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "example": ""
-                  },
-                  "content": {
-                    "type": "string",
-                    "example": ""
-                  },
-                  "images": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "example": ""
-                  },
-                  "video": {
-                    "type": "string",
-                    "format": "binary",
-                    "example": ""
-                  },
-                  "location": {
-                    "type": "string",
-                    "example": ""
-                  }
-                }
-              }
+                "$ref": "#/components/schemas/UpdateDiaryDto"
+              },
+              "example": ""
             }
           }
         },
@@ -930,6 +899,7 @@
         "summary": "删除游记",
         "deprecated": false,
         "description": "",
+        "operationId": "DiariesController_remove",
         "tags": [
           "游记"
         ],
@@ -998,84 +968,12 @@
         "security": []
       }
     },
-    "/api/diaries/user/me": {
-      "get": {
-        "summary": "获取当前用户的游记",
-        "deprecated": false,
-        "description": "",
-        "tags": [
-          "游记"
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "页码",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "每页数量",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 10
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "description": "状态过滤",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "pending",
-                "approved",
-                "rejected"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "获取成功",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "401": {
-            "description": "未授权",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
     "/api/users/register": {
       "post": {
         "summary": "用户注册",
         "deprecated": false,
-        "description": "",
+        "description": "创建新用户并返回用户信息和JWT令牌。示例用户名: testuser, 密码: test123456",
+        "operationId": "UsersController_register",
         "tags": [
           "用户"
         ],
@@ -1088,7 +986,6 @@
                 "properties": {
                   "username": {
                     "type": "string",
-                    "description": "用户名",
                     "examples": [
                       "testuser"
                     ],
@@ -1096,16 +993,13 @@
                   },
                   "password": {
                     "type": "string",
-                    "description": "密码",
-                    "format": "password",
                     "examples": [
-                      "password123"
+                      "test123456"
                     ],
-                    "example": "password123"
+                    "example": "test123456"
                   },
                   "nickname": {
                     "type": "string",
-                    "description": "用户昵称",
                     "examples": [
                       "测试用户"
                     ],
@@ -1114,7 +1008,7 @@
                   "avatar": {
                     "type": "string",
                     "format": "binary",
-                    "description": "用户头像图片",
+                    "description": "可选的用户头像，如不上传将使用默认头像",
                     "example": ""
                   }
                 },
@@ -1134,44 +1028,14 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "examples": [
-                        true
-                      ]
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string"
-                        },
-                        "username": {
-                          "type": "string"
-                        },
-                        "nickname": {
-                          "type": "string"
-                        },
-                        "avatar": {
-                          "type": "string"
-                        },
-                        "role": {
-                          "type": "string"
-                        },
-                        "token": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
+                  "properties": {}
                 }
               }
             },
             "headers": {}
           },
           "400": {
-            "description": "注册失败，用户已存在或数据无效",
+            "description": "用户名已被占用",
             "content": {
               "application/json": {
                 "schema": {
@@ -1190,7 +1054,8 @@
       "post": {
         "summary": "用户登录",
         "deprecated": false,
-        "description": "",
+        "description": "使用用户名和密码登录并返回JWT令牌。示例用户名: testuser, 密码: test123456，或使用测试用户: test/test123456",
+        "operationId": "UsersController_login",
         "tags": [
           "用户"
         ],
@@ -1199,26 +1064,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "username",
-                  "password"
-                ],
-                "properties": {
-                  "username": {
-                    "type": "string",
-                    "examples": [
-                      "testuser"
-                    ]
-                  },
-                  "password": {
-                    "type": "string",
-                    "format": "password",
-                    "examples": [
-                      "password123"
-                    ]
-                  }
-                }
+                "$ref": "#/components/schemas/LoginUserDto"
               },
               "example": ""
             }
@@ -1231,30 +1077,14 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "examples": [
-                        true
-                      ]
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "token": {
-                          "type": "string",
-                          "description": "JWT Token"
-                        }
-                      }
-                    }
-                  }
+                  "properties": {}
                 }
               }
             },
             "headers": {}
           },
           "401": {
-            "description": "登录失败，无效的用户名或密码",
+            "description": "无效的用户名或密码",
             "content": {
               "application/json": {
                 "schema": {
@@ -1274,45 +1104,19 @@
         "summary": "获取用户个人资料",
         "deprecated": false,
         "description": "",
+        "operationId": "UsersController_getUserProfile",
         "tags": [
           "用户"
         ],
         "parameters": [],
         "responses": {
           "200": {
-            "description": "获取成功",
+            "description": "成功获取用户资料",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "examples": [
-                        true
-                      ]
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string"
-                        },
-                        "username": {
-                          "type": "string"
-                        },
-                        "nickname": {
-                          "type": "string"
-                        },
-                        "avatar": {
-                          "type": "string"
-                        },
-                        "role": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
+                  "properties": {}
                 }
               }
             },
@@ -1351,33 +1155,24 @@
         "summary": "更新用户头像",
         "deprecated": false,
         "description": "",
+        "operationId": "UsersController_updateAvatar",
         "tags": [
           "用户"
         ],
         "parameters": [],
         "requestBody": {
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "avatar": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "新头像图片",
-                    "example": ""
-                  }
-                },
-                "required": [
-                  "avatar"
-                ]
-              }
+                "$ref": "#/components/schemas/UpdateAvatarDto"
+              },
+              "example": ""
             }
           }
         },
         "responses": {
           "200": {
-            "description": "更新成功",
+            "description": "头像更新成功",
             "content": {
               "application/json": {
                 "schema": {
@@ -1389,7 +1184,7 @@
             "headers": {}
           },
           "400": {
-            "description": "请上传头像图片",
+            "description": "头像URL不能为空",
             "content": {
               "application/json": {
                 "schema": {
@@ -1433,6 +1228,7 @@
         "summary": "更新用户昵称",
         "deprecated": false,
         "description": "",
+        "operationId": "UsersController_updateNickname",
         "tags": [
           "用户"
         ],
@@ -1441,19 +1237,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "nickname"
-                ],
-                "properties": {
-                  "nickname": {
-                    "type": "string",
-                    "description": "新昵称",
-                    "examples": [
-                      "新昵称"
-                    ]
-                  }
-                }
+                "$ref": "#/components/schemas/UpdateNicknameDto"
               },
               "example": ""
             }
@@ -1461,7 +1245,7 @@
         },
         "responses": {
           "200": {
-            "description": "更新成功",
+            "description": "昵称更新成功",
             "content": {
               "application/json": {
                 "schema": {
@@ -1498,6 +1282,74 @@
           },
           "404": {
             "description": "用户未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "summary": "上传文件",
+        "deprecated": false,
+        "description": "",
+        "operationId": "UploadController_uploadFile",
+        "tags": [
+          "文件上传"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "要上传的文件",
+                    "example": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功，返回文件URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "文件不能为空",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "未授权",
             "content": {
               "application/json": {
                 "schema": {
@@ -1603,6 +1455,144 @@
         "xml": {
           "name": "Tag"
         }
+      },
+      "LoginUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "examples": [
+              "testuser"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "description": "密码",
+            "examples": [
+              "test123456"
+            ]
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "UpdateAvatarDto": {
+        "type": "object",
+        "properties": {
+          "avatarUrl": {
+            "type": "string",
+            "description": "头像URL，通过上传接口获取",
+            "examples": [
+              "https://minio.example.com/travel-diary/abc123.jpg"
+            ]
+          }
+        },
+        "required": [
+          "avatarUrl"
+        ]
+      },
+      "UpdateNicknameDto": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "description": "新昵称",
+            "examples": [
+              "新测试用户"
+            ]
+          }
+        },
+        "required": [
+          "nickname"
+        ]
+      },
+      "CreateDiaryDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "游记标题",
+            "examples": [
+              "我的北京之旅"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "description": "游记内容",
+            "examples": [
+              "这是一段游记内容描述..."
+            ]
+          },
+          "images": {
+            "description": "游记图片(可多张)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "examples": [
+              [
+                "http://172.29.4.76:9000/travel-diary/image1.jpg"
+              ]
+            ]
+          },
+          "videoUrl": {
+            "type": "string",
+            "description": "视频URL(可选，通过上传接口获取)",
+            "examples": [
+              "http://172.29.4.76:9000/travel-diary/video123.mp4"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "images"
+        ]
+      },
+      "UpdateDiaryDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "游记标题"
+          },
+          "content": {
+            "type": "string",
+            "description": "游记内容"
+          },
+          "images": {
+            "description": "游记图片(可多张)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "videoUrl": {
+            "type": "string",
+            "description": "视频URL(可选，通过上传接口获取)",
+            "examples": [
+              "http://172.29.4.76:9000/travel-diary/video123.mp4"
+            ]
+          }
+        }
+      },
+      "RejectDiaryDto": {
+        "type": "object",
+        "properties": {
+          "rejectReason": {
+            "type": "string",
+            "description": "拒绝原因",
+            "examples": [
+              "内容不符合规范"
+            ]
+          }
+        },
+        "required": [
+          "rejectReason"
+        ]
       }
     },
     "securitySchemes": {}
