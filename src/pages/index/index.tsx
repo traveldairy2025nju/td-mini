@@ -1,8 +1,6 @@
 import { View, Text } from '@tarojs/components';
 import { useEffect, useState } from 'react';
 import Taro, { useDidShow } from '@tarojs/taro';
-import { isLoggedIn } from '../../utils/auth';
-import Button from '../../components/taro-ui/Button';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import api from '../../services/api';
 import './index.scss';
@@ -21,6 +19,7 @@ interface DiaryItem {
 function Index() {
   const [diaryList, setDiaryList] = useState<DiaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('discover'); // 默认选中"发现"标签
 
   // 页面显示时通知TabBar更新
   useDidShow(() => {
@@ -90,56 +89,59 @@ function Index() {
     Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
   };
 
-  // 创建游记，需要先检查登录状态
-  const handleCreateDiary = () => {
-    if (isLoggedIn()) {
-      Taro.navigateTo({ url: '/pages/create-diary/index' });
+  // 切换标签页
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // 如果是附近标签，未来可以在这里实现获取附近的游记
+  };
+
+  // 渲染内容区域
+  const renderContent = () => {
+    if (activeTab === 'discover') {
+      return (
+        <View className='diary-list-section'>
+          {loading ? (
+            <View className='loading-container'>加载中...</View>
+          ) : diaryList.length > 0 ? (
+            <WaterfallFlow
+              diaryList={diaryList}
+              onItemClick={handleDiaryItemClick}
+            />
+          ) : (
+            <View className='empty-container'>暂无游记，快来创建第一篇吧！</View>
+          )}
+        </View>
+      );
     } else {
-      Taro.showModal({
-        title: '提示',
-        content: '您需要先登录才能创建游记',
-        confirmText: '去登录',
-        cancelText: '取消',
-        success: (res) => {
-          if (res.confirm) {
-            Taro.navigateTo({ url: '/pages/login/index' });
-          }
-        }
-      });
+      // 附近标签的内容
+      return (
+        <View className='nearby-content'>
+          <View className='empty-container'>附近功能即将上线，敬请期待！</View>
+        </View>
+      );
     }
   };
 
   return (
     <View className='index-container'>
-      <View className='index-header'>
-        <Text className='index-title'>旅行日记</Text>
-        <Text className='index-subtitle'>记录美好旅行时刻</Text>
-      </View>
-
-      {/* 创建游记按钮 */}
-      <View className='action-bar'>
-        <Button type='primary' className='create-diary-btn' onClick={handleCreateDiary}>
-          创建游记
-        </Button>
-      </View>
-
-      {/* 游记列表瀑布流 */}
-      <View className='diary-list-section'>
-        <View className='section-title'>
-          <Text>最新游记</Text>
+      {/* 顶部标签栏 */}
+      <View className='tab-bar'>
+        <View 
+          className={`tab-item ${activeTab === 'discover' ? 'active' : ''}`}
+          onClick={() => handleTabChange('discover')}
+        >
+          发现
         </View>
-
-        {loading ? (
-          <View className='loading-container'>加载中...</View>
-        ) : diaryList.length > 0 ? (
-          <WaterfallFlow
-            diaryList={diaryList}
-            onItemClick={handleDiaryItemClick}
-          />
-        ) : (
-          <View className='empty-container'>暂无游记，快来创建第一篇吧！</View>
-        )}
+        <View 
+          className={`tab-item ${activeTab === 'nearby' ? 'active' : ''}`}
+          onClick={() => handleTabChange('nearby')}
+        >
+          附近
+        </View>
       </View>
+
+      {/* 内容区域 */}
+      {renderContent()}
     </View>
   );
 }
