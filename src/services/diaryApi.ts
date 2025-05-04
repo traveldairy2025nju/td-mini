@@ -21,6 +21,15 @@ const diaryApi = {
     });
   },
 
+  // 获取游记详情（包含点赞状态）
+  getDetailWithLikeStatus: (id) => {
+    console.log(`diaryApi.getDetailWithLikeStatus - 请求游记ID: ${id}`);
+    return request({
+      url: `/api/diaries/${id}/with-like-status`,
+      method: 'GET'
+    });
+  },
+
   // 创建游记
   create: async (data) => {
     // data包含：title, content, images 数组，可选 videoUrl
@@ -107,6 +116,48 @@ const diaryApi = {
       console.error('视频上传错误:', error);
       throw error;
     }
+  },
+
+  // 点赞/取消点赞游记
+  likeDiary: (diaryId) => {
+    console.log('点赞/取消点赞 - 游记ID:', diaryId);
+    return request({
+      url: '/api/diaries/like',
+      method: 'POST',
+      data: { diaryId }
+    });
+  },
+
+  // 添加评论
+  addComment: (diaryId: string, content: string, parentCommentId?: string | null) => {
+    const data: { diaryId: string; content: string; parentCommentId?: string } = { diaryId, content };
+    if (parentCommentId) {
+      data.parentCommentId = parentCommentId;
+    }
+    
+    return request({
+      url: '/api/diaries/comment',
+      method: 'POST',
+      data
+    });
+  },
+
+  // 获取游记评论
+  getComments: (diaryId, params = {}) => {
+    return request({
+      url: `/api/diaries/${diaryId}/comments`,
+      method: 'GET',
+      data: params
+    });
+  },
+
+  // 删除评论
+  deleteComment: (commentId) => {
+    console.log('删除评论 - 评论ID:', commentId);
+    return request({
+      url: `/api/diaries/comment/${commentId}`,
+      method: 'DELETE'
+    });
   }
 };
 

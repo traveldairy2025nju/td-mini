@@ -193,6 +193,7 @@
   display: flex;
   padding: 12px 0;
   border-bottom: 1px solid #f0f0f0;
+  position: relative;
 }
 
 .comment-avatar {
@@ -205,6 +206,7 @@
 
 .comment-content {
   flex: 1;
+  position: relative;
 }
 
 .comment-header {
@@ -228,6 +230,31 @@
   font-size: 20px;
   color: #333;
   line-height: 1.5;
+}
+
+.comment-delete {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 18px;
+  color: #ff6b6b;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.load-more {
+  text-align: center;
+  padding: 15px 0;
+  color: #666;
+  font-size: 20px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+.load-more:active {
+  background-color: #eee;
 }
 
 .no-comments {
@@ -260,23 +287,18 @@
 
 .comment-input-area {
   flex: 1;
-  margin-right: 25px; /* 增加右边距 */
-  background-color: #f5f5f5; /* 浅灰色背景 */
-  border-radius: 28px; /* 椭圆形状 */
-  padding: 5px; /* 外部内边距 */
+  margin-right: 25px;
+  background-color: #f5f5f5;
+  border-radius: 28px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   height: 55px;
 }
 
-.comment-input {
-  background-color: transparent; /* 输入框透明，使用外层容器的背景色 */
-  border-radius: 22px; 
-  padding: 12px 20px; /* 增加输入框内边距 */
+.comment-placeholder {
+  color: #999;
   font-size: 19px;
-  width: 100%;
-  box-sizing: border-box;
-  height: 100%;
 }
 
 .action-buttons {
@@ -307,4 +329,115 @@
   font-size: 17px;
   color: #666;
   margin-top: 3px;
+}
+
+/* 评论相关样式增强 */
+.reply-info {
+  margin-top: 8px;
+  background-color: #f8f8f8;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 18px;
+  color: #666;
+}
+
+.reply-text {
+  font-size: 18px;
+  color: #888;
+}
+
+/* 评论弹窗 */
+.comment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.comment-modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.comment-modal-content {
+  position: relative;
+  width: 100%;
+  background-color: #fff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  z-index: 1001;
+  animation: slide-up 0.3s ease;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.comment-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.comment-modal-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+.comment-modal-close {
+  font-size: 20px;
+  color: #666;
+  padding: 6px 12px;
+}
+
+.comment-modal-body {
+  padding: 20px;
+}
+
+.comment-modal-input {
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 20px;
+  color: #333;
+  background-color: #f9f9f9;
+}
+
+.comment-modal-footer {
+  display: flex;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  justify-content: flex-end;
+}
+
+.comment-modal-btn {
+  margin-left: 15px;
+  padding: 10px 20px;
+  font-size: 20px;
+  color: #666;
+  border-radius: 8px;
+}
+
+.comment-modal-btn.primary {
+  background-color: #1677ff;
+  color: #fff;
 }
