@@ -25,6 +25,9 @@ interface Comment {
   createdAt: string;
 }
 
+// 默认占位图
+const DEFAULT_IMAGE = 'https://placehold.co/600x400/f5f5f5/cccccc?text=图片加载失败';
+
 function DiaryDetail() {
   const router = useRouter();
   console.log('详情页 - 完整router对象:', JSON.stringify(router));
@@ -47,18 +50,19 @@ function DiaryDetail() {
     {
       id: '1',
       authorName: '旅行者1号',
-      authorAvatar: 'https://joeschmoe.io/api/v1/random',
+      authorAvatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=user1',
       content: '这个地方真的太美了，下次也想去！',
       createdAt: '2023-05-20'
     },
     {
       id: '2',
       authorName: '背包客',
-      authorAvatar: 'https://joeschmoe.io/api/v1/random',
+      authorAvatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=user2',
       content: '分享的照片很棒，能介绍一下拍摄的相机吗？',
       createdAt: '2023-05-19'
     }
   ]);
+  const [failedImages, setFailedImages] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     console.log('详情页 - useEffect中的ID:', id);
@@ -84,17 +88,39 @@ function DiaryDetail() {
 
       const res = await api.diary.getDetail(diaryId);
       console.log('详情页 - API响应:', res);
-
+      
       if (res.success && res.data) {
         const diaryData = res.data;
+        
+        // 打印详细的图片数据
+        console.log('详情页 - 图片数据:', diaryData.images);
+        console.log('详情页 - 视频数据:', diaryData.video);
+        
+        // 检查图片URL
+        if (Array.isArray(diaryData.images)) {
+          diaryData.images.forEach((img, index) => {
+            console.log(`图片${index+1}:`, img);
+            
+            // 确保图片URL是有效的
+            if (!img || typeof img !== 'string' || !img.startsWith('http')) {
+              console.warn(`图片${index+1}的URL可能不正确:`, img);
+            }
+          });
+        } else {
+          console.warn('图片数据不是数组:', diaryData.images);
+        }
+        
         setDiary({
           id: diaryData._id,
           title: diaryData.title,
           content: diaryData.content,
-          images: diaryData.images || [],
+          // 确保images是数组，并过滤掉无效URL
+          images: Array.isArray(diaryData.images) 
+            ? diaryData.images.filter(img => img && typeof img === 'string') 
+            : [],
           videoUrl: diaryData.video,
           authorName: diaryData.author?.nickname || '未知用户',
-          authorAvatar: diaryData.author?.avatar || 'https://placeholder.com/150',
+          authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
           createdAt: diaryData.createdAt || '',
           views: diaryData.views || 0,
           likes: diaryData.likes || 0
@@ -150,6 +176,20 @@ function DiaryDetail() {
     });
   };
 
+  // 处理图片加载失败
+  const handleImageError = (url: string) => {
+    console.error('图片加载失败:', url);
+    setFailedImages(prev => ({...prev, [url]: true}));
+  };
+
+  // 获取图片实际显示URL
+  const getImageUrl = (url: string) => {
+    if (failedImages[url]) {
+      return DEFAULT_IMAGE;
+    }
+    return url;
+  };
+
   if (loading) {
     return (
       <View className='loading-container'>
@@ -172,6 +212,8 @@ function DiaryDetail() {
     ...diary.images.map(img => ({ type: 'image', url: img }))
   ];
 
+  console.log('媒体列表:', mediaList); // 添加日志查看媒体列表内容
+
   return (
     <View className='diary-detail-page'>
       {/* 固定顶栏 */}
@@ -187,39 +229,63 @@ function DiaryDetail() {
       <ScrollView className='diary-content-scroll' scrollY>
         {/* 媒体轮播区 */}
         {mediaList.length > 0 && (
-          <Swiper
-            className='media-swiper'
-            indicatorColor='#999'
-            indicatorActiveColor='#333'
-            circular
-            indicatorDots
-            autoplay={false}
-          >
-            {mediaList.map((media, index) => (
-              <SwiperItem key={index} className='swiper-item'>
-                {media.type === 'image' ? (
-                  <Image
-                    className='swiper-image'
-                    src={media.url}
-                    mode='aspectFill'
-                    onClick={() => {
-                      Taro.previewImage({
-                        current: media.url,
-                        urls: diary.images
-                      });
-                    }}
-                  />
-                ) : (
-                  <Video
-                    src={media.url}
-                    className='swiper-video'
-                    controls={true}
-                    showFullscreenBtn={true}
-                  />
-                )}
-              </SwiperItem>
-            ))}
-          </Swiper>
+          <View className='media-container'>
+            <Swiper
+              className='media-swiper'
+              indicatorColor='#999'
+              indicatorActiveColor='#333'
+              circular
+              indicatorDots
+              autoplay={false}
+            >
+              {mediaList.map((media, index) => (
+                <SwiperItem key={index} className='swiper-item'>
+                  {media.type === 'image' ? (
+                    <View className='image-wrapper'>
+                      <Image
+                        className='swiper-image'
+                        src={failedImages[media.url] ? DEFAULT_IMAGE : media.url}
+                        mode='aspectFit'
+                        lazyLoad={false}
+                        showMenuByLongpress={true}
+                        onError={() => handleImageError(media.url)}
+                        onClick={() => {
+                          console.log('点击图片:', media.url);
+                          // 如果原始图片加载失败，不进行预览
+                          if (failedImages[media.url]) {
+                            Taro.showToast({
+                              title: '原始图片无法加载',
+                              icon: 'none'
+                            });
+                            return;
+                          }
+                          
+                          Taro.previewImage({
+                            current: media.url,
+                            urls: diary.images
+                          }).catch(err => {
+                            console.error('预览图片失败:', err);
+                            Taro.showToast({
+                              title: '图片预览失败',
+                              icon: 'none'
+                            });
+                          });
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <Video
+                      src={media.url}
+                      className='swiper-video'
+                      controls={true}
+                      showFullscreenBtn={true}
+                      objectFit='contain'
+                    />
+                  )}
+                </SwiperItem>
+              ))}
+            </Swiper>
+          </View>
         )}
 
         {/* 文章标题和内容 */}
