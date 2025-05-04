@@ -349,7 +349,24 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   // 点击评论触发回复
   const handleClickComment = (comment: Comment) => {
-    openCommentModal(comment);
+    // 如果点击的是回复评论，则视为对主评论的回复
+    if (comment.parentComment) {
+      // 查找主评论
+      const mainComment = comments.find(c => 
+        c._id === comment.parentComment || c.id === comment.parentComment
+      );
+      
+      if (mainComment) {
+        console.log('点击回复评论，转为回复主评论:', mainComment);
+        openCommentModal(mainComment);
+      } else {
+        // 找不到主评论，直接回复这条评论
+        openCommentModal(comment);
+      }
+    } else {
+      // 直接回复主评论
+      openCommentModal(comment);
+    }
   };
 
   // 处理删除评论
@@ -429,14 +446,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             </View>
           );
         })}
-        
-        {/* 添加回复按钮 */}
-        <View className='reply-action' onClick={(e) => {
-          e.stopPropagation(); // 阻止冒泡，防止触发父评论的点击事件
-          handleClickComment(parentComment);
-        }}>
-          <Text className='reply-action-text'>回复</Text>
-        </View>
       </View>
     );
   };
