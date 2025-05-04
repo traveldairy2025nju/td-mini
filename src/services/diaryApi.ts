@@ -66,7 +66,14 @@ const diaryApi = {
   },
 
   // 获取当前用户的游记
-  getUserDiaries: (params = {}) => {
+  getUserDiaries: (status?: 'all' | 'pending' | 'approved' | 'rejected') => {
+    console.log('diaryApi.getUserDiaries - 状态过滤:', status);
+
+    // 构建查询参数
+    const params = status && status !== 'all' ? { status } : {};
+
+    console.log('diaryApi.getUserDiaries - 查询参数:', params);
+
     return request({
       url: '/api/diaries/user/me',
       method: 'GET',

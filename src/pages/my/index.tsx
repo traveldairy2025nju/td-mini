@@ -86,14 +86,24 @@ function My() {
     }
   };
 
+  // 处理状态过滤变化
+  const handleStatusFilterChange = (status: 'all' | 'pending' | 'approved' | 'rejected') => {
+    console.log('我的页面 - 切换状态过滤:', status);
+    setStatusFilter(status);
+    // 直接传递新状态给fetchMyDiaries，而不是依赖状态更新后再调用
+    fetchMyDiaries(status);
+  };
+
   // 获取我的游记列表
-  const fetchMyDiaries = async () => {
+  const fetchMyDiaries = async (statusToFilter?: 'all' | 'pending' | 'approved' | 'rejected') => {
     if (!checkLogin()) return;
 
     try {
       setLoadingDiaries(true);
-      // 调用获取当前用户游记的API
-      const res = await api.diary.getUserDiaries(statusFilter === 'all' ? undefined : statusFilter);
+      // 使用传入的状态参数或当前状态
+      const currentStatus = statusToFilter || statusFilter;
+      console.log('我的页面 - 准备获取游记，状态过滤:', currentStatus);
+      const res = await api.diary.getUserDiaries(currentStatus);
       console.log('我的页面 - 获取游记API响应:', res);
 
       if (res.success && res.data) {
@@ -123,12 +133,6 @@ function My() {
     } finally {
       setLoadingDiaries(false);
     }
-  };
-
-  // 处理状态过滤变化
-  const handleStatusFilterChange = (status: 'all' | 'pending' | 'approved' | 'rejected') => {
-    setStatusFilter(status);
-    fetchMyDiaries();
   };
 
   // 点击游记进入详情
@@ -243,6 +247,7 @@ function My() {
         <WaterfallFlow
           diaryList={diaries}
           onItemClick={handleDiaryClick}
+          showStatus={true}
         />
       ) : (
         <View className='empty-container'>
@@ -250,7 +255,7 @@ function My() {
           <Button
             type='primary'
             className='create-diary-btn'
-            onClick={() => Taro.navigateTo({ url: '/pages/diary/create/index' })}
+            onClick={() => Taro.navigateTo({ url: '/pages/create-diary/index' })}
           >
             创建游记
           </Button>
