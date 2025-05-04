@@ -1,0 +1,55 @@
+/* 底部评论输入框 */
+.fixed-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  z-index: 100;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+.comment-input-area {
+  flex: 1;
+  height: 36px;
+  background: #f5f5f5;
+  border-radius: 18px;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  color: #999;
+}
+
+.comment-placeholder {
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  margin-left: 10px;
+}
+
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.action-icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.action-text {
+  font-size: 10px;
+  color: #666;
+}
+
+.action-button.active .action-text {
+  color: #ff5151;
+} 

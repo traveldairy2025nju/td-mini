@@ -50,8 +50,9 @@ const userApi = {
   },
 
   // 用户登录
-  login: async (username, password) => {
+  login: async (params) => {
     try {
+      const { username, password } = params;
       const res = await request({
         url: '/api/users/login',
         method: 'POST',
@@ -83,11 +84,20 @@ const userApi = {
   },
 
   // 获取用户个人资料
-  getUserProfile: () => {
-    return request({
-      url: '/api/users/profile',
-      method: 'GET'
-    });
+  getUserProfile: async () => {
+    try {
+      console.log('获取用户个人资料');
+      const res = await request({
+        url: '/api/users/profile',
+        method: 'GET'
+      });
+      
+      console.log('获取用户个人资料响应:', res);
+      return res;
+    } catch (error) {
+      console.error('获取用户个人资料失败:', error);
+      throw error;
+    }
   },
 
   // 获取当前用户信息，用于验证登录状态

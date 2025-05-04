@@ -69,6 +69,7 @@ function Login() {
     if (!validate()) return;
 
     try {
+      console.log('提交登录表单:', formData);
       const success = await login(formData.username, formData.password);
 
       if (success) {
@@ -82,16 +83,19 @@ function Login() {
         setTimeout(() => {
           Taro.switchTab({ url: '/pages/index/index' });
         }, 2000);
-      } else if (error) {
+      } else {
+        // 显示具体的错误信息
         Taro.showToast({
-          title: '用户名或密码错误',
+          title: error || '登录失败，请检查用户名和密码',
           icon: 'none',
           duration: 2000
         });
+        console.error('登录失败，错误信息:', error);
       }
     } catch (err) {
+      console.error('登录异常:', err);
       Taro.showToast({
-        title: '登录时发生错误',
+        title: err instanceof Error ? err.message : '登录时发生错误',
         icon: 'none',
         duration: 2000
       });
