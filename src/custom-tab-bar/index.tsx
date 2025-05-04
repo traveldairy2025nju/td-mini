@@ -1,5 +1,5 @@
 import { View, Image } from '@tarojs/components';
-import Taro, { useDidShow, useDidHide } from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import { isLoggedIn } from '../utils/auth';
 import './index.scss';
@@ -115,6 +115,7 @@ export default function CustomTabBar() {
   return (
     <View className='custom-tab-bar'>
       <View className='tab-bar-border'></View>
+      
       <View className='tab-bar-item' onClick={() => switchTab(0, tabList[0].pagePath)}>
         <Image
           className='tab-bar-icon'

@@ -61,6 +61,45 @@ page {
   padding-bottom: 40px;
 }
 
+/* 顶部标签栏样式 */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  padding: 0 30px;
+  height: 100px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  font-size: 32px;
+  color: #666;
+  padding: 20px 0;
+  position: relative;
+}
+
+.tab-item.active {
+  color: #1296db;
+  font-weight: bold;
+}
+
+.tab-item.active:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 6px;
+  background-color: #1296db;
+  border-radius: 3px;
+}
+
 .index-header {
   text-align: center;
   padding: 40px 30px;
@@ -105,6 +144,7 @@ page {
   padding: 20px 0;
   border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
 }
 
 .section-title {
@@ -130,6 +170,14 @@ page {
   width: 8px;
   background-color: #1296db;
   border-radius: 4px;
+}
+
+.nearby-content {
+  background-color: #fff;
+  padding: 20px 0;
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
 }
 
 .loading-container {
