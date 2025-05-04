@@ -6,7 +6,8 @@ export default {
     "pages/my/index",
     "pages/edit-nickname/index",
     "pages/settings/index",
-    "pages/create-diary/index"
+    "pages/create-diary/index",
+    "pages/diary/detail/index"
   ],
   window: {
     backgroundTextStyle: "light",

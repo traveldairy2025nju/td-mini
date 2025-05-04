@@ -4,8 +4,19 @@ import Taro from '@tarojs/taro';
 import { isLoggedIn } from '../../utils/auth';
 import Button from '../../components/taro-ui/Button';
 import WaterfallFlow from '../../components/WaterfallFlow';
-import { getDiaryList, DiaryItem } from '../../services/diaryService';
+import api from '../../services/api';
 import './index.scss';
+
+// 游记项目类型
+interface DiaryItem {
+  id: string;
+  title: string;
+  coverImage: string;
+  authorName: string;
+  likeCount: number;
+  viewCount: number;
+  createdAt: string;
+}
 
 function Index() {
   const [diaryList, setDiaryList] = useState<DiaryItem[]>([]);
@@ -20,17 +31,56 @@ function Index() {
   const fetchDiaryList = async () => {
     try {
       setLoading(true);
-      const data = await getDiaryList();
-      setDiaryList(data);
+      const res = await api.diary.getAll();
+      console.log('首页 - API返回的原始数据:', res);
+
+      if (res.success && res.data && res.data.items) {
+        // 转换API返回的数据为组件需要的格式
+        const formattedDiaries = res.data.items.map(item => {
+          console.log('首页 - 处理游记项:', item);
+          // 使用MongoDB的_id字段作为唯一标识
+          return {
+            id: item._id, // 使用_id而不是id
+            title: item.title || '无标题',
+            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            authorName: item.author?.nickname || '未知用户',
+            likeCount: item.likes || 0,
+            viewCount: item.views || 0,
+            createdAt: item.createdAt || ''
+          };
+        });
+
+        console.log('首页 - 格式化后的游记列表:', formattedDiaries);
+        setDiaryList(formattedDiaries);
+      } else {
+        // 如果API调用失败，显示错误信息
+        throw new Error(res.message || '获取游记列表失败');
+      }
     } catch (error) {
       console.error('获取游记列表失败', error);
       Taro.showToast({
         title: '获取游记列表失败',
         icon: 'none'
       });
+      // 加载失败时设置为空数组
+      setDiaryList([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // 点击游记项目，跳转到详情页
+  const handleDiaryItemClick = (id: string) => {
+    console.log('首页 - 点击游记，ID:', id);
+    if (!id) {
+      console.error('首页 - 游记ID无效');
+      Taro.showToast({
+        title: '游记ID无效',
+        icon: 'none'
+      });
+      return;
+    }
+    Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
   };
 
   // 创建游记，需要先检查登录状态
@@ -50,11 +100,6 @@ function Index() {
         }
       });
     }
-  };
-
-  // 点击游记项目，跳转到详情页
-  const handleDiaryItemClick = (id: string) => {
-    Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
   };
 
   return (

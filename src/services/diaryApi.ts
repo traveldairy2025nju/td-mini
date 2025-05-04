@@ -14,6 +14,7 @@ const diaryApi = {
 
   // 获取单个游记详情
   getDetail: (id) => {
+    console.log(`diaryApi.getDetail - 请求游记ID: ${id}`);
     return request({
       url: `/api/diaries/${id}`,
       method: 'GET'
@@ -23,19 +24,36 @@ const diaryApi = {
   // 创建游记
   create: async (data) => {
     // data包含：title, content, images 数组，可选 videoUrl
+
+    // 如果客户端使用videoUrl字段，但服务器使用video字段，需要转换
+    const apiData = { ...data };
+    if (apiData.videoUrl !== undefined) {
+      apiData.video = apiData.videoUrl;
+      delete apiData.videoUrl;
+    }
+
+    console.log('diaryApi.create - 提交的数据:', apiData);
+
     return request({
       url: '/api/diaries',
       method: 'POST',
-      data
+      data: apiData
     });
   },
 
   // 更新游记
   update: (id, data) => {
+    // 如果客户端使用videoUrl字段，但服务器使用video字段，需要转换
+    const apiData = { ...data };
+    if (apiData.videoUrl !== undefined) {
+      apiData.video = apiData.videoUrl;
+      delete apiData.videoUrl;
+    }
+
     return request({
       url: `/api/diaries/${id}`,
       method: 'PUT',
-      data
+      data: apiData
     });
   },
 
