@@ -190,7 +190,26 @@ function CreateDiary() {
     try {
       setIsSubmitting(true);
 
-      const result = await api.diary.create(formData);
+      // 准备提交的数据
+      const submitData = {
+        ...formData
+      };
+
+      // 如果videoUrl为空字符串，则不提交这个字段
+      if (!submitData.videoUrl) {
+        delete submitData.videoUrl;
+      }
+
+      // 验证videoUrl格式
+      if (submitData.videoUrl && !submitData.videoUrl.match(/^https?:\/\/.+\..+/)) {
+        Taro.showToast({
+          title: '视频URL格式不正确',
+          icon: 'none'
+        });
+        return;
+      }
+
+      const result = await api.diary.create(submitData);
 
       if (result.success) {
         Taro.showToast({
