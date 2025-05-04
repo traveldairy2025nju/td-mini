@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import { checkLogin } from '../../utils/auth';
-import api from '../../services';
+import api from '../../services/api';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import Button from '../../components/taro-ui/Button';
 import './index.scss';

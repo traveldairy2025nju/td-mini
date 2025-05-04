@@ -1,9 +1,9 @@
-import { View, Text, Textarea, ScrollView, Image } from '@tarojs/components';
+import { View, Text, Textarea, ScrollView, Image, Video } from '@tarojs/components';
 import { useState } from 'react';
 import Taro from '@tarojs/taro';
 import Button from '../../components/taro-ui/Button';
 import Input from '../../components/taro-ui/Input';
-import { createDiary, uploadFile } from '../../services/api';
+import api from '../../services/api';
 import './index.scss';
 
 interface FormData {
@@ -114,7 +114,7 @@ function CreateDiary() {
   // 上传图片
   const uploadImage = async (filePath: string) => {
     try {
-      const result = await uploadFile(filePath);
+      const result = await api.upload.uploadFile(filePath);
       if (result.success && result.data.url) {
         return result.data.url;
       }
@@ -132,7 +132,7 @@ function CreateDiary() {
   // 上传视频
   const uploadVideo = async (filePath: string) => {
     try {
-      const result = await uploadFile(filePath);
+      const result = await api.upload.uploadFile(filePath);
       if (result.success && result.data.url) {
         return result.data.url;
       }
@@ -190,7 +190,7 @@ function CreateDiary() {
     try {
       setIsSubmitting(true);
 
-      const result = await createDiary(formData);
+      const result = await api.diary.create(formData);
 
       if (result.success) {
         Taro.showToast({
