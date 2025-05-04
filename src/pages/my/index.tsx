@@ -94,18 +94,24 @@ function My() {
       setLoadingDiaries(true);
       // 调用获取当前用户游记的API
       const res = await api.diary.getUserDiaries(statusFilter === 'all' ? undefined : statusFilter);
+      console.log('我的页面 - 获取游记API响应:', res);
+
       if (res.success && res.data) {
         // 转换API返回的数据为组件需要的格式
-        const formattedDiaries = res.data.items.map(item => ({
-          id: item.id,
-          title: item.title,
-          coverImage: item.images?.[0] || 'https://placeholder.com/300',
-          authorName: userInfo?.nickname || '我',
-          likeCount: item.likes || 0,
-          viewCount: item.views || 0,
-          createdAt: item.createdAt,
-          status: item.status
-        }));
+        const formattedDiaries = res.data.items.map(item => {
+          console.log('我的页面 - 处理游记项:', item);
+          return {
+            id: item._id,
+            title: item.title || '无标题',
+            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            authorName: userInfo?.nickname || '我',
+            likeCount: item.likes || 0,
+            viewCount: item.views || 0,
+            createdAt: item.createdAt || '',
+            status: item.status
+          };
+        });
+        console.log('我的页面 - 格式化后的游记列表:', formattedDiaries);
         setDiaries(formattedDiaries);
       }
     } catch (error) {
@@ -127,6 +133,15 @@ function My() {
 
   // 点击游记进入详情
   const handleDiaryClick = (id: string) => {
+    console.log('我的页面 - 点击游记，ID:', id);
+    if (!id) {
+      console.error('我的页面 - 游记ID无效');
+      Taro.showToast({
+        title: '游记ID无效',
+        icon: 'none'
+      });
+      return;
+    }
     Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
   };
 
