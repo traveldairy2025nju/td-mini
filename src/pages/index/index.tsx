@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components';
 import { useEffect, useState } from 'react';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import { isLoggedIn } from '../../utils/auth';
 import Button from '../../components/taro-ui/Button';
 import WaterfallFlow from '../../components/WaterfallFlow';
@@ -21,6 +21,13 @@ interface DiaryItem {
 function Index() {
   const [diaryList, setDiaryList] = useState<DiaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 页面显示时通知TabBar更新
+  useDidShow(() => {
+    console.log('首页 - 页面显示');
+    // 触发TabBar更新事件
+    Taro.eventCenter.trigger('tabIndexChange', 0);
+  });
 
   useEffect(() => {
     // 获取游记列表数据

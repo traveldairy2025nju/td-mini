@@ -1,6 +1,6 @@
 import { View, Text, Image } from '@tarojs/components';
 import { useEffect, useState } from 'react';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import { checkLogin } from '../../utils/auth';
 import api from '../../services/api';
@@ -28,6 +28,13 @@ function My() {
     isLoading,
     updateProfile
   } = useUserStore();
+
+  // 页面显示时通知TabBar更新
+  useDidShow(() => {
+    console.log('我的页面 - 页面显示');
+    // 触发TabBar更新事件
+    Taro.eventCenter.trigger('tabIndexChange', 1);
+  });
 
   // 活动标签状态
   const [activeTab, setActiveTab] = useState<'diaries' | 'favorites'>('diaries');

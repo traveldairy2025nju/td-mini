@@ -1,5 +1,5 @@
 import { View, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow, useDidHide } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import { isLoggedIn } from '../utils/auth';
 import './index.scss';
@@ -28,19 +28,68 @@ export default function CustomTabBar() {
     }
   ]);
 
+  // 组件挂载时添加路由事件监听
   useEffect(() => {
-    const path = Taro.getCurrentInstance().router?.path;
-    if (path) {
-      const tabIndex = tabList.findIndex(item => path.includes(item.pagePath));
-      if (tabIndex !== -1) {
-        setSelected(tabIndex);
+    // 监听页面显示事件
+    Taro.eventCenter.on('tabIndexChange', handleTabIndexChange);
+
+    // 初始化时执行一次
+    updateSelectedTab();
+
+    // 组件卸载时移除事件监听
+    return () => {
+      Taro.eventCenter.off('tabIndexChange', handleTabIndexChange);
+    };
+  }, []);
+
+  // 每次显示时更新Tab状态
+  useDidShow(() => {
+    console.log('TabBar - useDidShow触发');
+    updateSelectedTab();
+  });
+
+  // 处理Tab索引变化
+  const handleTabIndexChange = (index: number) => {
+    console.log('TabBar - 接收到tabIndexChange事件:', index);
+    setSelected(index);
+  };
+
+  // 根据当前路径更新选中的tab
+  const updateSelectedTab = () => {
+    const currentPage = Taro.getCurrentInstance();
+    const path = currentPage.router?.path || '';
+
+    console.log('TabBar - 当前路径:', path);
+
+    // 根据路径精确匹配
+    if (path === 'pages/index/index') {
+      console.log('TabBar - 激活首页tab');
+      setSelected(0);
+    } else if (path === 'pages/my/index') {
+      console.log('TabBar - 激活我的tab');
+      setSelected(1);
+    } else {
+      // 如果不是精确匹配，尝试模糊匹配
+      if (path.includes('/pages/index')) {
+        console.log('TabBar - 模糊匹配激活首页tab');
+        setSelected(0);
+      } else if (path.includes('/pages/my')) {
+        console.log('TabBar - 模糊匹配激活我的tab');
+        setSelected(1);
+      } else {
+        console.log('TabBar - 未匹配到主页面路径');
       }
     }
-  }, []);
+  };
 
   // 处理TabBar点击
   const switchTab = (index: number, path: string) => {
+    // 触发全局事件，通知索引变化
+    Taro.eventCenter.trigger('tabIndexChange', index);
+
+    // 先设置选中状态，再切换页面
     setSelected(index);
+    console.log('TabBar - 点击Tab切换到:', index, path);
     Taro.switchTab({ url: `/${path}` });
   };
 
