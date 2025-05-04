@@ -33,6 +33,31 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     }
   }, [diaryId]);
 
+  // 添加事件监听器以响应外部评论弹窗请求
+  useEffect(() => {
+    // 监听打开评论弹窗的事件
+    const openCommentHandler = (data?: { diaryId?: string }) => {
+      console.log('接收到打开评论弹窗事件', data);
+      setCommentModalVisible(true);
+    };
+
+    // 监听刷新评论的事件
+    const refreshCommentsHandler = () => {
+      console.log('接收到刷新评论事件');
+      refreshComments();
+    };
+
+    // 注册事件监听
+    Taro.eventCenter.on('openCommentModal', openCommentHandler);
+    Taro.eventCenter.on('refreshComments', refreshCommentsHandler);
+
+    // 清理函数
+    return () => {
+      Taro.eventCenter.off('openCommentModal', openCommentHandler);
+      Taro.eventCenter.off('refreshComments', refreshCommentsHandler);
+    };
+  }, [diaryId]); // 依赖于日记ID
+
   const fetchComments = async (diaryId: string, pageNum = 1, refresh = false) => {
     try {
       setCommentsLoading(true);
@@ -108,56 +133,29 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     const token = Taro.getStorageSync('token');
     console.log('当前token状态:', token ? '已存在' : '不存在');
     
-    // 如果没有用户ID，尝试再次获取
-    if (!currentUserId) {
-      console.log('尝试重新获取用户信息');
-      try {
-        const currentUser = await api.user.getCurrentUser();
-        if (currentUser) {
-          const userId = currentUser._id || currentUser.id || currentUser.userId;
-          if (userId) {
-            console.log('获取到用户ID:', userId);
-            // 继续打开弹窗
-            setReplyToComment(comment || null);
-            setCommentText('');
-            setCommentModalVisible(true);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('重新获取用户信息失败:', error);
-      }
-      
-      // 如果仍然没有获取到用户ID，但有token，仍然允许操作
-      if (token) {
-        console.log('有token但无用户ID，仍然允许操作');
-        setReplyToComment(comment || null);
-        setCommentText('');
-        setCommentModalVisible(true);
-        return;
-      }
-      
-      // 此时确定用户未登录
-      Taro.showToast({
-        title: '请先登录',
-        icon: 'none',
-        duration: 2000
-      });
-      
-      // 延迟跳转到登录页
-      setTimeout(() => {
-        Taro.navigateTo({
-          url: '/pages/login/index'
-        });
-      }, 1500);
-      
+    // 直接判断token是否存在，如果存在就允许评论
+    if (token) {
+      console.log('检测到token存在，允许评论');
+      setReplyToComment(comment || null);
+      setCommentText('');
+      setCommentModalVisible(true);
       return;
     }
     
-    // 用户已登录，直接打开弹窗
-    setReplyToComment(comment || null);
-    setCommentText(''); // 清空评论文本
-    setCommentModalVisible(true);
+    // 如果没有token，则需要登录
+    console.log('未检测到token，用户需要登录');
+    Taro.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 2000
+    });
+    
+    // 延迟跳转到登录页
+    setTimeout(() => {
+      Taro.navigateTo({
+        url: '/pages/login/index'
+      });
+    }, 1500);
   };
 
   // 关闭评论弹窗
@@ -173,8 +171,24 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     
     console.log('提交评论，当前用户ID:', currentUserId);
     
-    // 检查登录状态，尝试多种方法
+    // 检查登录状态，使用token判断
     const token = Taro.getStorageSync('token');
+    if (!token) {
+      console.log('未检测到token，用户需要登录');
+      Taro.showToast({
+        title: '请先登录后再评论',
+        icon: 'none',
+        duration: 2000
+      });
+      
+      setTimeout(() => {
+        closeCommentModal();
+        Taro.navigateTo({
+          url: '/pages/login/index'
+        });
+      }, 1500);
+      return;
+    }
     
     // 验证评论内容
     if (!commentText.trim()) {
@@ -228,11 +242,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         }
       } else {
         if (res.statusCode === 401) {
+          // token可能过期，需要重新登录
           Taro.showToast({
-            title: '请先登录后再评论',
+            title: '登录已过期，请重新登录',
             icon: 'none',
             duration: 2000
           });
+          
+          // 清除过期token
+          Taro.removeStorageSync('token');
+          
           setTimeout(() => {
             closeCommentModal();
             Taro.navigateTo({
@@ -249,8 +268,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       
       // 如果是未授权错误，引导用户登录
       if (error.message && (error.message.includes('授权') || error.message.includes('登录'))) {
+        // 清除可能过期的token
+        Taro.removeStorageSync('token');
+        
         Taro.showToast({
-          title: '请先登录后再评论',
+          title: '请重新登录后再评论',
           icon: 'none',
           duration: 2000
         });
@@ -274,11 +296,23 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     console.log('长按评论:', comment);
     setActiveComment(comment);
     
+    // 检查登录状态
+    const token = Taro.getStorageSync('token');
+    if (!token) {
+      console.log('用户未登录，无法操作评论');
+      Taro.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+    
     // 准备操作菜单选项
     const actions: CommentAction[] = ['reply', 'copy'];
     
     // 只有评论作者或管理员才能删除评论
-    const isCommentAuthor = currentUserId && comment.user && currentUserId === comment.user._id;
+    const commentUserId = comment.user?._id || '';
+    const isCommentAuthor = currentUserId && commentUserId && currentUserId === commentUserId;
     const isAdmin = userInfo && userInfo.role === 'admin';
     
     if (isCommentAuthor || isAdmin) {

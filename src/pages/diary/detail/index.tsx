@@ -170,6 +170,68 @@ function DiaryDetail() {
   // 打开评论弹窗
   const openCommentModal = async () => {
     console.log('打开评论弹窗，当前用户ID:', currentUserId);
+    
+    // 检查登录状态 - 优先使用token判断
+    const token = Taro.getStorageSync('token');
+    
+    // 如果没有用户ID但有token，说明可能是登录状态但用户信息未加载
+    if (!currentUserId && token) {
+      console.log('有token但无用户ID，尝试重新获取用户信息');
+      try {
+        const userData = await api.user.getCurrentUser();
+        if (userData) {
+          const userId = userData._id || userData.id || userData.userId;
+          if (userId) {
+            console.log('成功获取到用户ID:', userId);
+            // 更新用户ID
+            setCurrentUserId(userId);
+            userInfoRef.current = userData;
+            
+            // 直接触发评论弹窗
+            Taro.eventCenter.trigger('openCommentModal');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      }
+    }
+    
+    // 如果没有用户ID，且没有token，则确实是未登录状态
+    if (!currentUserId && !token) {
+      console.log('确认用户未登录，跳转到登录页面');
+      Taro.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 2000
+      });
+      
+      // 延迟跳转到登录页
+      setTimeout(() => {
+        Taro.navigateTo({
+          url: '/pages/login/index'
+        });
+      }, 1500);
+      return;
+    }
+    
+    // 直接触发评论弹窗 - 因为此时用户要么有ID要么有token
+    Taro.eventCenter.trigger('openCommentModal');
+    
+    // 查找要修改的组件引用
+    const commentSectionRef = Taro.createSelectorQuery()
+      .select('.comments-section');
+    
+    commentSectionRef.boundingClientRect((rect: any) => {
+      if (rect && rect.top !== undefined) {
+        console.log('找到评论区域，滚动到评论区域');
+        // 滚动到评论区域
+        Taro.pageScrollTo({
+          scrollTop: rect.top,
+          duration: 300
+        });
+      }
+    }).exec();
   };
 
   // 处理点赞
