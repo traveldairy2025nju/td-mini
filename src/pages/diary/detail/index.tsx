@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, Video } from '@tarojs/components';
+import { View, Text, Image, ScrollView, Video, Input, Swiper, SwiperItem } from '@tarojs/components';
 import { useEffect, useState } from 'react';
 import Taro, { useRouter } from '@tarojs/taro';
 import api from '../../../services/api';
@@ -17,6 +17,14 @@ interface DiaryDetail {
   likes: number;
 }
 
+interface Comment {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  content: string;
+  createdAt: string;
+}
+
 function DiaryDetail() {
   const router = useRouter();
   console.log('详情页 - 完整router对象:', JSON.stringify(router));
@@ -31,6 +39,26 @@ function DiaryDetail() {
 
   const [diary, setDiary] = useState<DiaryDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [commentText, setCommentText] = useState('');
+  const [liked, setLiked] = useState(false);
+  const [collected, setCollected] = useState(false);
+  // 模拟评论数据
+  const [comments] = useState<Comment[]>([
+    {
+      id: '1',
+      authorName: '旅行者1号',
+      authorAvatar: 'https://joeschmoe.io/api/v1/random',
+      content: '这个地方真的太美了，下次也想去！',
+      createdAt: '2023-05-20'
+    },
+    {
+      id: '2',
+      authorName: '背包客',
+      authorAvatar: 'https://joeschmoe.io/api/v1/random',
+      content: '分享的照片很棒，能介绍一下拍摄的相机吗？',
+      createdAt: '2023-05-19'
+    }
+  ]);
 
   useEffect(() => {
     console.log('详情页 - useEffect中的ID:', id);
@@ -95,6 +123,33 @@ function DiaryDetail() {
     return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
   };
 
+  // 处理评论提交（暂未实现）
+  const handleCommentSubmit = () => {
+    Taro.showToast({
+      title: '评论功能暂未实现',
+      icon: 'none'
+    });
+    setCommentText('');
+  };
+
+  // 处理点赞（暂未实现）
+  const handleLike = () => {
+    setLiked(!liked);
+    Taro.showToast({
+      title: !liked ? '点赞成功' : '取消点赞',
+      icon: 'none'
+    });
+  };
+
+  // 处理收藏（暂未实现）
+  const handleCollect = () => {
+    setCollected(!collected);
+    Taro.showToast({
+      title: !collected ? '收藏成功' : '取消收藏',
+      icon: 'none'
+    });
+  };
+
   if (loading) {
     return (
       <View className='loading-container'>
@@ -111,64 +166,136 @@ function DiaryDetail() {
     );
   }
 
+  // 构建媒体列表（包括图片和视频）
+  const mediaList = [
+    ...(diary.videoUrl ? [{ type: 'video', url: diary.videoUrl }] : []),
+    ...diary.images.map(img => ({ type: 'image', url: img }))
+  ];
+
   return (
-    <ScrollView className='diary-detail-container' scrollY>
-      <View className='diary-header'>
-        <Text className='diary-title'>{diary.title}</Text>
+    <View className='diary-detail-page'>
+      {/* 固定顶栏 */}
+      <View className='fixed-header'>
         <View className='author-info'>
           <Image className='author-avatar' src={diary.authorAvatar} mode='aspectFill' />
-          <View className='author-meta'>
-            <Text className='author-name'>{diary.authorName}</Text>
-            <Text className='publish-date'>{formatDate(diary.createdAt)}</Text>
+          <Text className='author-name'>{diary.authorName}</Text>
+        </View>
+        <Text className='publish-date'>{formatDate(diary.createdAt)}</Text>
+      </View>
+
+      {/* 主内容区域 - 可滚动 */}
+      <ScrollView className='diary-content-scroll' scrollY>
+        {/* 媒体轮播区 */}
+        {mediaList.length > 0 && (
+          <Swiper
+            className='media-swiper'
+            indicatorColor='#999'
+            indicatorActiveColor='#333'
+            circular
+            indicatorDots
+            autoplay={false}
+          >
+            {mediaList.map((media, index) => (
+              <SwiperItem key={index} className='swiper-item'>
+                {media.type === 'image' ? (
+                  <Image
+                    className='swiper-image'
+                    src={media.url}
+                    mode='aspectFill'
+                    onClick={() => {
+                      Taro.previewImage({
+                        current: media.url,
+                        urls: diary.images
+                      });
+                    }}
+                  />
+                ) : (
+                  <Video
+                    src={media.url}
+                    className='swiper-video'
+                    controls={true}
+                    showFullscreenBtn={true}
+                  />
+                )}
+              </SwiperItem>
+            ))}
+          </Swiper>
+        )}
+
+        {/* 文章标题和内容 */}
+        <View className='diary-content-block'>
+          <Text className='diary-title'>{diary.title}</Text>
+          <Text className='content-text'>{diary.content}</Text>
+          
+          <View className='diary-stats'>
+            <View className='stat-item'>
+              <Text className='stat-icon'>👁️</Text>
+              <Text className='stat-value'>{diary.views} 浏览</Text>
+            </View>
+            <View className='stat-item'>
+              <Text className='stat-icon'>❤️</Text>
+              <Text className='stat-value'>{diary.likes} 赞</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* 评论区 */}
+        <View className='comments-section'>
+          <View className='comments-header'>
+            <Text className='comments-title'>评论区</Text>
+            <Text className='comments-count'>{comments.length}条评论</Text>
+          </View>
+          
+          {comments.length > 0 ? (
+            <View className='comments-list'>
+              {comments.map(comment => (
+                <View key={comment.id} className='comment-item'>
+                  <Image className='comment-avatar' src={comment.authorAvatar} mode='aspectFill' />
+                  <View className='comment-content'>
+                    <View className='comment-header'>
+                      <Text className='comment-author'>{comment.authorName}</Text>
+                      <Text className='comment-date'>{comment.createdAt}</Text>
+                    </View>
+                    <Text className='comment-text'>{comment.content}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View className='no-comments'>
+              <Text>暂无评论，快来说点什么吧~</Text>
+            </View>
+          )}
+        </View>
+        
+        {/* 底部间距，确保内容不被底栏遮挡 */}
+        <View className='bottom-space'></View>
+      </ScrollView>
+
+      {/* 固定底栏 */}
+      <View className='fixed-footer'>
+        <View className='comment-input-area'>
+          <Input
+            className='comment-input'
+            placeholder='写下你的评论...'
+            value={commentText}
+            onInput={e => setCommentText(e.detail.value)}
+            confirmType='send'
+            onConfirm={handleCommentSubmit}
+          />
+        </View>
+        <View className='action-buttons'>
+          <View className={`action-button ${liked ? 'active' : ''}`} onClick={handleLike}>
+            <Text className='action-icon'>{liked ? '❤️' : '🤍'}</Text>
+            <Text className='action-text'>点赞</Text>
+          </View>
+          <View className={`action-button ${collected ? 'active' : ''}`} onClick={handleCollect}>
+            <Text className='action-icon'>{collected ? '⭐' : '☆'}</Text>
+            <Text className='action-text'>收藏</Text>
           </View>
         </View>
       </View>
-
-      <View className='diary-content'>
-        <Text className='content-text'>{diary.content}</Text>
-      </View>
-
-      {diary.images.length > 0 && (
-        <View className='image-gallery'>
-          {diary.images.map((image, index) => (
-            <Image
-              key={index}
-              className='gallery-image'
-              src={image}
-              mode='widthFix'
-              onClick={() => {
-                Taro.previewImage({
-                  current: image,
-                  urls: diary.images
-                });
-              }}
-            />
-          ))}
-        </View>
-      )}
-
-      {diary.videoUrl && (
-        <View className='video-container'>
-          <Video
-            src={diary.videoUrl}
-            className='content-video'
-            controls={true}
-            showFullscreenBtn={true}
-          />
-        </View>
-      )}
-
-      <View className='diary-stats'>
-        <View className='stat-item'>
-          <Text className='stat-icon'>👁️</Text>
-          <Text className='stat-value'>{diary.views} 浏览</Text>
-        </View>
-        <View className='stat-item'>
-          <Text className='stat-icon'>❤️</Text>
-          <Text className='stat-value'>{diary.likes} 赞</Text>
-        </View>
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
