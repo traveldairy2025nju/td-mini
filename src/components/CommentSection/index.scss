@@ -29,10 +29,16 @@
   width: 100%;
 }
 
+/* 评论线程容器 */
+.comment-thread {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f5f5f5;
+  padding-bottom: 8px;
+}
+
 .comment-item {
   display: flex;
   padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
 }
 
 .comment-avatar {
@@ -80,6 +86,74 @@
 .reply-text {
   font-size: 12px;
   color: #666;
+}
+
+/* 回复区域样式 */
+.reply-comments {
+  margin-left: 40px;
+  margin-top: 4px;
+  padding: 8px 0;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.reply-item {
+  display: flex;
+  padding: 8px 12px;
+  
+  &:not(:last-child) {
+    border-bottom: 1px dashed #eee;
+  }
+}
+
+.reply-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.reply-content {
+  flex: 1;
+  margin-left: 10px;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.reply-author {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.reply-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.reply-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  word-break: break-all;
+}
+
+/* 回复按钮 */
+.reply-action {
+  padding: 4px 12px 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reply-action-text {
+  font-size: 12px;
+  color: #0086f6;
+  padding: 2px 8px;
 }
 
 .load-more {

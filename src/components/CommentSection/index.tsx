@@ -226,20 +226,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         setCommentText('');
         closeCommentModal();
         
-        // 尝试直接将新评论添加到评论列表的开头
-        try {
-          const newComment = res.data;
-          if (newComment && (newComment._id || newComment.id)) {
-            setComments(prev => [newComment, ...prev]);
-            setTotalComments(prev => prev + 1);
-          } else {
-            // 如果无法直接添加新评论，则刷新评论列表
-            refreshComments();
-          }
-        } catch (e) {
-          console.error('处理新评论失败，刷新列表', e);
-          refreshComments();
-        }
+        // 刷新评论列表以获取最新数据
+        refreshComments();
       } else {
         if (res.statusCode === 401) {
           // token可能过期，需要重新登录
@@ -387,9 +375,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               icon: 'success'
             });
             
-            // 从评论列表中移除
-            setComments(prev => prev.filter(comment => (comment.id !== commentId && comment._id !== commentId)));
-            setTotalComments(prev => prev - 1);
+            // 删除成功后刷新评论列表
+            refreshComments();
           } else {
             throw new Error(apiRes.message || '删除失败');
           }
@@ -402,6 +389,56 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         icon: 'none'
       });
     }
+  };
+
+  // 渲染回复评论
+  const renderReplies = (parentComment: Comment, replies: Comment[]) => {
+    if (!replies || replies.length === 0) return null;
+    
+    return (
+      <View className='reply-comments'>
+        {replies.map(reply => {
+          const replyAuthor = reply.user || {
+            _id: '',
+            nickname: '未知用户',
+            avatar: DEFAULT_AVATAR
+          };
+          const replyId = reply._id || reply.id;
+          
+          return (
+            <View 
+              key={replyId} 
+              className='reply-item'
+              onClick={() => handleClickComment(reply)}
+              onLongPress={() => handleLongPressComment(reply)}
+            >
+              <Image 
+                className='reply-avatar' 
+                src={replyAuthor.avatar} 
+                mode='aspectFill' 
+              />
+              <View className='reply-content'>
+                <View className='reply-header'>
+                  <Text className='reply-author'>{replyAuthor.nickname}</Text>
+                  <Text className='reply-date'>{formatDate(reply.createdAt)}</Text>
+                </View>
+                <Text className='reply-text'>
+                  回复 {parentComment.user?.nickname || '用户'}：{reply.content}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
+        
+        {/* 添加回复按钮 */}
+        <View className='reply-action' onClick={(e) => {
+          e.stopPropagation(); // 阻止冒泡，防止触发父评论的点击事件
+          handleClickComment(parentComment);
+        }}>
+          <Text className='reply-action-text'>回复</Text>
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -424,33 +461,37 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 avatar: DEFAULT_AVATAR
               };
               const commentId = comment._id || comment.id;
+              const hasReplies = (comment.replies && comment.replies.length > 0);
               
               return (
-                <View 
-                  key={commentId} 
-                  className='comment-item'
-                  onClick={() => handleClickComment(comment)}
-                  onLongPress={() => handleLongPressComment(comment)}
-                >
-                  <Image 
-                    className='comment-avatar' 
-                    src={author.avatar} 
-                    mode='aspectFill' 
-                  />
-                  <View className='comment-content'>
-                    <View className='comment-header'>
-                      <Text className='comment-author'>{author.nickname}</Text>
-                      <Text className='comment-date'>{formatDate(comment.createdAt)}</Text>
-                    </View>
-                    <Text className='comment-text'>{comment.content}</Text>
-                    
-                    {/* 如果是回复别人的评论，显示原评论信息 */}
-                    {comment.parentComment && (
-                      <View className='reply-info'>
-                        <Text className='reply-text'>回复评论</Text>
+                <View key={commentId} className='comment-thread'>
+                  <View 
+                    className='comment-item'
+                    onClick={() => handleClickComment(comment)}
+                    onLongPress={() => handleLongPressComment(comment)}
+                  >
+                    <Image 
+                      className='comment-avatar' 
+                      src={author.avatar} 
+                      mode='aspectFill' 
+                    />
+                    <View className='comment-content'>
+                      <View className='comment-header'>
+                        <Text className='comment-author'>{author.nickname}</Text>
+                        <Text className='comment-date'>{formatDate(comment.createdAt)}</Text>
                       </View>
-                    )}
+                      <Text className='comment-text'>{comment.content}</Text>
+                      
+                      {!hasReplies && comment.parentComment && (
+                        <View className='reply-info'>
+                          <Text className='reply-text'>回复评论</Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
+                  
+                  {/* 渲染回复评论 */}
+                  {hasReplies && renderReplies(comment, comment.replies || [])}
                 </View>
               );
             })}

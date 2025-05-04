@@ -11,6 +11,8 @@ export interface Comment {
     nickname: string;
     avatar: string;
   };
+  children?: Comment[];
+  replies?: Comment[];
 }
 
 // 评论操作类型
