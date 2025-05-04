@@ -45,7 +45,7 @@ const useUserStore = create<UserState>((set, get) => ({
       
       if (res.success) {
         // 获取用户信息
-        const profileRes = await api.user.getProfile();
+        const profileRes = await api.user.getUserProfile();
         if (profileRes.success) {
           const userInfo = {
             ...profileRes.data,
@@ -95,7 +95,7 @@ const useUserStore = create<UserState>((set, get) => ({
   // 更新用户信息
   updateProfile: async () => {
     try {
-      const res = await api.user.getProfile();
+      const res = await api.user.getUserProfile();
       if (res.success) {
         const userInfo = {
           ...res.data,

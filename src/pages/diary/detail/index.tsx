@@ -1,11 +1,13 @@
-import { View, Text, Image, ScrollView, Video, Input, Swiper, SwiperItem } from '@tarojs/components';
-import { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, Video, Swiper, SwiperItem } from '@tarojs/components';
+import { useEffect, useState, useRef } from 'react';
 import Taro, { useRouter } from '@tarojs/taro';
 import api from '../../../services/api';
+import { CommentSection, CommentInput } from '../../../components/CommentSection';
 import './index.scss';
 
 interface DiaryDetail {
-  id: string;
+  id?: string;
+  _id?: string;
   title: string;
   content: string;
   images: string[];
@@ -15,14 +17,7 @@ interface DiaryDetail {
   createdAt: string;
   views: number;
   likes: number;
-}
-
-interface Comment {
-  id: string;
-  authorName: string;
-  authorAvatar: string;
-  content: string;
-  createdAt: string;
+  liked?: boolean; // 当前用户是否点赞
 }
 
 // 默认占位图
@@ -42,29 +37,46 @@ function DiaryDetail() {
 
   const [diary, setDiary] = useState<DiaryDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [commentText, setCommentText] = useState('');
   const [liked, setLiked] = useState(false);
   const [collected, setCollected] = useState(false);
-  // 模拟评论数据
-  const [comments] = useState<Comment[]>([
-    {
-      id: '1',
-      authorName: '旅行者1号',
-      authorAvatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=user1',
-      content: '这个地方真的太美了，下次也想去！',
-      createdAt: '2023-05-20'
-    },
-    {
-      id: '2',
-      authorName: '背包客',
-      authorAvatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=user2',
-      content: '分享的照片很棒，能介绍一下拍摄的相机吗？',
-      createdAt: '2023-05-19'
-    }
-  ]);
   const [failedImages, setFailedImages] = useState<{[key: string]: boolean}>({});
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  // 记录用户信息
+  const userInfoRef = useRef<any>(null);
 
   useEffect(() => {
+    // 获取当前用户信息
+    const getUserInfo = async () => {
+      try {
+        console.log('检查登录状态');
+        const loginStatus = await api.user.checkLoginStatus();
+        console.log('登录状态检查结果:', loginStatus);
+        
+        if (loginStatus.isLoggedIn && loginStatus.user) {
+          const user = loginStatus.user;
+          console.log('已登录用户:', user);
+          
+          // 获取用户ID
+          const userId = user._id || user.id || user.userId;
+          if (userId) {
+            console.log('设置当前用户ID:', userId);
+            setCurrentUserId(userId);
+            userInfoRef.current = user;
+          } else {
+            console.warn('用户信息中没有找到ID字段');
+          }
+        } else {
+          console.log('用户未登录或登录已过期');
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      }
+    };
+    
+    // 执行获取用户信息
+    getUserInfo();
+    
     console.log('详情页 - useEffect中的ID:', id);
     if (id) {
       fetchDiaryDetail(id);
@@ -86,7 +98,8 @@ function DiaryDetail() {
       setLoading(true);
       console.log(`详情页 - 开始请求游记详情, ID: ${diaryId}`);
 
-      const res = await api.diary.getDetail(diaryId);
+      // 使用with-like-status接口获取带点赞状态的详情
+      const res = await api.diary.getDetailWithLikeStatus(diaryId);
       console.log('详情页 - API响应:', res);
       
       if (res.success && res.data) {
@@ -112,6 +125,7 @@ function DiaryDetail() {
         
         setDiary({
           id: diaryData._id,
+          _id: diaryData._id,
           title: diaryData.title,
           content: diaryData.content,
           // 确保images是数组，并过滤掉无效URL
@@ -123,8 +137,12 @@ function DiaryDetail() {
           authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
           createdAt: diaryData.createdAt || '',
           views: diaryData.views || 0,
-          likes: diaryData.likes || 0
+          likes: diaryData.likes || 0,
+          liked: diaryData.liked || false
         });
+        
+        // 根据API返回的点赞状态更新liked状态
+        setLiked(diaryData.liked || false);
       } else {
         throw new Error(res.message || '获取游记详情失败');
       }
@@ -149,22 +167,109 @@ function DiaryDetail() {
     return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
   };
 
-  // 处理评论提交（暂未实现）
-  const handleCommentSubmit = () => {
-    Taro.showToast({
-      title: '评论功能暂未实现',
-      icon: 'none'
-    });
-    setCommentText('');
+  // 打开评论弹窗
+  const openCommentModal = async () => {
+    console.log('打开评论弹窗，当前用户ID:', currentUserId);
+    
+    // 检查登录状态 - 优先使用token判断
+    const token = Taro.getStorageSync('token');
+    
+    // 如果没有用户ID但有token，说明可能是登录状态但用户信息未加载
+    if (!currentUserId && token) {
+      console.log('有token但无用户ID，尝试重新获取用户信息');
+      try {
+        const userData = await api.user.getCurrentUser();
+        if (userData) {
+          const userId = userData._id || userData.id || userData.userId;
+          if (userId) {
+            console.log('成功获取到用户ID:', userId);
+            // 更新用户ID
+            setCurrentUserId(userId);
+            userInfoRef.current = userData;
+            
+            // 直接触发评论弹窗
+            Taro.eventCenter.trigger('openCommentModal');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      }
+    }
+    
+    // 如果没有用户ID，且没有token，则确实是未登录状态
+    if (!currentUserId && !token) {
+      console.log('确认用户未登录，跳转到登录页面');
+      Taro.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 2000
+      });
+      
+      // 延迟跳转到登录页
+      setTimeout(() => {
+        Taro.navigateTo({
+          url: '/pages/login/index'
+        });
+      }, 1500);
+      return;
+    }
+    
+    // 直接触发评论弹窗 - 因为此时用户要么有ID要么有token
+    Taro.eventCenter.trigger('openCommentModal');
+    
+    // 查找要修改的组件引用
+    const commentSectionRef = Taro.createSelectorQuery()
+      .select('.comments-section');
+    
+    commentSectionRef.boundingClientRect((rect: any) => {
+      if (rect && rect.top !== undefined) {
+        console.log('找到评论区域，滚动到评论区域');
+        // 滚动到评论区域
+        Taro.pageScrollTo({
+          scrollTop: rect.top,
+          duration: 300
+        });
+      }
+    }).exec();
   };
 
-  // 处理点赞（暂未实现）
-  const handleLike = () => {
-    setLiked(!liked);
-    Taro.showToast({
-      title: !liked ? '点赞成功' : '取消点赞',
-      icon: 'none'
-    });
+  // 处理点赞
+  const handleLike = async () => {
+    if (!id) return;
+    
+    try {
+      // 乐观更新UI
+      setLiked(!liked);
+      if (diary) {
+        const newLikes = liked ? diary.likes - 1 : diary.likes + 1;
+        setDiary({...diary, likes: newLikes});
+      }
+      
+      // 发送请求
+      const res = await api.diary.likeDiary(id);
+      
+      if (!res.success) {
+        // 如果失败，回滚UI
+        setLiked(liked);
+        if (diary) {
+          setDiary({...diary});
+        }
+        throw new Error(res.message || '操作失败');
+      }
+      
+      // 成功提示
+      Taro.showToast({
+        title: !liked ? '点赞成功' : '取消点赞',
+        icon: 'none'
+      });
+    } catch (error) {
+      console.error('点赞操作失败', error);
+      Taro.showToast({
+        title: error instanceof Error ? error.message : '操作失败',
+        icon: 'none'
+      });
+    }
   };
 
   // 处理收藏（暂未实现）
@@ -306,61 +411,27 @@ function DiaryDetail() {
         </View>
 
         {/* 评论区 */}
-        <View className='comments-section'>
-          <View className='comments-header'>
-            <Text className='comments-title'>评论区</Text>
-            <Text className='comments-count'>{comments.length}条评论</Text>
-          </View>
-          
-          {comments.length > 0 ? (
-            <View className='comments-list'>
-              {comments.map(comment => (
-                <View key={comment.id} className='comment-item'>
-                  <Image className='comment-avatar' src={comment.authorAvatar} mode='aspectFill' />
-                  <View className='comment-content'>
-                    <View className='comment-header'>
-                      <Text className='comment-author'>{comment.authorName}</Text>
-                      <Text className='comment-date'>{comment.createdAt}</Text>
-                    </View>
-                    <Text className='comment-text'>{comment.content}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View className='no-comments'>
-              <Text>暂无评论，快来说点什么吧~</Text>
-            </View>
-          )}
-        </View>
+        {id && (
+          <CommentSection 
+            diaryId={id} 
+            currentUserId={currentUserId} 
+            userInfo={userInfoRef.current}
+            formatDate={formatDate}
+          />
+        )}
         
         {/* 底部间距，确保内容不被底栏遮挡 */}
         <View className='bottom-space'></View>
       </ScrollView>
 
-      {/* 固定底栏 */}
-      <View className='fixed-footer'>
-        <View className='comment-input-area'>
-          <Input
-            className='comment-input'
-            placeholder='写下你的评论...'
-            value={commentText}
-            onInput={e => setCommentText(e.detail.value)}
-            confirmType='send'
-            onConfirm={handleCommentSubmit}
-          />
-        </View>
-        <View className='action-buttons'>
-          <View className={`action-button ${liked ? 'active' : ''}`} onClick={handleLike}>
-            <Text className='action-icon'>{liked ? '❤️' : '🤍'}</Text>
-            <Text className='action-text'>点赞</Text>
-          </View>
-          <View className={`action-button ${collected ? 'active' : ''}`} onClick={handleCollect}>
-            <Text className='action-icon'>{collected ? '⭐' : '☆'}</Text>
-            <Text className='action-text'>收藏</Text>
-          </View>
-        </View>
-      </View>
+      {/* 底部评论输入 */}
+      <CommentInput 
+        onOpenCommentModal={openCommentModal}
+        liked={liked}
+        collected={collected}
+        onLike={handleLike}
+        onCollect={handleCollect}
+      />
     </View>
   );
 }
