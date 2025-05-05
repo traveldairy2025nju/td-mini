@@ -32,6 +32,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+src/config/env.local.ts
 
 # 微信小程序特定文件
 project.config.json

@@ -97,6 +97,12 @@ function Index() {
     // 如果是附近标签，未来可以在这里实现获取附近的游记
   };
 
+  // 点击搜索图标
+  const handleSearchClick = () => {
+    console.log('点击搜索图标，准备跳转到搜索页面');
+    Taro.navigateTo({ url: '/pages/search/index' });
+  };
+
   // 渲染内容区域
   const renderContent = () => {
     if (activeTab === 'discover') {
@@ -139,6 +145,11 @@ function Index() {
           onClick={() => handleTabChange('nearby')}
         >
           附近
+        </View>
+        
+        {/* 搜索图标 */}
+        <View className='search-icon' onClick={handleSearchClick}>
+          🔍
         </View>
       </View>
 

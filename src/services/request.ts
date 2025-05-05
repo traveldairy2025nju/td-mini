@@ -1,6 +1,20 @@
 import Taro from '@tarojs/taro';
+import ENV_CONFIG from '../config/env';
 
-export const BASE_URL = 'http://10.4.37.228:3000';  // 开发环境使用本地API，生产环境需要修改
+// 尝试导入本地环境配置（如果存在）
+let LOCAL_CONFIG: { BASE_URL?: string } = {};
+try {
+  // 动态导入本地配置，如果不存在会抛出错误
+  const localConfig = require('../config/env.local').default;
+  if (localConfig && typeof localConfig === 'object') {
+    LOCAL_CONFIG = localConfig;
+  }
+} catch (e) {
+  console.log('没有找到本地环境配置，使用默认配置');
+}
+
+// 优先使用本地配置，如果没有则使用环境配置
+export const BASE_URL = LOCAL_CONFIG.BASE_URL || ENV_CONFIG.BASE_URL;
 
 // 请求拦截器
 function interceptor(chain) {

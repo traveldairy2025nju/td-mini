@@ -94,6 +94,16 @@ const diaryApi = {
     });
   },
 
+  // 搜索游记
+  searchDiaries: (keyword, page = 1, limit = 10) => {
+    console.log('diaryApi.searchDiaries - 关键词:', keyword);
+    return request({
+      url: '/api/diaries/search',
+      method: 'GET',
+      data: { keyword, page, limit }
+    });
+  },
+
   // 上传图片并处理到游记创建/更新中
   uploadImage: async (filePath) => {
     try {

@@ -43,7 +43,21 @@ npm install
 npm install --legacy-peer-deps
 ```
 
-### 3. 启动开发服务器
+### 3. 配置本地环境
+
+项目使用环境配置文件管理API地址等敏感信息。你需要创建本地环境配置文件：
+
+```bash
+# 复制示例环境配置文件
+cp src/config/env.local.example.ts src/config/env.local.ts
+
+# 编辑配置文件，修改为你的本地开发环境
+# 例如修改 BASE_URL 为你的本地API服务器地址
+```
+
+> 注意：`env.local.ts` 文件包含个人开发环境配置，已添加到 `.gitignore`，不会被提交到代码仓库。
+
+### 4. 启动开发服务器
 
 ```bash
 npm run dev:weapp
@@ -51,13 +65,13 @@ npm run dev:weapp
 
 此命令会启动 Taro 的开发服务器，并在 `dist` 目录下生成微信小程序代码。
 
-### 4. 在微信开发者工具中预览
+### 5. 在微信开发者工具中预览
 
-#### 4.1 打开微信开发者工具
+#### 5.1 打开微信开发者工具
 
 - 下载并安装[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
 
-#### 4.2 导入项目
+#### 5.2 导入项目
 
 1. 打开微信开发者工具
 2. 点击左上角的【+】按钮，选择【导入项目】
@@ -67,13 +81,13 @@ npm run dev:weapp
    - 如果没有，可以选择【使用测试号】
 5. 点击【导入】完成项目导入
 
-#### 4.3 预览和调试
+#### 5.3 预览和调试
 
 - 导入成功后，开发者工具会自动编译和预览小程序
 - 使用【编译】按钮可以刷新预览
 - 使用【调试器】面板可以查看控制台输出和网络请求
 
-#### 4.4 真机调试
+#### 5.4 真机调试
 
 1. 点击开发者工具顶部的【预览】按钮
 2. 使用微信扫描生成的二维码
@@ -88,6 +102,10 @@ td-mini/
   │   ├── pages/            # 页面组件
   │   ├── components/       # 通用组件
   │   ├── assets/           # 静态资源
+  │   ├── config/           # 配置文件
+  │   │   ├── env.ts        # 环境配置
+  │   │   ├── env.local.example.ts # 本地环境配置示例
+  │   │   └── env.local.ts  # 本地环境配置（需手动创建，不提交）
   │   ├── app.tsx           # 应用入口
   │   ├── app.config.ts     # 应用配置
   │   └── index.html        # H5 入口 HTML
@@ -125,3 +143,10 @@ npm run dev:weapp
 1. 前往[微信公众平台](https://mp.weixin.qq.com/)注册小程序账号
 2. 获取 AppID
 3. 在 `project.config.json` 中更新 AppID
+
+### 4. API 连接问题
+
+如果无法连接到后端 API：
+
+1. 检查 `src/config/env.local.ts` 中的 `BASE_URL` 是否正确
+2. 确保 API 服务器正在运行并且可以访问
