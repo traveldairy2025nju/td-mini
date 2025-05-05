@@ -28,6 +28,19 @@ function My() {
     updateProfile
   } = useUserStore();
 
+  // 活动标签状态
+  const [activeTab, setActiveTab] = useState<'diaries' | 'favorites'>('diaries');
+  // 游记列表
+  const [diaries, setDiaries] = useState<DiaryItem[]>([]);
+  // 收藏游记列表
+  const [favorites, setFavorites] = useState<DiaryItem[]>([]);
+  // 游记加载状态
+  const [loadingDiaries, setLoadingDiaries] = useState(false);
+  // 收藏加载状态
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  // 游记状态过滤
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+
   // 页面显示时通知TabBar更新
   useDidShow(() => {
     console.log('我的页面 - 页面显示');
@@ -37,17 +50,34 @@ function My() {
     // 页面每次显示时重新获取数据
     if (checkLogin()) {
       fetchMyDiaries();
+      if (activeTab === 'favorites') {
+        fetchFavorites();
+      }
     }
   });
 
-  // 活动标签状态
-  const [activeTab, setActiveTab] = useState<'diaries' | 'favorites'>('diaries');
-  // 游记列表
-  const [diaries, setDiaries] = useState<DiaryItem[]>([]);
-  // 游记加载状态
-  const [loadingDiaries, setLoadingDiaries] = useState(false);
-  // 游记状态过滤
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  // 添加事件监听器
+  useEffect(() => {
+    // 监听刷新我的页面事件
+    const refreshHandler = () => {
+      console.log('接收到刷新我的页面事件');
+      if (checkLogin()) {
+        if (activeTab === 'favorites') {
+          fetchFavorites();
+        } else {
+          fetchMyDiaries();
+        }
+      }
+    };
+
+    // 注册事件
+    Taro.eventCenter.on('refreshMyPage', refreshHandler);
+
+    // 清理函数
+    return () => {
+      Taro.eventCenter.off('refreshMyPage', refreshHandler);
+    };
+  }, [activeTab]);
 
   useEffect(() => {
     // 检查登录状态
@@ -56,6 +86,13 @@ function My() {
       fetchMyDiaries();
     }
   }, []);
+
+  // 添加监听activeTab变化，切换到收藏标签时自动加载收藏列表
+  useEffect(() => {
+    if (activeTab === 'favorites' && checkLogin()) {
+      fetchFavorites();
+    }
+  }, [activeTab]);
 
   // 更新头像
   const handleUpdateAvatar = () => {
@@ -143,6 +180,80 @@ function My() {
       });
     } finally {
       setLoadingDiaries(false);
+    }
+  };
+
+  // 获取我的收藏列表
+  const fetchFavorites = async () => {
+    // 再次检查登录状态，确保token存在
+    const token = Taro.getStorageSync('token');
+    if (!token) {
+      console.log('获取收藏列表 - 用户未登录或token不存在');
+      setFavorites([]);
+      setLoadingFavorites(false);
+      return;
+    }
+
+    try {
+      setLoadingFavorites(true);
+      console.log('获取收藏列表 - 开始获取收藏游记列表');
+
+      // 尝试不传递userId，让后端根据token识别用户
+      console.log('获取收藏列表 - 尝试不传递userId，让后端根据token识别用户');
+      const res = await api.diary.getFavorites('', 1, 10);
+      console.log('获取收藏列表 - 完整API响应:', JSON.stringify(res));
+
+      if (res.success && res.data && res.data.items) {
+        console.log('获取收藏列表 - 收到的收藏游记数量:', res.data.items.length);
+
+        // 转换API返回的数据为组件需要的格式
+        const formattedFavorites = res.data.items.map((item, index) => {
+          console.log(`获取收藏列表 - 处理第${index+1}项:`, JSON.stringify(item));
+
+          // 确保有有效的封面图
+          let coverImage = '';
+          if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+            coverImage = item.images[0];
+          }
+
+          return {
+            id: item._id,
+            title: item.title || '无标题',
+            coverImage: coverImage || 'https://placeholder.com/300',
+            authorName: item.author?.nickname || '未知用户',
+            likeCount: item.likeCount || 0,
+            createdAt: item.createdAt || '',
+            status: item.status
+          };
+        });
+
+        console.log('我的页面 - 格式化后的收藏游记列表:', formattedFavorites);
+        setFavorites(formattedFavorites);
+      } else {
+        setFavorites([]);
+        console.warn('获取收藏游记列表失败:', res.message || '接口返回格式不符合预期');
+
+        // 显示错误提示
+        if (res.message) {
+          Taro.showToast({
+            title: res.message,
+            icon: 'none',
+            duration: 2000
+          });
+        }
+      }
+    } catch (error) {
+      console.error('获取收藏游记失败', error);
+      setFavorites([]);
+
+      const errorMessage = error instanceof Error ? error.message : '网络异常，请稍后再试';
+      Taro.showToast({
+        title: errorMessage,
+        icon: 'none',
+        duration: 2000
+      });
+    } finally {
+      setLoadingFavorites(false);
     }
   };
 
@@ -275,12 +386,29 @@ function My() {
     </View>
   );
 
-  // 渲染收藏列表（暂未实现）
+  // 渲染收藏列表
   const renderFavoritesList = () => (
     <View className='favorites-list'>
-      <View className='empty-container'>
-        <Text className='empty-text'>收藏功能即将上线，敬请期待！</Text>
-      </View>
+      {loadingFavorites ? (
+        <View className='loading-container'>加载中...</View>
+      ) : favorites.length > 0 ? (
+        <WaterfallFlow
+          diaryList={favorites}
+          onItemClick={handleDiaryClick}
+          showStatus={false}
+        />
+      ) : (
+        <View className='empty-container'>
+          <Text className='empty-text'>暂无收藏游记，快去浏览发现更多精彩内容吧！</Text>
+          <Button
+            type='primary'
+            className='create-diary-btn'
+            onClick={() => Taro.switchTab({ url: '/pages/index/index' })}
+          >
+            探索游记
+          </Button>
+        </View>
+      )}
     </View>
   );
 

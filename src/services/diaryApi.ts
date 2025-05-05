@@ -31,6 +31,16 @@ const diaryApi = {
     });
   },
 
+  // 获取游记详情（包含点赞和收藏状态）
+  getDetailWithStatus: (id) => {
+    console.log(`diaryApi.getDetailWithStatus - 请求游记ID: ${id}`);
+    return request({
+      url: `/api/diaries/${id}/with-status`,
+      method: 'GET',
+      data: { _t: Date.now() } // 添加时间戳避免缓存
+    });
+  },
+
   // 创建游记
   create: async (data) => {
     // data包含：title, content, images 数组，可选 videoUrl
@@ -139,6 +149,48 @@ const diaryApi = {
       url: '/api/diaries/like',
       method: 'POST',
       data: { diaryId }
+    });
+  },
+
+  // 收藏/取消收藏游记
+  favoriteDiary: (diaryId) => {
+    // 确保diaryId格式正确，移除可能的空格和非法字符
+    const cleanDiaryId = diaryId ? String(diaryId).trim() : '';
+
+    console.log('收藏/取消收藏 - 原始游记ID:', diaryId);
+    console.log('收藏/取消收藏 - 处理后游记ID:', cleanDiaryId);
+    console.log('收藏/取消收藏 - 游记ID类型:', typeof cleanDiaryId);
+    console.log('收藏/取消收藏 - 游记ID长度:', cleanDiaryId.length);
+    console.log('收藏/取消收藏 - 完整请求数据:', { diaryId: cleanDiaryId });
+
+    return request({
+      url: '/api/diaries/favorite',
+      method: 'POST',
+      data: { diaryId: cleanDiaryId }
+    });
+  },
+
+  // 获取当前用户收藏的游记列表
+  getFavorites: (userId = '', page = 1, limit = 10) => {
+    // 构建请求参数，只有在userId非空时才添加
+    const params: any = {
+      page,
+      limit,
+      _t: Date.now() // 添加时间戳避免缓存
+    };
+
+    // 只有当userId非空时才添加到请求参数
+    if (userId) {
+      params.userId = userId;
+    }
+
+    console.log('获取收藏游记列表 - 用户ID:', userId, '页码:', page, '每页数量:', limit);
+    console.log('获取收藏游记列表 - 完整请求参数:', params);
+
+    return request({
+      url: '/api/diaries/favorites',
+      method: 'GET',
+      data: params
     });
   },
 

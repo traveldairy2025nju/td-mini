@@ -17,6 +17,8 @@ interface DiaryDetail {
   createdAt: string;
   likes: number;
   isLiked?: boolean; // 当前用户是否点赞
+  favorites?: number; // 收藏数
+  isFavorited?: boolean; // 当前用户是否已收藏
 }
 
 // 默认占位图
@@ -50,15 +52,15 @@ function DiaryDetail() {
       // 构建分享标题和路径
       const shareTitle = `${diary.title} - 旅行日记`;
       const sharePath = `/pages/diary/detail/index?id=${id}`;
-      
+
       // 获取第一张图片作为分享图片（如果有）
       let imageUrl = '';
       if (diary.images && diary.images.length > 0) {
         imageUrl = diary.images[0];
       }
-      
+
       console.log('分享游记:', shareTitle, sharePath, imageUrl);
-      
+
       return {
         title: shareTitle,
         path: sharePath,
@@ -125,9 +127,30 @@ function DiaryDetail() {
       setLoading(true);
       console.log(`详情页 - 开始请求游记详情, ID: ${diaryId}`);
 
-      // 使用with-like-status接口获取带点赞状态的详情
-      const res = await api.diary.getDetailWithLikeStatus(diaryId);
-      console.log('详情页 - API响应:', res);
+      // 首先尝试使用with-status接口获取带点赞和收藏状态的详情
+      let res;
+      let usedFallback = false;
+
+      try {
+        // 使用with-status接口获取游记详情（包括点赞和收藏状态）
+        res = await api.diary.getDetailWithStatus(diaryId);
+        console.log('详情页 - API响应(with-status):', res);
+      } catch (error) {
+        console.warn('详情页 - with-status接口请求失败，回退到with-like-status:', error);
+        usedFallback = true;
+
+        // 如果with-status接口失败，回退到with-like-status接口
+        try {
+          res = await api.diary.getDetailWithLikeStatus(diaryId);
+          console.log('详情页 - API响应(with-like-status):', res);
+        } catch (likeError) {
+          console.error('详情页 - with-like-status接口也失败，回退到基本详情接口:', likeError);
+
+          // 如果with-like-status也失败，继续回退到基本详情接口
+          res = await api.diary.getDetail(diaryId);
+          console.log('详情页 - API响应(基本详情):', res);
+        }
+      }
 
       if (res.success && res.data) {
         const diaryData = res.data;
@@ -164,11 +187,19 @@ function DiaryDetail() {
           authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
           createdAt: diaryData.createdAt || '',
           likes: diaryData.likeCount || 0,
-          isLiked: diaryData.isLiked || false
+          isLiked: diaryData.isLiked || false,
+          favorites: diaryData.favoriteCount || 0,
+          isFavorited: diaryData.isFavorited || false
         });
 
-        // 根据API返回的点赞状态更新liked状态
+        // 根据API返回的点赞和收藏状态更新UI
         setLiked(diaryData.isLiked || false);
+        setCollected(diaryData.isFavorited || false);
+
+        // 如果使用了回退接口，且没有收藏相关信息，则告知用户
+        if (usedFallback) {
+          console.log('使用了回退接口，收藏功能可能不完整');
+        }
       } else {
         throw new Error(res.message || '获取游记详情失败');
       }
@@ -318,13 +349,105 @@ function DiaryDetail() {
     }
   };
 
-  // 处理收藏（暂未实现）
-  const handleCollect = () => {
-    setCollected(!collected);
-    Taro.showToast({
-      title: !collected ? '收藏成功' : '取消收藏',
-      icon: 'none'
-    });
+  // 处理收藏
+  const handleCollect = async () => {
+    if (!id) {
+      console.error('收藏操作 - ID为空');
+      return;
+    }
+
+    // 确保ID格式正确
+    const diaryId = id.trim();
+    if (!diaryId) {
+      console.error('收藏操作 - 处理后ID为空');
+      return;
+    }
+
+    console.log('收藏操作 - 开始处理收藏, 原始ID:', id);
+    console.log('收藏操作 - 处理后ID:', diaryId);
+    console.log('收藏操作 - ID类型:', typeof diaryId);
+    console.log('收藏操作 - ID长度:', diaryId.length);
+
+    try {
+      // 检查登录状态
+      const token = Taro.getStorageSync('token');
+      if (!token) {
+        console.log('收藏操作 - 用户未登录');
+        Taro.showToast({
+          title: '请先登录',
+          icon: 'none',
+          duration: 2000
+        });
+
+        setTimeout(() => {
+          Taro.navigateTo({
+            url: '/pages/login/index'
+          });
+        }, 1500);
+        return;
+      }
+
+      const originalCollectedState = collected;
+      console.log('收藏操作 - 当前收藏状态:', collected, '即将切换为:', !collected);
+
+      // 乐观更新UI
+      setCollected(!collected);
+
+      // 如果有收藏数，也更新收藏数
+      if (diary && typeof diary.favorites === 'number') {
+        const newFavorites = !collected ? diary.favorites + 1 : Math.max(0, diary.favorites - 1);
+        setDiary({...diary, favorites: newFavorites, isFavorited: !collected});
+      }
+
+      // 发送请求，使用处理后的ID
+      console.log(`发送收藏请求，游记ID: ${diaryId}, 当前收藏状态: ${collected}, 即将切换为: ${!collected}`);
+      const res = await api.diary.favoriteDiary(diaryId);
+      console.log('收藏操作响应:', res);
+
+      if (!res.success) {
+        // 如果API调用失败，回滚UI
+        setCollected(originalCollectedState);
+        if (diary) {
+          setDiary({...diary, isFavorited: originalCollectedState});
+        }
+        throw new Error(res.message || '操作失败');
+      }
+
+      // 成功响应，根据API返回更新UI
+      if (res.data && typeof res.data.favorited === 'boolean') {
+        // API返回了确切的收藏状态，使用它
+        setCollected(res.data.favorited);
+
+        // 如果API返回的状态与UI状态不同，更新UI
+        if (diary && res.data.favorited !== !originalCollectedState) {
+          const updatedFavorites = res.data.favorited
+            ? (diary.favorites || 0) + 1
+            : Math.max(0, (diary.favorites || 0) - 1);
+          setDiary({...diary, favorites: updatedFavorites, isFavorited: res.data.favorited});
+        }
+      }
+
+      // 成功提示
+      Taro.showToast({
+        title: res.message || (originalCollectedState ? '取消收藏成功' : '收藏成功'),
+        icon: 'none'
+      });
+
+      // 触发刷新首页和我的页面，更新收藏状态
+      Taro.eventCenter.trigger('refreshHomePage');
+      Taro.eventCenter.trigger('refreshMyPage');
+
+    } catch (error) {
+      console.error('收藏操作失败', error);
+
+      // 严重错误回滚UI
+      setCollected(collected);
+
+      Taro.showToast({
+        title: error instanceof Error ? error.message : '操作失败',
+        icon: 'none'
+      });
+    }
   };
 
   // 处理图片加载失败
@@ -448,6 +571,10 @@ function DiaryDetail() {
             <View className='stat-item'>
               <Text className='stat-icon'>❤️</Text>
               <Text className='stat-value'>{diary.likes} 赞</Text>
+            </View>
+            <View className='stat-item'>
+              <Text className='stat-icon'>⭐</Text>
+              <Text className='stat-value'>{diary.favorites || 0} 收藏</Text>
             </View>
           </View>
         </View>

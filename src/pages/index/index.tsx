@@ -16,27 +16,38 @@ interface DiaryItem {
 }
 
 function Index() {
-  const [diaryList, setDiaryList] = useState<DiaryItem[]>([]);
+  const [diaries, setDiaries] = useState<DiaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [activeTab, setActiveTab] = useState('discover'); // 默认选中"发现"标签
 
-  // 页面显示时通知TabBar更新
+  // 组件挂载时和Tab切换时获取数据
   useDidShow(() => {
     console.log('首页 - 页面显示');
-    // 触发TabBar更新事件
-    Taro.eventCenter.trigger('tabIndexChange', 0);
+    fetchDiaries();
 
-    // 每次页面显示时重新获取最新数据
-    fetchDiaryList();
+    // 通知TabBar更新选中状态
+    Taro.eventCenter.trigger('tabIndexChange', 0);
   });
 
+  // 添加事件监听器，监听收藏状态变化
   useEffect(() => {
-    // 获取游记列表数据
-    fetchDiaryList();
+    const refreshHandler = () => {
+      console.log('接收到刷新首页事件');
+      fetchDiaries();
+    };
+
+    // 注册事件
+    Taro.eventCenter.on('refreshHomePage', refreshHandler);
+
+    // 清理函数
+    return () => {
+      Taro.eventCenter.off('refreshHomePage', refreshHandler);
+    };
   }, []);
 
   // 获取游记列表
-  const fetchDiaryList = async () => {
+  const fetchDiaries = async () => {
     try {
       setLoading(true);
       // 添加时间戳参数避免缓存
@@ -59,7 +70,7 @@ function Index() {
         });
 
         console.log('首页 - 格式化后的游记列表:', formattedDiaries);
-        setDiaryList(formattedDiaries);
+        setDiaries(formattedDiaries);
       } else {
         // 如果API调用失败，显示错误信息
         throw new Error(res.message || '获取游记列表失败');
@@ -71,7 +82,7 @@ function Index() {
         icon: 'none'
       });
       // 加载失败时设置为空数组
-      setDiaryList([]);
+      setDiaries([]);
     } finally {
       setLoading(false);
     }
@@ -110,9 +121,9 @@ function Index() {
         <View className='diary-list-section'>
           {loading ? (
             <View className='loading-container'>加载中...</View>
-          ) : diaryList.length > 0 ? (
+          ) : diaries.length > 0 ? (
             <WaterfallFlow
-              diaryList={diaryList}
+              diaryList={diaries}
               onItemClick={handleDiaryItemClick}
             />
           ) : (

@@ -84,6 +84,7 @@ Taro.addInterceptor(interceptor);
 export const request = (options) => {
   const url = `${BASE_URL}${options.url}`;
   console.log(`发起请求: ${options.method || 'GET'} ${url}`);
+  console.log('请求参数:', JSON.stringify(options.data));
 
   return Taro.request({
     url,
@@ -95,7 +96,7 @@ export const request = (options) => {
     }
   }).then(res => {
     const { statusCode, data } = res;
-    console.log(`请求完成: ${url} 状态码 ${statusCode}`);
+    console.log(`请求完成: ${url} 状态码 ${statusCode}`, '响应数据:', JSON.stringify(data));
 
     if (statusCode >= 200 && statusCode < 300) {
       // 处理登录响应，保存token
@@ -113,11 +114,17 @@ export const request = (options) => {
       return data;
     } else {
       const errorMsg = data.message || '请求失败';
-      console.error(`请求错误: ${url} - ${errorMsg}`);
+      console.error(`请求错误: ${url} - 状态码 ${statusCode} - ${errorMsg}`, '完整响应:', JSON.stringify(data));
       throw new Error(errorMsg);
     }
   }).catch(error => {
     console.error(`请求异常: ${url}`, error);
+
+    // 如果是网络错误，提供更详细的信息
+    if (error.errMsg) {
+      console.error('网络错误详情:', error.errMsg);
+    }
+
     throw error;
   });
 };
