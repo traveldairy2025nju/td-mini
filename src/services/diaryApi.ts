@@ -165,6 +165,29 @@ const diaryApi = {
     });
   },
 
+  // 获取游记评论（带点赞状态）
+  getCommentsWithLikeStatus: (diaryId, page = 1, limit = 10) => {
+    return request({
+      url: `/api/diaries/${diaryId}/comments-with-like-status`,
+      method: 'GET',
+      data: {
+        page,
+        limit,
+        _t: Date.now() // 添加时间戳避免缓存
+      }
+    });
+  },
+
+  // 点赞/取消点赞评论
+  likeComment: (commentId) => {
+    console.log('点赞/取消点赞评论 - 评论ID:', commentId);
+    return request({
+      url: '/api/diaries/comment/like',
+      method: 'POST',
+      data: { commentId }
+    });
+  },
+
   // 删除评论
   deleteComment: (commentId) => {
     console.log('删除评论 - 评论ID:', commentId);

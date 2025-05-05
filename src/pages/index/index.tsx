@@ -146,7 +146,7 @@ function Index() {
         >
           附近
         </View>
-        
+
         {/* 搜索图标 */}
         <View className='search-icon' onClick={handleSearchClick}>
           🔍

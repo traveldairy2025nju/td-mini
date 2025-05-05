@@ -8,11 +8,11 @@ import './index.scss';
 // 默认头像
 const DEFAULT_AVATAR = 'https://api.dicebear.com/6.x/initials/svg?seed=TD';
 
-const CommentSection: React.FC<CommentSectionProps> = ({ 
-  diaryId, 
-  currentUserId, 
+const CommentSection: React.FC<CommentSectionProps> = ({
+  diaryId,
+  currentUserId,
   userInfo,
-  formatDate 
+  formatDate
 }) => {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
@@ -21,7 +21,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const [totalComments, setTotalComments] = useState(0);
-  
+
   // 评论弹窗相关状态
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [replyToComment, setReplyToComment] = useState<Comment | null>(null);
@@ -61,19 +61,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const fetchComments = async (diaryId: string, pageNum = 1, refresh = false) => {
     try {
       setCommentsLoading(true);
-      
+
       const params = { page: pageNum, limit };
-      const res = await api.diary.getComments(diaryId, params);
-      
+      // 使用支持点赞状态的评论接口
+      const res = await api.diary.getCommentsWithLikeStatus(diaryId, pageNum, limit);
+
       console.log('获取评论响应:', res);
-      
+
       if (res.success && res.data) {
         // 确保评论数据是数组，从items字段中获取
         const commentsList = Array.isArray(res.data.items) ? res.data.items : [];
         const total = res.data.total || 0;
-        
+
         console.log('评论列表:', commentsList, '总数:', total);
-        
+
         // 如果是刷新，直接替换评论列表
         if (refresh) {
           setComments(commentsList);
@@ -81,7 +82,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           // 否则追加评论
           setComments(prev => [...prev, ...commentsList]);
         }
-        
+
         setTotalComments(total);
         setHasMore(commentsList.length === limit); // 如果返回的评论数量小于limit，说明没有更多了
         setPage(pageNum);
@@ -96,14 +97,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       }
     } catch (error) {
       console.error('获取评论失败', error);
-      
+
       // 出错时，如果是刷新或第一页，设置空数据
       if (refresh || pageNum === 1) {
         setComments([]);
         setTotalComments(0);
         setHasMore(false);
       }
-      
+
       Taro.showToast({
         title: error instanceof Error ? error.message : '获取评论失败',
         icon: 'none'
@@ -128,11 +129,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   // 打开评论弹窗
   const openCommentModal = async (comment?: Comment) => {
     console.log('打开评论弹窗，当前用户ID:', currentUserId);
-    
+
     // 检查登录状态并提供更多信息
     const token = Taro.getStorageSync('token');
     console.log('当前token状态:', token ? '已存在' : '不存在');
-    
+
     // 直接判断token是否存在，如果存在就允许评论
     if (token) {
       console.log('检测到token存在，允许评论');
@@ -141,7 +142,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       setCommentModalVisible(true);
       return;
     }
-    
+
     // 如果没有token，则需要登录
     console.log('未检测到token，用户需要登录');
     Taro.showToast({
@@ -149,7 +150,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       icon: 'none',
       duration: 2000
     });
-    
+
     // 延迟跳转到登录页
     setTimeout(() => {
       Taro.navigateTo({
@@ -168,9 +169,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   // 提交评论
   const submitComment = async () => {
     if (!diaryId) return;
-    
+
     console.log('提交评论，当前用户ID:', currentUserId);
-    
+
     // 检查登录状态，使用token判断
     const token = Taro.getStorageSync('token');
     if (!token) {
@@ -180,7 +181,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
         icon: 'none',
         duration: 2000
       });
-      
+
       setTimeout(() => {
         closeCommentModal();
         Taro.navigateTo({
@@ -189,7 +190,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       }, 1500);
       return;
     }
-    
+
     // 验证评论内容
     if (!commentText.trim()) {
       Taro.showToast({
@@ -198,34 +199,34 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       });
       return;
     }
-    
+
     try {
       // 显示加载状态
       Taro.showLoading({
         title: '发布中...',
         mask: true
       });
-      
+
       // 获取父评论ID（如果是回复）
       const parentCommentId = replyToComment ? (replyToComment._id || replyToComment.id || '') : undefined;
-      
+
       // 发送API请求
       const res = await api.diary.addComment(diaryId, commentText.trim(), parentCommentId);
       console.log('评论提交响应:', res);
-      
+
       // 隐藏加载状态
       Taro.hideLoading();
-      
+
       if (res.success && res.data) {
         Taro.showToast({
           title: '评论成功',
           icon: 'success'
         });
-        
+
         // 清空评论框并关闭弹窗
         setCommentText('');
         closeCommentModal();
-        
+
         // 刷新评论列表以获取最新数据
         refreshComments();
       } else {
@@ -236,10 +237,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             icon: 'none',
             duration: 2000
           });
-          
+
           // 清除过期token
           Taro.removeStorageSync('token');
-          
+
           setTimeout(() => {
             closeCommentModal();
             Taro.navigateTo({
@@ -253,12 +254,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     } catch (error) {
       console.error('评论失败', error);
       Taro.hideLoading();
-      
+
       // 如果是未授权错误，引导用户登录
       if (error.message && (error.message.includes('授权') || error.message.includes('登录'))) {
         // 清除可能过期的token
         Taro.removeStorageSync('token');
-        
+
         Taro.showToast({
           title: '请重新登录后再评论',
           icon: 'none',
@@ -279,11 +280,117 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
+  // 处理评论点赞
+  const handleCommentLike = async (comment: Comment, event: any) => {
+    event.stopPropagation(); // 阻止冒泡，避免触发评论回复
+
+    // 检查登录状态
+    const token = Taro.getStorageSync('token');
+    if (!token) {
+      Taro.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 2000
+      });
+
+      setTimeout(() => {
+        Taro.navigateTo({
+          url: '/pages/login/index'
+        });
+      }, 1500);
+      return;
+    }
+
+    const commentId = comment._id || comment.id;
+    if (!commentId) {
+      console.error('评论ID无效:', comment);
+      return;
+    }
+
+    try {
+      // 乐观更新UI
+      const isCurrentlyLiked = comment.isLiked || false;
+      const currentLikeCount = comment.likeCount || 0;
+
+      // 更新状态 - 创建更新后的评论对象
+      const updatedComment = {
+        ...comment,
+        isLiked: !isCurrentlyLiked,
+        likeCount: isCurrentlyLiked
+          ? Math.max(0, currentLikeCount - 1)
+          : currentLikeCount + 1
+      };
+
+      // 更新评论列表中的评论
+      setComments(prevComments =>
+        prevComments.map(c => {
+          // 更新主评论
+          if ((c._id && c._id === commentId) || (c.id && c.id === commentId)) {
+            return updatedComment;
+          }
+
+          // 检查并更新回复中的评论
+          if (c.replies && c.replies.length > 0) {
+            return {
+              ...c,
+              replies: c.replies.map(reply => {
+                if ((reply._id && reply._id === commentId) || (reply.id && reply.id === commentId)) {
+                  return updatedComment;
+                }
+                return reply;
+              })
+            };
+          }
+
+          return c;
+        })
+      );
+
+      // 发送请求
+      const res = await api.diary.likeComment(commentId);
+
+      if (!res.success) {
+        // 如果失败，回滚UI
+        setComments(prevComments =>
+          prevComments.map(c => {
+            // 回滚主评论
+            if ((c._id && c._id === commentId) || (c.id && c.id === commentId)) {
+              return comment;
+            }
+
+            // 检查并回滚回复中的评论
+            if (c.replies && c.replies.length > 0) {
+              return {
+                ...c,
+                replies: c.replies.map(reply => {
+                  if ((reply._id && reply._id === commentId) || (reply.id && reply.id === commentId)) {
+                    return comment;
+                  }
+                  return reply;
+                })
+              };
+            }
+
+            return c;
+          })
+        );
+
+        throw new Error(res.message || '点赞失败');
+      }
+    } catch (error) {
+      console.error('评论点赞失败:', error);
+      Taro.showToast({
+        title: error instanceof Error ? error.message : '点赞失败',
+        icon: 'none'
+      });
+    }
+  };
+
   // 长按评论显示操作菜单
   const handleLongPressComment = (comment: Comment) => {
     console.log('长按评论:', comment);
     setActiveComment(comment);
-    
+
     // 检查登录状态
     const token = Taro.getStorageSync('token');
     if (!token) {
@@ -294,19 +401,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       });
       return;
     }
-    
+
     // 准备操作菜单选项
-    const actions: CommentAction[] = ['reply', 'copy'];
-    
+    const actions: CommentAction[] = ['reply', 'copy', 'like'];
+
     // 只有评论作者或管理员才能删除评论
     const commentUserId = comment.user?._id || '';
     const isCommentAuthor = currentUserId && commentUserId && currentUserId === commentUserId;
     const isAdmin = userInfo && userInfo.role === 'admin';
-    
+
     if (isCommentAuthor || isAdmin) {
       actions.push('delete');
     }
-    
+
     // 显示操作菜单
     Taro.showActionSheet({
       itemList: actions.map(action => {
@@ -314,6 +421,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           case 'reply': return '回复';
           case 'delete': return '删除';
           case 'copy': return '复制内容';
+          case 'like': return comment.isLiked ? '取消点赞' : '点赞';
           default: return '';
         }
       }),
@@ -344,6 +452,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           }
         });
         break;
+      case 'like':
+        handleCommentLike(comment, { stopPropagation: () => {} });
+        break;
     }
   };
 
@@ -352,10 +463,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     // 如果点击的是回复评论，则视为对主评论的回复
     if (comment.parentComment) {
       // 查找主评论
-      const mainComment = comments.find(c => 
+      const mainComment = comments.find(c =>
         c._id === comment.parentComment || c.id === comment.parentComment
       );
-      
+
       if (mainComment) {
         console.log('点击回复评论，转为回复主评论:', mainComment);
         openCommentModal(mainComment);
@@ -378,7 +489,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       });
       return;
     }
-    
+
     try {
       await Taro.showModal({
         title: '确认删除',
@@ -391,7 +502,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               title: '删除成功',
               icon: 'success'
             });
-            
+
             // 删除成功后刷新评论列表
             refreshComments();
           } else {
@@ -411,7 +522,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   // 渲染回复评论
   const renderReplies = (parentComment: Comment, replies: Comment[]) => {
     if (!replies || replies.length === 0) return null;
-    
+
     return (
       <View className='reply-comments'>
         {replies.map(reply => {
@@ -421,18 +532,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             avatar: DEFAULT_AVATAR
           };
           const replyId = reply._id || reply.id;
-          
+
           return (
-            <View 
-              key={replyId} 
+            <View
+              key={replyId}
               className='reply-item'
               onClick={() => handleClickComment(reply)}
               onLongPress={() => handleLongPressComment(reply)}
             >
-              <Image 
-                className='reply-avatar' 
-                src={replyAuthor.avatar} 
-                mode='aspectFill' 
+              <Image
+                className='reply-avatar'
+                src={replyAuthor.avatar}
+                mode='aspectFill'
               />
               <View className='reply-content'>
                 <View className='reply-header'>
@@ -442,6 +553,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 <Text className='reply-text'>
                   回复 {parentComment.user?.nickname || '用户'}：{reply.content}
                 </Text>
+
+                <View className='reply-actions'>
+                  <View
+                    className={`reply-like ${reply.isLiked ? 'liked' : ''}`}
+                    onClick={(e) => handleCommentLike(reply, e)}
+                  >
+                    <Text className='like-icon'>{reply.isLiked ? '❤️' : '🤍'}</Text>
+                    <Text className='like-count'>{reply.likeCount || 0}</Text>
+                  </View>
+                </View>
               </View>
             </View>
           );
@@ -458,7 +579,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           <Text className='comments-title'>评论区</Text>
           <Text className='comments-count'>{totalComments}条评论</Text>
         </View>
-        
+
         {comments.length > 0 ? (
           <View className='comments-list'>
             {comments.map(comment => {
@@ -471,18 +592,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               };
               const commentId = comment._id || comment.id;
               const hasReplies = (comment.replies && comment.replies.length > 0);
-              
+
               return (
                 <View key={commentId} className='comment-thread'>
-                  <View 
+                  <View
                     className='comment-item'
                     onClick={() => handleClickComment(comment)}
                     onLongPress={() => handleLongPressComment(comment)}
                   >
-                    <Image 
-                      className='comment-avatar' 
-                      src={author.avatar} 
-                      mode='aspectFill' 
+                    <Image
+                      className='comment-avatar'
+                      src={author.avatar}
+                      mode='aspectFill'
                     />
                     <View className='comment-content'>
                       <View className='comment-header'>
@@ -490,7 +611,26 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         <Text className='comment-date'>{formatDate(comment.createdAt)}</Text>
                       </View>
                       <Text className='comment-text'>{comment.content}</Text>
-                      
+
+                      <View className='comment-actions'>
+                        <View
+                          className={`comment-like ${comment.isLiked ? 'liked' : ''}`}
+                          onClick={(e) => handleCommentLike(comment, e)}
+                        >
+                          <Text className='like-icon'>{comment.isLiked ? '❤️' : '🤍'}</Text>
+                          <Text className='like-count'>{comment.likeCount || 0}</Text>
+                        </View>
+                        <Text
+                          className='reply-action'
+                          onClick={(e) => {
+                            e.stopPropagation(); // 阻止冒泡
+                            openCommentModal(comment);
+                          }}
+                        >
+                          回复
+                        </Text>
+                      </View>
+
                       {!hasReplies && comment.parentComment && (
                         <View className='reply-info'>
                           <Text className='reply-text'>回复评论</Text>
@@ -498,13 +638,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                       )}
                     </View>
                   </View>
-                  
+
                   {/* 渲染回复评论 */}
                   {hasReplies && renderReplies(comment, comment.replies || [])}
                 </View>
               );
             })}
-            
+
             {/* 加载更多按钮 */}
             {hasMore && (
               <View className='load-more' onClick={loadMoreComments}>
@@ -552,4 +692,4 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   );
 };
 
-export default CommentSection; 
+export default CommentSection;
