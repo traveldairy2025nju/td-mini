@@ -87,25 +87,53 @@ function CreateDiary() {
   // 选择视频
   const handleChooseVideo = async () => {
     try {
+      console.log('开始选择视频');
       const res = await Taro.chooseVideo({
         sourceType: ['album', 'camera'],
         maxDuration: 60,
         camera: 'back'
       });
 
+      console.log('视频选择结果:', {
+        tempFilePath: res.tempFilePath,
+        duration: res.duration,
+        size: res.size,
+        width: res.width,
+        height: res.height
+      });
+
       if (res.tempFilePath) {
         setUploadingVideo(true);
+        
+        // 检查视频大小，过大的视频可能上传失败或占用过多带宽
+        if (res.size > 50 * 1024 * 1024) { // 50MB
+          Taro.showToast({
+            title: '视频过大，请选择较小的视频',
+            icon: 'none'
+          });
+          setUploadingVideo(false);
+          return;
+        }
 
         const videoUrl = await uploadVideo(res.tempFilePath);
         if (videoUrl) {
+          console.log('视频URL已设置到表单中:', videoUrl);
           setFormData(prev => ({
             ...prev,
             videoUrl
           }));
+        } else {
+          console.error('未能获取到有效的视频URL');
         }
+      } else {
+        console.log('未选择视频或选择已取消');
       }
     } catch (error) {
       console.error('选择视频失败', error);
+      Taro.showToast({
+        title: error.errMsg || '选择视频失败',
+        icon: 'none'
+      });
     } finally {
       setUploadingVideo(false);
     }
@@ -132,8 +160,12 @@ function CreateDiary() {
   // 上传视频
   const uploadVideo = async (filePath: string) => {
     try {
+      console.log('开始上传视频, 文件路径:', filePath);
       const result = await api.upload.uploadFile(filePath);
+      console.log('视频上传响应:', JSON.stringify(result));
+      
       if (result.success && result.data.url) {
+        console.log('视频上传成功, URL:', result.data.url);
         return result.data.url;
       }
       throw new Error('上传失败');
@@ -208,6 +240,8 @@ function CreateDiary() {
         });
         return;
       }
+
+      console.log('提交的游记数据:', submitData); // 添加日志，确认videoUrl字段已正确包含
 
       const result = await api.diary.create(submitData);
 

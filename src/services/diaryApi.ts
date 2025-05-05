@@ -44,15 +44,18 @@ const diaryApi = {
   // 创建游记
   create: async (data) => {
     // data包含：title, content, images 数组，可选 videoUrl
+    console.log('diaryApi.create - 原始数据:', JSON.stringify(data));
 
     // 如果客户端使用videoUrl字段，但服务器使用video字段，需要转换
     const apiData = { ...data };
     if (apiData.videoUrl !== undefined) {
+      console.log('diaryApi.create - 发现videoUrl字段:', apiData.videoUrl);
       apiData.video = apiData.videoUrl;
       delete apiData.videoUrl;
+      console.log('diaryApi.create - 转换为video字段:', apiData.video);
     }
 
-    console.log('diaryApi.create - 提交的数据:', apiData);
+    console.log('diaryApi.create - 提交的数据:', JSON.stringify(apiData));
 
     return request({
       url: '/api/diaries',

@@ -532,6 +532,73 @@
         "security": []
       }
     },
+    "/api/diaries/rejected": {
+      "get": {
+        "summary": "获取已拒绝的游记列表",
+        "deprecated": false,
+        "description": "",
+        "operationId": "DiariesController_findAllRejected",
+        "tags": [
+          "游记"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
     "/api/diaries/search": {
       "get": {
         "summary": "搜索游记",
