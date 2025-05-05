@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro';
 import api from '../../services/api';
 import { Comment, CommentAction, CommentSectionProps } from './interfaces';
 import './index.scss';
+import CommentInput from './CommentInput';
 
 // 默认头像
 const DEFAULT_AVATAR = 'https://api.dicebear.com/6.x/initials/svg?seed=TD';
@@ -552,4 +553,5 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   );
 };
 
-export default CommentSection; 
+export default CommentSection;
+export { CommentInput }; 

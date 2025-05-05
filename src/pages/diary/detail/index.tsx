@@ -1,6 +1,6 @@
-import { View, Text, Image, ScrollView, Video, Swiper, SwiperItem } from '@tarojs/components';
+import { View, Text, Image, ScrollView, Video, Swiper, SwiperItem, Button } from '@tarojs/components';
 import { useEffect, useState, useRef } from 'react';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import api from '../../../services/api';
 import { CommentSection, CommentInput } from '../../../components/CommentSection';
 import './index.scss';
@@ -44,6 +44,34 @@ function DiaryDetail() {
 
   // 记录用户信息
   const userInfoRef = useRef<any>(null);
+
+  // 配置分享功能
+  useShareAppMessage(() => {
+    if (diary) {
+      // 构建分享标题和路径
+      const shareTitle = `${diary.title} - 旅行日记`;
+      const sharePath = `/pages/diary/detail/index?id=${id}`;
+      
+      // 获取第一张图片作为分享图片（如果有）
+      let imageUrl = '';
+      if (diary.images && diary.images.length > 0) {
+        imageUrl = diary.images[0];
+      }
+      
+      console.log('分享游记:', shareTitle, sharePath, imageUrl);
+      
+      return {
+        title: shareTitle,
+        path: sharePath,
+        imageUrl: imageUrl, // 分享图片
+      };
+    }
+    // 默认分享内容
+    return {
+      title: '精彩旅行日记',
+      path: '/pages/index/index'
+    };
+  });
 
   useEffect(() => {
     // 获取当前用户信息
