@@ -171,21 +171,17 @@ const diaryApi = {
   },
 
   // 获取当前用户收藏的游记列表
-  getFavorites: (userId = '', page = 1, limit = 10) => {
-    // 构建请求参数，只有在userId非空时才添加
-    const params: any = {
+  getFavorites: (page = 1, limit = 10) => {
+    console.log('获取收藏游记列表 - 页码:', page, '每页数量:', limit);
+
+    // 构建请求参数
+    const params = {
       page,
       limit,
       _t: Date.now() // 添加时间戳避免缓存
     };
 
-    // 只有当userId非空时才添加到请求参数
-    if (userId) {
-      params.userId = userId;
-    }
-
-    console.log('获取收藏游记列表 - 用户ID:', userId, '页码:', page, '每页数量:', limit);
-    console.log('获取收藏游记列表 - 完整请求参数:', params);
+    console.log('获取收藏游记列表 - 请求参数:', params);
 
     return request({
       url: '/api/diaries/favorites',

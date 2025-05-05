@@ -185,7 +185,7 @@ function My() {
 
   // 获取我的收藏列表
   const fetchFavorites = async () => {
-    // 再次检查登录状态，确保token存在
+    // 检查登录状态，确保token存在
     const token = Taro.getStorageSync('token');
     if (!token) {
       console.log('获取收藏列表 - 用户未登录或token不存在');
@@ -198,10 +198,9 @@ function My() {
       setLoadingFavorites(true);
       console.log('获取收藏列表 - 开始获取收藏游记列表');
 
-      // 尝试不传递userId，让后端根据token识别用户
-      console.log('获取收藏列表 - 尝试不传递userId，让后端根据token识别用户');
-      const res = await api.diary.getFavorites('', 1, 10);
-      console.log('获取收藏列表 - 完整API响应:', JSON.stringify(res));
+      // 根据最新API规范，不需要传递userId参数
+      const res = await api.diary.getFavorites(1, 10);
+      console.log('获取收藏列表 - API响应状态:', res.success);
 
       if (res.success && res.data && res.data.items) {
         console.log('获取收藏列表 - 收到的收藏游记数量:', res.data.items.length);
