@@ -92,6 +92,15 @@ input {
   position: relative !important;
 }
 
+/* 图标字体 */
+.icon-search:before {
+  content: "\e8ef";
+}
+
+.icon-close:before {
+  content: "\e646";
+}
+
 /* 引入系统图标 */
 @font-face {
   font-family: "iconfont";

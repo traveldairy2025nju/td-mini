@@ -532,6 +532,61 @@
         "security": []
       }
     },
+    "/api/diaries/search": {
+      "get": {
+        "summary": "搜索游记",
+        "deprecated": false,
+        "description": "",
+        "operationId": "DiariesController_search",
+        "tags": [
+          "游记"
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词，支持标题、内容、作者昵称",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "搜索成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
     "/api/diaries/{id}": {
       "get": {
         "summary": "获取游记详情",
