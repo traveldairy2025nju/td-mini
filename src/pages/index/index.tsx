@@ -12,7 +12,6 @@ interface DiaryItem {
   coverImage: string;
   authorName: string;
   likeCount: number;
-  viewCount: number;
   createdAt: string;
 }
 
@@ -26,6 +25,9 @@ function Index() {
     console.log('首页 - 页面显示');
     // 触发TabBar更新事件
     Taro.eventCenter.trigger('tabIndexChange', 0);
+
+    // 每次页面显示时重新获取最新数据
+    fetchDiaryList();
   });
 
   useEffect(() => {
@@ -37,7 +39,8 @@ function Index() {
   const fetchDiaryList = async () => {
     try {
       setLoading(true);
-      const res = await api.diary.getAll();
+      // 添加时间戳参数避免缓存
+      const res = await api.diary.getAll({ _t: Date.now() });
       console.log('首页 - API返回的原始数据:', res);
 
       if (res.success && res.data && res.data.items) {
@@ -50,8 +53,7 @@ function Index() {
             title: item.title || '无标题',
             coverImage: item.images?.[0] || 'https://placeholder.com/300',
             authorName: item.author?.nickname || '未知用户',
-            likeCount: item.likes || 0,
-            viewCount: item.views || 0,
+            likeCount: item.likeCount || 0, // 使用likeCount字段
             createdAt: item.createdAt || ''
           };
         });
@@ -132,19 +134,19 @@ function Index() {
     <View className='index-container'>
       {/* 顶部标签栏 */}
       <View className='tab-bar'>
-        <View 
+        <View
           className={`tab-item ${activeTab === 'discover' ? 'active' : ''}`}
           onClick={() => handleTabChange('discover')}
         >
           发现
         </View>
-        <View 
+        <View
           className={`tab-item ${activeTab === 'nearby' ? 'active' : ''}`}
           onClick={() => handleTabChange('nearby')}
         >
           附近
         </View>
-        
+
         {/* 搜索图标 */}
         <View className='search-icon' onClick={handleSearchClick}>
           🔍

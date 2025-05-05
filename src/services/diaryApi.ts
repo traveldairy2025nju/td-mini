@@ -26,7 +26,8 @@ const diaryApi = {
     console.log(`diaryApi.getDetailWithLikeStatus - 请求游记ID: ${id}`);
     return request({
       url: `/api/diaries/${id}/with-like-status`,
-      method: 'GET'
+      method: 'GET',
+      data: { _t: Date.now() }
     });
   },
 
@@ -79,7 +80,10 @@ const diaryApi = {
     console.log('diaryApi.getUserDiaries - 状态过滤:', status);
 
     // 构建查询参数
-    const params = status && status !== 'all' ? { status } : {};
+    const params: any = status && status !== 'all' ? { status } : {};
+
+    // 添加时间戳避免缓存
+    params._t = Date.now();
 
     console.log('diaryApi.getUserDiaries - 查询参数:', params);
 
@@ -144,7 +148,7 @@ const diaryApi = {
     if (parentCommentId) {
       data.parentCommentId = parentCommentId;
     }
-    
+
     return request({
       url: '/api/diaries/comment',
       method: 'POST',
@@ -158,6 +162,29 @@ const diaryApi = {
       url: `/api/diaries/${diaryId}/comments`,
       method: 'GET',
       data: params
+    });
+  },
+
+  // 获取游记评论（带点赞状态）
+  getCommentsWithLikeStatus: (diaryId, page = 1, limit = 10) => {
+    return request({
+      url: `/api/diaries/${diaryId}/comments-with-like-status`,
+      method: 'GET',
+      data: {
+        page,
+        limit,
+        _t: Date.now() // 添加时间戳避免缓存
+      }
+    });
+  },
+
+  // 点赞/取消点赞评论
+  likeComment: (commentId) => {
+    console.log('点赞/取消点赞评论 - 评论ID:', commentId);
+    return request({
+      url: '/api/diaries/comment/like',
+      method: 'POST',
+      data: { commentId }
     });
   },
 

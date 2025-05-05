@@ -13,10 +13,12 @@ export interface Comment {
   };
   children?: Comment[];
   replies?: Comment[];
+  likeCount?: number; // 评论点赞数
+  isLiked?: boolean; // 当前用户是否已点赞
 }
 
 // 评论操作类型
-export type CommentAction = 'reply' | 'delete' | 'copy';
+export type CommentAction = 'reply' | 'delete' | 'copy' | 'like';
 
 // 评论组件Props
 export interface CommentSectionProps {
@@ -24,4 +26,4 @@ export interface CommentSectionProps {
   currentUserId: string | null;
   userInfo: any;
   formatDate: (dateString: string) => string;
-} 
+}

@@ -15,7 +15,6 @@ interface DiaryItem {
   coverImage: string;
   authorName: string;
   likeCount: number;
-  viewCount: number;
   createdAt: string;
   status?: 'pending' | 'approved' | 'rejected';
 }
@@ -34,6 +33,11 @@ function My() {
     console.log('我的页面 - 页面显示');
     // 触发TabBar更新事件
     Taro.eventCenter.trigger('tabIndexChange', 1);
+
+    // 页面每次显示时重新获取数据
+    if (checkLogin()) {
+      fetchMyDiaries();
+    }
   });
 
   // 活动标签状态
@@ -110,6 +114,7 @@ function My() {
       // 使用传入的状态参数或当前状态
       const currentStatus = statusToFilter || statusFilter;
       console.log('我的页面 - 准备获取游记，状态过滤:', currentStatus);
+      // 添加时间戳参数避免缓存
       const res = await api.diary.getUserDiaries(currentStatus);
       console.log('我的页面 - 获取游记API响应:', res);
 
@@ -122,8 +127,7 @@ function My() {
             title: item.title || '无标题',
             coverImage: item.images?.[0] || 'https://placeholder.com/300',
             authorName: userInfo?.nickname || '我',
-            likeCount: item.likes || 0,
-            viewCount: item.views || 0,
+            likeCount: item.likeCount || 0,
             createdAt: item.createdAt || '',
             status: item.status
           };
