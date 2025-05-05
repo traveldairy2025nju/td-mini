@@ -43,7 +43,6 @@ function My() {
 
   // 页面显示时通知TabBar更新
   useDidShow(() => {
-    console.log('我的页面 - 页面显示');
     // 触发TabBar更新事件
     Taro.eventCenter.trigger('tabIndexChange', 1);
 
@@ -60,7 +59,6 @@ function My() {
   useEffect(() => {
     // 监听刷新我的页面事件
     const refreshHandler = () => {
-      console.log('接收到刷新我的页面事件');
       if (checkLogin()) {
         if (activeTab === 'favorites') {
           fetchFavorites();
@@ -136,7 +134,6 @@ function My() {
 
   // 处理状态过滤变化
   const handleStatusFilterChange = (status: 'all' | 'pending' | 'approved' | 'rejected') => {
-    console.log('我的页面 - 切换状态过滤:', status);
     setStatusFilter(status);
     // 直接传递新状态给fetchMyDiaries，而不是依赖状态更新后再调用
     fetchMyDiaries(status);
@@ -150,15 +147,12 @@ function My() {
       setLoadingDiaries(true);
       // 使用传入的状态参数或当前状态
       const currentStatus = statusToFilter || statusFilter;
-      console.log('我的页面 - 准备获取游记，状态过滤:', currentStatus);
       // 添加时间戳参数避免缓存
       const res = await api.diary.getUserDiaries(currentStatus);
-      console.log('我的页面 - 获取游记API响应:', res);
 
       if (res.success && res.data) {
         // 转换API返回的数据为组件需要的格式
         const formattedDiaries = res.data.items.map(item => {
-          console.log('我的页面 - 处理游记项:', item);
           return {
             id: item._id,
             title: item.title || '无标题',
@@ -169,11 +163,9 @@ function My() {
             status: item.status
           };
         });
-        console.log('我的页面 - 格式化后的游记列表:', formattedDiaries);
         setDiaries(formattedDiaries);
       }
     } catch (error) {
-      console.error('获取我的游记失败', error);
       Taro.showToast({
         title: '获取游记失败',
         icon: 'none'
@@ -188,7 +180,6 @@ function My() {
     // 检查登录状态，确保token存在
     const token = Taro.getStorageSync('token');
     if (!token) {
-      console.log('获取收藏列表 - 用户未登录或token不存在');
       setFavorites([]);
       setLoadingFavorites(false);
       return;
@@ -196,19 +187,15 @@ function My() {
 
     try {
       setLoadingFavorites(true);
-      console.log('获取收藏列表 - 开始获取收藏游记列表');
+      // 调用API，设置较大的limit值确保能获取更多数据
+      const res = await api.diary.getFavorites(1, 20);
 
-      // 根据最新API规范，不需要传递userId参数
-      const res = await api.diary.getFavorites(1, 10);
-      console.log('获取收藏列表 - API响应状态:', res.success);
-
-      if (res.success && res.data && res.data.items) {
-        console.log('获取收藏列表 - 收到的收藏游记数量:', res.data.items.length);
+      if (res.success && res.data) {
+        // 先检查data.list，如果不存在再尝试data.items
+        const itemsArray = res.data.list || res.data.items || [];
 
         // 转换API返回的数据为组件需要的格式
-        const formattedFavorites = res.data.items.map((item, index) => {
-          console.log(`获取收藏列表 - 处理第${index+1}项:`, JSON.stringify(item));
-
+        const formattedFavorites = itemsArray.map((item) => {
           // 确保有有效的封面图
           let coverImage = '';
           if (item.images && Array.isArray(item.images) && item.images.length > 0) {
@@ -226,12 +213,9 @@ function My() {
           };
         });
 
-        console.log('我的页面 - 格式化后的收藏游记列表:', formattedFavorites);
         setFavorites(formattedFavorites);
       } else {
         setFavorites([]);
-        console.warn('获取收藏游记列表失败:', res.message || '接口返回格式不符合预期');
-
         // 显示错误提示
         if (res.message) {
           Taro.showToast({
@@ -242,9 +226,7 @@ function My() {
         }
       }
     } catch (error) {
-      console.error('获取收藏游记失败', error);
       setFavorites([]);
-
       const errorMessage = error instanceof Error ? error.message : '网络异常，请稍后再试';
       Taro.showToast({
         title: errorMessage,
@@ -258,9 +240,7 @@ function My() {
 
   // 点击游记进入详情
   const handleDiaryClick = (id: string) => {
-    console.log('我的页面 - 点击游记，ID:', id);
     if (!id) {
-      console.error('我的页面 - 游记ID无效');
       Taro.showToast({
         title: '游记ID无效',
         icon: 'none'
