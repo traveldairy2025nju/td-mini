@@ -198,16 +198,18 @@ function My() {
       setLoadingFavorites(true);
       console.log('获取收藏列表 - 开始获取收藏游记列表');
 
-      // 尝试不传递userId，让后端根据token识别用户
-      console.log('获取收藏列表 - 尝试不传递userId，让后端根据token识别用户');
-      const res = await api.diary.getFavorites('', 1, 10);
+      // 调用API，设置较大的limit值确保能获取更多数据
+      console.log('获取收藏列表 - 请求参数: 页码=1, 每页数量=20');
+      const res = await api.diary.getFavorites(1, 20);
       console.log('获取收藏列表 - 完整API响应:', JSON.stringify(res));
 
-      if (res.success && res.data && res.data.items) {
-        console.log('获取收藏列表 - 收到的收藏游记数量:', res.data.items.length);
+      if (res.success && res.data) {
+        // 先检查data.list，如果不存在再尝试data.items
+        const itemsArray = res.data.list || res.data.items || [];
+        console.log('获取收藏列表 - 收到的收藏游记数量:', itemsArray.length);
 
         // 转换API返回的数据为组件需要的格式
-        const formattedFavorites = res.data.items.map((item, index) => {
+        const formattedFavorites = itemsArray.map((item, index) => {
           console.log(`获取收藏列表 - 处理第${index+1}项:`, JSON.stringify(item));
 
           // 确保有有效的封面图

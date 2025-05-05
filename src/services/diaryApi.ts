@@ -171,26 +171,48 @@ const diaryApi = {
   },
 
   // 获取当前用户收藏的游记列表
-  getFavorites: (userId = '', page = 1, limit = 10) => {
-    // 构建请求参数，只有在userId非空时才添加
+  getFavorites: (page = 1, limit = 10) => {
+    // 确保页码为大于等于1的整数
+    const validPage = Math.max(1, Math.floor(Number(page) || 1));
+    const validLimit = Math.max(1, Math.floor(Number(limit) || 10));
+    
+    // 构建请求参数
     const params: any = {
-      page,
-      limit,
+      page: validPage,
+      limit: validLimit,
       _t: Date.now() // 添加时间戳避免缓存
     };
 
-    // 只有当userId非空时才添加到请求参数
-    if (userId) {
-      params.userId = userId;
-    }
-
-    console.log('获取收藏游记列表 - 用户ID:', userId, '页码:', page, '每页数量:', limit);
+    console.log('获取收藏游记列表 - 页码:', validPage, '每页数量:', validLimit);
     console.log('获取收藏游记列表 - 完整请求参数:', params);
 
     return request({
-      url: '/api/diaries/favorites',
+      url: '/api/diaries/user/favorites',
       method: 'GET',
       data: params
+    }).then(response => {
+      // 详细记录响应结构以便调试
+      console.log('收藏游记API响应:', {
+        success: response.success,
+        结构: response.data ? Object.keys(response.data) : '无数据',
+        数据类型: response.data ? typeof response.data : '无数据',
+        总数: response.data?.total || '未知',
+        当前页: response.data?.page || '未知',
+        items是否存在: response.data?.items ? '是' : '否',
+        list是否存在: response.data?.list ? '是' : '否',
+      });
+      
+      // 检测API响应里items和list字段，适配返回格式
+      if (response.success) {
+        if (response.data?.items && !response.data?.list) {
+          console.log('检测到items数据，自动转换为list格式');
+          response.data.list = response.data.items;
+        } else if (!response.data?.list && !response.data?.items) {
+          console.warn('警告：收藏游记API响应中既无items也无list字段');
+        }
+      }
+      
+      return response;
     });
   },
 
