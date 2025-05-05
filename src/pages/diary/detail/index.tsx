@@ -15,7 +15,6 @@ interface DiaryDetail {
   authorName: string;
   authorAvatar: string;
   createdAt: string;
-  views: number;
   likes: number;
   isLiked?: boolean; // 当前用户是否点赞
 }
@@ -91,7 +90,7 @@ function DiaryDetail() {
         Taro.navigateBack();
       }, 2000);
     }
-  }, [id]);
+  }, [id, Taro.getCurrentInstance().router?.params.refresh]);
 
   const fetchDiaryDetail = async (diaryId: string) => {
     try {
@@ -136,7 +135,6 @@ function DiaryDetail() {
           authorName: diaryData.author?.nickname || '未知用户',
           authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
           createdAt: diaryData.createdAt || '',
-          views: diaryData.views || 0,
           likes: diaryData.likeCount || 0,
           isLiked: diaryData.isLiked || false
         });
@@ -239,6 +237,23 @@ function DiaryDetail() {
     if (!id) return;
 
     try {
+      // 检查登录状态
+      const token = Taro.getStorageSync('token');
+      if (!token) {
+        Taro.showToast({
+          title: '请先登录',
+          icon: 'none',
+          duration: 2000
+        });
+
+        setTimeout(() => {
+          Taro.navigateTo({
+            url: '/pages/login/index'
+          });
+        }, 1500);
+        return;
+      }
+
       // 乐观更新UI
       setLiked(!liked);
       if (diary) {
@@ -263,6 +278,9 @@ function DiaryDetail() {
         title: !liked ? '点赞成功' : '取消点赞',
         icon: 'none'
       });
+
+      // 重新获取最新数据以确保状态一致
+      fetchDiaryDetail(id);
     } catch (error) {
       console.error('点赞操作失败', error);
       Taro.showToast({
@@ -399,10 +417,6 @@ function DiaryDetail() {
           <Text className='content-text'>{diary.content}</Text>
 
           <View className='diary-stats'>
-            <View className='stat-item'>
-              <Text className='stat-icon'>👁️</Text>
-              <Text className='stat-value'>{diary.views} 浏览</Text>
-            </View>
             <View className='stat-item'>
               <Text className='stat-icon'>❤️</Text>
               <Text className='stat-value'>{diary.likes} 赞</Text>

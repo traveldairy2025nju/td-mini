@@ -8,7 +8,6 @@ interface DiaryItem {
   coverImage: string;
   authorName: string;
   likeCount: number;
-  viewCount: number;
   createdAt: string;
   status?: 'pending' | 'approved' | 'rejected'; // 添加状态字段
 }
@@ -87,8 +86,7 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
           <View className='diary-meta'>
             <Text className='diary-author'>{item.authorName}</Text>
             <View className='diary-stats'>
-              <Text className='diary-likes'>{item.likeCount} 赞</Text>
-              <Text className='diary-views'>{item.viewCount} 浏览</Text>
+              <Text className='diary-likes'>❤️ {item.likeCount}</Text>
             </View>
           </View>
         </View>

@@ -26,7 +26,8 @@ const diaryApi = {
     console.log(`diaryApi.getDetailWithLikeStatus - 请求游记ID: ${id}`);
     return request({
       url: `/api/diaries/${id}/with-like-status`,
-      method: 'GET'
+      method: 'GET',
+      data: { _t: Date.now() }
     });
   },
 
@@ -79,7 +80,10 @@ const diaryApi = {
     console.log('diaryApi.getUserDiaries - 状态过滤:', status);
 
     // 构建查询参数
-    const params = status && status !== 'all' ? { status } : {};
+    const params: any = status && status !== 'all' ? { status } : {};
+
+    // 添加时间戳避免缓存
+    params._t = Date.now();
 
     console.log('diaryApi.getUserDiaries - 查询参数:', params);
 
@@ -134,7 +138,7 @@ const diaryApi = {
     if (parentCommentId) {
       data.parentCommentId = parentCommentId;
     }
-    
+
     return request({
       url: '/api/diaries/comment',
       method: 'POST',
