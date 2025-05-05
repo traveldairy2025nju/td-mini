@@ -177,7 +177,7 @@ function My() {
 
   // 获取我的收藏列表
   const fetchFavorites = async () => {
-    // 再次检查登录状态，确保token存在
+    // 检查登录状态，确保token存在
     const token = Taro.getStorageSync('token');
     if (!token) {
       setFavorites([]);

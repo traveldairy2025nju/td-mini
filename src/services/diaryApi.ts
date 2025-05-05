@@ -175,7 +175,7 @@ const diaryApi = {
     // 确保页码为大于等于1的整数
     const validPage = Math.max(1, Math.floor(Number(page) || 1));
     const validLimit = Math.max(1, Math.floor(Number(limit) || 10));
-    
+
     // 构建请求参数
     const params: any = {
       page: validPage,
@@ -201,7 +201,7 @@ const diaryApi = {
         items是否存在: response.data?.items ? '是' : '否',
         list是否存在: response.data?.list ? '是' : '否',
       });
-      
+
       // 检测API响应里items和list字段，适配返回格式
       if (response.success) {
         if (response.data?.items && !response.data?.list) {
@@ -211,7 +211,7 @@ const diaryApi = {
           console.warn('警告：收藏游记API响应中既无items也无list字段');
         }
       }
-      
+
       return response;
     });
   },
