@@ -9,6 +9,7 @@ interface CommentInputProps {
   collected: boolean;
   onLike: () => void;
   onCollect: () => void;
+  onShare?: () => void;
 }
 
 const CommentInput: React.FC<CommentInputProps> = ({
@@ -16,7 +17,8 @@ const CommentInput: React.FC<CommentInputProps> = ({
   liked,
   collected,
   onLike,
-  onCollect
+  onCollect,
+  onShare
 }) => {
   return (
     <View className='fixed-footer'>
@@ -40,6 +42,16 @@ const CommentInput: React.FC<CommentInputProps> = ({
           <Text className='action-icon'>{collected ? '⭐' : '☆'}</Text>
           <Text className='action-text'>{collected ? '已收藏' : '收藏'}</Text>
         </View>
+        {onShare && (
+          <View
+            className='action-button'
+            onClick={onShare}
+            hoverClass='action-button-hover'
+          >
+            <Text className='action-icon'>📤</Text>
+            <Text className='action-text'>分享</Text>
+          </View>
+        )}
       </View>
     </View>
   );

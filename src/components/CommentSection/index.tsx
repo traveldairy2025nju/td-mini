@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro';
 import api from '../../services/api';
 import { Comment, CommentAction, CommentSectionProps } from './interfaces';
 import './index.scss';
+import CommentInput from './CommentInput';
 
 // 默认头像
 const DEFAULT_AVATAR = 'https://api.dicebear.com/6.x/initials/svg?seed=TD';
@@ -63,8 +64,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       setCommentsLoading(true);
 
       const params = { page: pageNum, limit };
-      // 使用支持点赞状态的评论接口
-      const res = await api.diary.getCommentsWithLikeStatus(diaryId, pageNum, limit);
+      const res = await api.diary.getComments(diaryId, params);
 
       console.log('获取评论响应:', res);
 
@@ -280,112 +280,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
-  // 处理评论点赞
-  const handleCommentLike = async (comment: Comment, event: any) => {
-    event.stopPropagation(); // 阻止冒泡，避免触发评论回复
-
-    // 检查登录状态
-    const token = Taro.getStorageSync('token');
-    if (!token) {
-      Taro.showToast({
-        title: '请先登录',
-        icon: 'none',
-        duration: 2000
-      });
-
-      setTimeout(() => {
-        Taro.navigateTo({
-          url: '/pages/login/index'
-        });
-      }, 1500);
-      return;
-    }
-
-    const commentId = comment._id || comment.id;
-    if (!commentId) {
-      console.error('评论ID无效:', comment);
-      return;
-    }
-
-    try {
-      // 乐观更新UI
-      const isCurrentlyLiked = comment.isLiked || false;
-      const currentLikeCount = comment.likeCount || 0;
-
-      // 更新状态 - 创建更新后的评论对象
-      const updatedComment = {
-        ...comment,
-        isLiked: !isCurrentlyLiked,
-        likeCount: isCurrentlyLiked
-          ? Math.max(0, currentLikeCount - 1)
-          : currentLikeCount + 1
-      };
-
-      // 更新评论列表中的评论
-      setComments(prevComments =>
-        prevComments.map(c => {
-          // 更新主评论
-          if ((c._id && c._id === commentId) || (c.id && c.id === commentId)) {
-            return updatedComment;
-          }
-
-          // 检查并更新回复中的评论
-          if (c.replies && c.replies.length > 0) {
-            return {
-              ...c,
-              replies: c.replies.map(reply => {
-                if ((reply._id && reply._id === commentId) || (reply.id && reply.id === commentId)) {
-                  return updatedComment;
-                }
-                return reply;
-              })
-            };
-          }
-
-          return c;
-        })
-      );
-
-      // 发送请求
-      const res = await api.diary.likeComment(commentId);
-
-      if (!res.success) {
-        // 如果失败，回滚UI
-        setComments(prevComments =>
-          prevComments.map(c => {
-            // 回滚主评论
-            if ((c._id && c._id === commentId) || (c.id && c.id === commentId)) {
-              return comment;
-            }
-
-            // 检查并回滚回复中的评论
-            if (c.replies && c.replies.length > 0) {
-              return {
-                ...c,
-                replies: c.replies.map(reply => {
-                  if ((reply._id && reply._id === commentId) || (reply.id && reply.id === commentId)) {
-                    return comment;
-                  }
-                  return reply;
-                })
-              };
-            }
-
-            return c;
-          })
-        );
-
-        throw new Error(res.message || '点赞失败');
-      }
-    } catch (error) {
-      console.error('评论点赞失败:', error);
-      Taro.showToast({
-        title: error instanceof Error ? error.message : '点赞失败',
-        icon: 'none'
-      });
-    }
-  };
-
   // 长按评论显示操作菜单
   const handleLongPressComment = (comment: Comment) => {
     console.log('长按评论:', comment);
@@ -403,7 +297,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     }
 
     // 准备操作菜单选项
-    const actions: CommentAction[] = ['reply', 'copy', 'like'];
+    const actions: CommentAction[] = ['reply', 'copy'];
 
     // 只有评论作者或管理员才能删除评论
     const commentUserId = comment.user?._id || '';
@@ -421,7 +315,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           case 'reply': return '回复';
           case 'delete': return '删除';
           case 'copy': return '复制内容';
-          case 'like': return comment.isLiked ? '取消点赞' : '点赞';
           default: return '';
         }
       }),
@@ -451,9 +344,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             });
           }
         });
-        break;
-      case 'like':
-        handleCommentLike(comment, { stopPropagation: () => {} });
         break;
     }
   };
@@ -553,16 +443,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                 <Text className='reply-text'>
                   回复 {parentComment.user?.nickname || '用户'}：{reply.content}
                 </Text>
-
-                <View className='reply-actions'>
-                  <View
-                    className={`reply-like ${reply.isLiked ? 'liked' : ''}`}
-                    onClick={(e) => handleCommentLike(reply, e)}
-                  >
-                    <Text className='like-icon'>{reply.isLiked ? '❤️' : '🤍'}</Text>
-                    <Text className='like-count'>{reply.likeCount || 0}</Text>
-                  </View>
-                </View>
               </View>
             </View>
           );
@@ -611,25 +491,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                         <Text className='comment-date'>{formatDate(comment.createdAt)}</Text>
                       </View>
                       <Text className='comment-text'>{comment.content}</Text>
-
-                      <View className='comment-actions'>
-                        <View
-                          className={`comment-like ${comment.isLiked ? 'liked' : ''}`}
-                          onClick={(e) => handleCommentLike(comment, e)}
-                        >
-                          <Text className='like-icon'>{comment.isLiked ? '❤️' : '🤍'}</Text>
-                          <Text className='like-count'>{comment.likeCount || 0}</Text>
-                        </View>
-                        <Text
-                          className='reply-action'
-                          onClick={(e) => {
-                            e.stopPropagation(); // 阻止冒泡
-                            openCommentModal(comment);
-                          }}
-                        >
-                          回复
-                        </Text>
-                      </View>
 
                       {!hasReplies && comment.parentComment && (
                         <View className='reply-info'>
@@ -693,3 +554,4 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 };
 
 export default CommentSection;
+export { CommentInput };
