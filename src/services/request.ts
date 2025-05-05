@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro';
 
-export const BASE_URL = 'http://10.4.42.150:3000';  // 开发环境使用本地API，生产环境需要修改
+export const BASE_URL = 'http://10.4.37.228:3000';  // 开发环境使用本地API，生产环境需要修改
 
 // 请求拦截器
 function interceptor(chain) {

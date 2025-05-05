@@ -24,17 +24,25 @@ const CommentInput: React.FC<CommentInputProps> = ({
         <Text className='comment-placeholder'>写下你的评论...</Text>
       </View>
       <View className='action-buttons'>
-        <View className={`action-button ${liked ? 'active' : ''}`} onClick={onLike}>
+        <View
+          className={`action-button ${liked ? 'active' : ''}`}
+          onClick={onLike}
+          hoverClass='action-button-hover'
+        >
           <Text className='action-icon'>{liked ? '❤️' : '🤍'}</Text>
-          <Text className='action-text'>点赞</Text>
+          <Text className='action-text'>{liked ? '已赞' : '点赞'}</Text>
         </View>
-        <View className={`action-button ${collected ? 'active' : ''}`} onClick={onCollect}>
+        <View
+          className={`action-button ${collected ? 'active' : ''}`}
+          onClick={onCollect}
+          hoverClass='action-button-hover'
+        >
           <Text className='action-icon'>{collected ? '⭐' : '☆'}</Text>
-          <Text className='action-text'>收藏</Text>
+          <Text className='action-text'>{collected ? '已收藏' : '收藏'}</Text>
         </View>
       </View>
     </View>
   );
 };
 
-export default CommentInput; 
+export default CommentInput;
