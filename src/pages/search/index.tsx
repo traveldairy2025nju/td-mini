@@ -2,6 +2,7 @@ import { View, Text, Input } from '@tarojs/components';
 import { useState, useRef, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import api from '../../services/api';
+import WaterfallFlow from '../../components/WaterfallFlow';
 import './index.scss';
 
 // 游记项目类型
@@ -129,32 +130,10 @@ function Search() {
     }
 
     return (
-      <View className='diary-list'>
-        {diaryList.map(diary => (
-          <View 
-            key={diary.id} 
-            className='diary-item'
-            onClick={() => handleDiaryItemClick(diary.id)}
-          >
-            <View className='diary-title'>{diary.title}</View>
-            <View className='diary-author'>作者: {diary.authorName}</View>
-            <View 
-              className='diary-cover' 
-              style={{ backgroundImage: `url(${diary.coverImage})` }}
-            />
-            <View className='diary-meta'>
-              <View className='diary-likes'>
-                <Text className='iconfont icon-like icon'></Text>
-                <Text>{diary.likeCount}</Text>
-              </View>
-              <View className='diary-views'>
-                <Text className='iconfont icon-view icon'></Text>
-                <Text>{diary.viewCount}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
-      </View>
+      <WaterfallFlow
+        diaryList={diaryList}
+        onItemClick={handleDiaryItemClick}
+      />
     );
   };
 
