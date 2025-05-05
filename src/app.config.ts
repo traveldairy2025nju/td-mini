@@ -1,3 +1,8 @@
+import { getThemeColors } from './utils/themeManager';
+
+// 获取当前主题色
+const currentTheme = getThemeColors();
+
 export default {
   pages: [
     "pages/index/index",
@@ -8,7 +13,8 @@ export default {
     "pages/settings/index",
     "pages/create-diary/index",
     "pages/diary/detail/index",
-    "pages/search/index"
+    "pages/search/index",
+    "pages/custom-theme/index"
   ],
   window: {
     backgroundTextStyle: "light",
@@ -19,7 +25,7 @@ export default {
   tabBar: {
     custom: true,
     color: "#999",
-    selectedColor: "#1296db",
+    selectedColor: currentTheme.primaryColor,
     backgroundColor: "#fff",
     borderStyle: "black",
     list: [

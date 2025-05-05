@@ -1,7 +1,9 @@
-import { View, Image } from '@tarojs/components';
+import { View, Image, Canvas } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { isLoggedIn } from '../utils/auth';
+import { getThemeColors } from '../utils/themeManager';
+import { getPngIconWithColor } from '../utils/iconHelper';
 import './index.scss';
 
 interface TabItem {
@@ -13,6 +15,13 @@ interface TabItem {
 
 export default function CustomTabBar() {
   const [selected, setSelected] = useState(0);
+  const [theme, setTheme] = useState(getThemeColors());
+  const [homeIcon, setHomeIcon] = useState('../assets/icons/home.png');
+  const [homeActiveIcon, setHomeActiveIcon] = useState('../assets/icons/home-active.png');
+  const [userIcon, setUserIcon] = useState('../assets/icons/user.png');
+  const [userActiveIcon, setUserActiveIcon] = useState('../assets/icons/user-active.png');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   const [tabList] = useState<TabItem[]>([
     {
       pagePath: 'pages/index/index',
@@ -27,6 +36,42 @@ export default function CustomTabBar() {
       selectedIconPath: '../assets/icons/user-active.png'
     }
   ]);
+
+  // 处理图标颜色
+  useEffect(() => {
+    const updateIcons = async () => {
+      try {
+        // 处理普通图标
+        const homeIconColored = await getPngIconWithColor(tabList[0].iconPath, theme.primaryColor);
+        const userIconColored = await getPngIconWithColor(tabList[1].iconPath, theme.primaryColor);
+        setHomeIcon(homeIconColored);
+        setUserIcon(userIconColored);
+        
+        // 处理激活图标
+        const homeActiveIconColored = await getPngIconWithColor(tabList[0].selectedIconPath, theme.primaryColor);
+        const userActiveIconColored = await getPngIconWithColor(tabList[1].selectedIconPath, theme.primaryColor);
+        setHomeActiveIcon(homeActiveIconColored);
+        setUserActiveIcon(userActiveIconColored);
+      } catch (e) {
+        console.error('处理图标颜色失败', e);
+      }
+    };
+    
+    updateIcons();
+  }, [theme]);
+
+  // 监听主题变化
+  useEffect(() => {
+    const handleThemeChange = (newTheme) => {
+      setTheme(newTheme);
+    };
+    
+    Taro.eventCenter.on('themeChange', handleThemeChange);
+    
+    return () => {
+      Taro.eventCenter.off('themeChange', handleThemeChange);
+    };
+  }, []);
 
   // 组件挂载时添加路由事件监听
   useEffect(() => {
@@ -119,15 +164,18 @@ export default function CustomTabBar() {
       <View className='tab-bar-item' onClick={() => switchTab(0, tabList[0].pagePath)}>
         <Image
           className='tab-bar-icon'
-          src={selected === 0 ? tabList[0].selectedIconPath : tabList[0].iconPath}
+          src={selected === 0 ? homeActiveIcon : homeIcon}
         />
-        <View className={`tab-bar-text ${selected === 0 ? 'selected' : ''}`}>
+        <View 
+          className={`tab-bar-text ${selected === 0 ? 'selected' : ''}`} 
+          style={selected === 0 ? { color: theme.primaryColor } : {}}
+        >
           {tabList[0].text}
         </View>
       </View>
 
       <View className='tab-bar-plus-container' onClick={handleCreateDiary}>
-        <View className='tab-bar-plus-button'>
+        <View className='tab-bar-plus-button' style={{ background: theme.secondaryColor }}>
           <Image className='tab-bar-plus-icon' src='../assets/icons/plus.png' />
         </View>
       </View>
@@ -135,12 +183,18 @@ export default function CustomTabBar() {
       <View className='tab-bar-item' onClick={() => switchTab(1, tabList[1].pagePath)}>
         <Image
           className='tab-bar-icon'
-          src={selected === 1 ? tabList[1].selectedIconPath : tabList[1].iconPath}
+          src={selected === 1 ? userActiveIcon : userIcon}
         />
-        <View className={`tab-bar-text ${selected === 1 ? 'selected' : ''}`}>
+        <View 
+          className={`tab-bar-text ${selected === 1 ? 'selected' : ''}`}
+          style={selected === 1 ? { color: theme.primaryColor } : {}}
+        >
           {tabList[1].text}
         </View>
       </View>
+      
+      {/* 隐藏的Canvas用于处理图标 */}
+      <Canvas canvasId={`iconCanvas_${Date.now()}`} style={{ position: 'absolute', left: '-9999px', width: '100px', height: '100px' }} />
     </View>
   );
 }
