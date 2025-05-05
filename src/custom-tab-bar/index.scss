@@ -1,10 +1,12 @@
+@import "../styles/theme.scss";
+
 .custom-tab-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 110px;
-  background: #fff;
+  background: var(--white);
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -18,7 +20,7 @@
   top: 0;
   width: 100%;
   height: 1px;
-  background-color: #eee;
+  background-color: var(--border-color);
   transform: scaleY(0.5);
 }
 
@@ -39,10 +41,10 @@
 
 .tab-bar-text {
   font-size: 24px;
-  color: #999;
+  color: var(--text-color-light);
 
   &.selected {
-    color: #1296db;
+    color: var(--primary-color);
   }
 }
 
@@ -59,7 +61,7 @@
 .tab-bar-plus-button {
   width: 100px;
   height: 100px;
-  background: #ff5348;
+  background: var(--secondary-color);
   border-radius: 50%;
   display: flex;
   align-items: center;

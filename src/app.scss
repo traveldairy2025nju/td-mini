@@ -1,3 +1,6 @@
+/* 导入主题变量 */
+@import "./styles/theme.scss";
+
 /* 导入 Taro UI 基础样式 */
 @import "~taro-ui/dist/style/index.scss";
 @import "~taro-ui/dist/style/components/button.scss";
@@ -13,8 +16,8 @@ page {
     sans-serif;
   font-size: 28px;
   line-height: 1.5;
-  color: #333;
-  background-color: #f8f8f8;
+  color: var(--text-color);
+  background-color: var(--bg-color);
 }
 
 /* 微信小程序下特有的样式修复 */
@@ -25,7 +28,7 @@ page {
 
 /* 修复在微信小程序上一些常见的样式问题 */
 .at-button--primary {
-  background-color: #1296db !important;
+  background-color: var(--primary-color) !important;
 }
 
 .at-button--primary::after {
@@ -47,7 +50,7 @@ page {
 .weui-input,
 .at-input__input,
 input {
-  color: #333 !important;
+  color: var(--text-color) !important;
   background-color: transparent !important;
   z-index: 100 !important;
   position: relative !important;
@@ -57,7 +60,7 @@ input {
 .weui-input-placeholder,
 .input-placeholder,
 .placeholder {
-  color: #999 !important;
+  color: var(--text-color-light) !important;
   font-size: 28px !important;
 }
 

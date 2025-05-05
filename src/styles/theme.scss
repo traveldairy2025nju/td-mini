@@ -1,0 +1,33 @@
+// 默认主题颜色
+:root {
+  --primary-color: #1296db; // 主色调
+  --primary-light: rgba(18, 150, 219, 0.1); // 主色淡色版
+  --primary-dark: #0e7ab0; // 主色深色版
+  --secondary-color: #ff5348; // 次要色调（加号按钮）
+  --text-color: #333; // 文本主色
+  --text-color-light: #999; // 浅色文本
+  --bg-color: #f8f8f8; // 背景色
+  --border-color: #eee; // 边框颜色
+  --white: #fff; // 白色
+  --success-color: #52c41a; // 成功色
+  --warning-color: #faad14; // 警告色
+  --error-color: #f5222d; // 错误色
+}
+
+// 辅助类，方便使用主题色
+.text-primary {
+  color: var(--primary-color);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.border-primary {
+  border-color: var(--primary-color);
+}
+
+// 创建一个混入(mixin)便于复用主题相关样式
+@mixin themify($property, $color) {
+  #{$property}: var(--#{$color});
+} 
