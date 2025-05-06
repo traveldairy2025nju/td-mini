@@ -377,149 +377,151 @@ function CreateDiary() {
 
   return (
     <ScrollView className='create-diary-container' scrollY>
-      <View className='form-title'>创建旅行日记</View>
+      <View className='form-wrapper'>
+        <View className='form-title'>创建旅行日记</View>
 
-      <View className='form-section'>
-        <View className='input-field'>
-          <Text className='input-label'>标题</Text>
-          <Input
-            name='title'
-            type='text'
-            value={formData.title}
-            placeholder='请输入游记标题'
-            onChange={(value) => handleChange('title', value)}
-            error={!!errors.title}
-          />
-          {errors.title && <Text className='error-message'>{errors.title}</Text>}
-        </View>
-
-        <View className='input-field'>
-          <Text className='input-label'>内容</Text>
-          <Textarea
-            className='content-textarea'
-            value={formData.content}
-            placeholder='请详细描述您的旅行经历...'
-            onInput={(e) => handleChange('content', e.detail.value)}
-          />
-          {errors.content && <Text className='error-message'>{errors.content}</Text>}
-        </View>
-
-        <View className='input-field'>
-          <Text className='input-label'>图片</Text>
-          <View className='image-upload-area'>
-            <View className='image-list'>
-              {formData.images.map((image, index) => (
-                <View key={index} className='image-item'>
-                  <Image className='uploaded-image' src={image} mode='aspectFill' />
-                  <View className='image-delete' onClick={() => handleRemoveImage(index)}>×</View>
-                </View>
-              ))}
-
-              {formData.images.length < 9 && (
-                <View
-                  className={`image-add ${uploadingImage ? 'disabled' : ''}`}
-                  onClick={uploadingImage ? undefined : handleChooseImage}
-                >
-                  {uploadingImage ? '上传中...' : '+'}
-                </View>
-              )}
-            </View>
-
-            {errors.images && <Text className='error-message'>{errors.images}</Text>}
+        <View className='form-section'>
+          <View className='input-field'>
+            <Text className='input-label'>标题</Text>
+            <Input
+              name='title'
+              type='text'
+              value={formData.title}
+              placeholder='请输入游记标题'
+              onChange={(value) => handleChange('title', value)}
+              error={!!errors.title}
+            />
+            {errors.title && <Text className='error-message'>{errors.title}</Text>}
           </View>
-          <Text className='input-tip'>最多上传9张图片</Text>
-        </View>
 
-        <View className='input-field'>
-          <Text className='input-label'>视频（可选）</Text>
-          {formData.videoUrl ? (
-            <View className='video-container'>
-              <Video src={formData.videoUrl} className='uploaded-video' />
-              <View className='video-delete' onClick={handleRemoveVideo}>×</View>
-            </View>
-          ) : (
-            <Button
-              type='secondary'
-              className='video-upload-btn'
-              onClick={handleChooseVideo}
-              loading={uploadingVideo}
-              disabled={uploadingVideo}
-            >
-              {uploadingVideo ? '上传中...' : '添加视频'}
-            </Button>
-          )}
-          <Text className='input-tip'>视频最长60秒</Text>
-        </View>
+          <View className='input-field'>
+            <Text className='input-label'>内容</Text>
+            <Textarea
+              className='content-textarea'
+              value={formData.content}
+              placeholder='请详细描述您的旅行经历...'
+              onInput={(e) => handleChange('content', e.detail.value)}
+            />
+            {errors.content && <Text className='error-message'>{errors.content}</Text>}
+          </View>
 
-        <View className='input-field'>
-          <Text className='input-label'>位置（可选）</Text>
-          {formData.location ? (
-            <View className='location-container'>
-              <View className='location-info'>
-                <Text className='location-name'>{formData.location.name}</Text>
-                <Text className='location-address'>{formData.location.address}</Text>
+          <View className='input-field'>
+            <Text className='input-label'>图片</Text>
+            <View className='image-upload-area'>
+              <View className='image-list'>
+                {formData.images.map((image, index) => (
+                  <View key={index} className='image-item'>
+                    <Image className='uploaded-image' src={image} mode='aspectFill' />
+                    <View className='image-delete' onClick={() => handleRemoveImage(index)}>×</View>
+                  </View>
+                ))}
+
+                {formData.images.length < 9 && (
+                  <View
+                    className={`image-add ${uploadingImage ? 'disabled' : ''}`}
+                    onClick={uploadingImage ? undefined : handleChooseImage}
+                  >
+                    {uploadingImage ? '上传中...' : '+'}
+                  </View>
+                )}
               </View>
-              <View className='location-delete' onClick={handleRemoveLocation}>×</View>
+
+              {errors.images && <Text className='error-message'>{errors.images}</Text>}
             </View>
-          ) : showLocationInput ? (
-            <View className='manual-location-input'>
-              <Input
-                name='locationName'
-                type='text'
-                value={locationName}
-                placeholder='请输入位置名称，如：北京故宫'
-                onChange={(value) => setLocationName(value)}
-              />
-              <View className='location-buttons'>
-                <Button
-                  type='default'
-                  className='location-btn-cancel'
-                  onClick={() => setShowLocationInput(false)}
-                >
-                  取消
-                </Button>
-                <Button
-                  type='primary'
-                  className='location-btn-save'
-                  onClick={handleSaveLocation}
-                >
-                  确定
-                </Button>
+            <Text className='input-tip'>最多上传9张图片</Text>
+          </View>
+
+          <View className='input-field'>
+            <Text className='input-label'>视频（可选）</Text>
+            {formData.videoUrl ? (
+              <View className='video-container'>
+                <Video src={formData.videoUrl} className='uploaded-video' />
+                <View className='video-delete' onClick={handleRemoveVideo}>×</View>
               </View>
-            </View>
-          ) : (
-            <View className='location-buttons'>
+            ) : (
               <Button
                 type='secondary'
-                className='location-btn'
-                onClick={handleChooseLocation}
-                loading={isSelectingLocation}
-                disabled={isSelectingLocation}
+                className='video-upload-btn'
+                onClick={handleChooseVideo}
+                loading={uploadingVideo}
+                disabled={uploadingVideo}
               >
-                {isSelectingLocation ? '选择中...' : '选择位置'}
+                {uploadingVideo ? '上传中...' : '添加视频'}
               </Button>
-              <Button
-                type='default'
-                className='location-btn-manual'
-                onClick={handleManualLocationInput}
-              >
-                手动输入
-              </Button>
-            </View>
-          )}
-        </View>
-      </View>
+            )}
+            <Text className='input-tip'>视频最长60秒</Text>
+          </View>
 
-      <View className='form-actions'>
-        <View
-          className={`submit-button ${isSubmitting || uploadingImage || uploadingVideo ? 'disabled' : ''}`}
-          onClick={handleSubmit}
-          style={{
-            backgroundColor: theme.primaryColor,
-            boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
-          }}
-        >
-          <Text className='submit-text'>{isSubmitting ? '提交中...' : '提交游记'}</Text>
+          <View className='input-field'>
+            <Text className='input-label'>位置（可选）</Text>
+            {formData.location ? (
+              <View className='location-container'>
+                <View className='location-info'>
+                  <Text className='location-name'>{formData.location.name}</Text>
+                  <Text className='location-address'>{formData.location.address}</Text>
+                </View>
+                <View className='location-delete' onClick={handleRemoveLocation}>×</View>
+              </View>
+            ) : showLocationInput ? (
+              <View className='manual-location-input'>
+                <Input
+                  name='locationName'
+                  type='text'
+                  value={locationName}
+                  placeholder='请输入位置名称，如：北京故宫'
+                  onChange={(value) => setLocationName(value)}
+                />
+                <View className='location-buttons'>
+                  <Button
+                    type='default'
+                    className='location-btn-cancel'
+                    onClick={() => setShowLocationInput(false)}
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    type='primary'
+                    className='location-btn-save'
+                    onClick={handleSaveLocation}
+                  >
+                    确定
+                  </Button>
+                </View>
+              </View>
+            ) : (
+              <View className='location-buttons'>
+                <Button
+                  type='secondary'
+                  className='location-btn'
+                  onClick={handleChooseLocation}
+                  loading={isSelectingLocation}
+                  disabled={isSelectingLocation}
+                >
+                  {isSelectingLocation ? '选择中...' : '选择位置'}
+                </Button>
+                <Button
+                  type='default'
+                  className='location-btn-manual'
+                  onClick={handleManualLocationInput}
+                >
+                  手动输入
+                </Button>
+              </View>
+            )}
+          </View>
+        </View>
+
+        <View className='form-actions'>
+          <View
+            className={`submit-button ${isSubmitting || uploadingImage || uploadingVideo ? 'disabled' : ''}`}
+            onClick={handleSubmit}
+            style={{
+              backgroundColor: theme.primaryColor,
+              boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
+            }}
+          >
+            <Text className='submit-text'>{isSubmitting ? '提交中...' : '提交游记'}</Text>
+          </View>
         </View>
       </View>
     </ScrollView>
