@@ -81,3 +81,10 @@
 .action-button.active .action-text {
   color: var(--primary-color);
 }
+
+// 添加禁用状态的样式
+.action-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

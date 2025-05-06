@@ -19,6 +19,7 @@ interface DiaryDetail {
   isLiked?: boolean; // 当前用户是否点赞
   favorites?: number; // 收藏数
   isFavorited?: boolean; // 当前用户是否已收藏
+  status?: string; // 游记状态：pending(审核中)、approved(已通过)、rejected(已拒绝)
   location?: {
     name?: string;
     address?: string;
@@ -187,6 +188,7 @@ function DiaryDetail() {
                 isLiked: diaryData.isLiked || false,
                 favorites: diaryData.favoriteCount || 0,
                 isFavorited: diaryData.isFavorited || false,
+                status: diaryData.status || 'approved',
                 location: diaryData.location || undefined
               });
 
@@ -227,6 +229,7 @@ function DiaryDetail() {
                   isLiked: false,
                   favorites: 0,
                   isFavorited: false,
+                  status: diaryData.status || 'approved',
                   location: diaryData.location || undefined
                 });
               } else {
@@ -339,9 +342,23 @@ function DiaryDetail() {
     }).exec();
   };
 
+  // 添加一个函数来检查是否是已通过状态
+  const isApproved = (): boolean => {
+    return !diary || diary.status === 'approved' || diary.status === undefined;
+  };
+
   // 处理点赞
   const handleLike = async () => {
     if (!id) return;
+
+    // 检查游记状态，非已通过状态不允许点赞
+    if (!isApproved()) {
+      Taro.showToast({
+        title: '游记审核中，暂时无法点赞',
+        icon: 'none'
+      });
+      return;
+    }
 
     try {
       // 检查登录状态
@@ -413,6 +430,15 @@ function DiaryDetail() {
   const handleCollect = async () => {
     if (!id) {
       console.error('收藏操作 - ID为空');
+      return;
+    }
+
+    // 检查游记状态，非已通过状态不允许收藏
+    if (!isApproved()) {
+      Taro.showToast({
+        title: '游记审核中，暂时无法收藏',
+        icon: 'none'
+      });
       return;
     }
 
@@ -630,6 +656,11 @@ function DiaryDetail() {
           <Text className='author-name'>{diary.authorName}</Text>
         </View>
         <View className='header-right'>
+          {diary.status && diary.status !== 'approved' && (
+            <Text className={`status-tag status-${diary.status}`}>
+              {diary.status === 'pending' ? '审核中' : diary.status === 'rejected' ? '已拒绝' : diary.status}
+            </Text>
+          )}
           {isMyDiary && (
             <Text className='options-icon' onClick={handleDiaryOptions}>⋮</Text>
           )}
@@ -743,6 +774,7 @@ function DiaryDetail() {
         onCollect={handleCollect}
         likesCount={diary.likes}
         favoritesCount={diary.favorites || 0}
+        isApproved={isApproved()}
       />
     </View>
   );

@@ -14,6 +14,7 @@ interface CommentInputProps {
   onShare?: () => void;
   likesCount?: number;
   favoritesCount?: number;
+  isApproved?: boolean;
 }
 
 const CommentInput: React.FC<CommentInputProps> = ({
@@ -24,7 +25,8 @@ const CommentInput: React.FC<CommentInputProps> = ({
   onCollect,
   onShare,
   likesCount = 0,
-  favoritesCount = 0
+  favoritesCount = 0,
+  isApproved = true
 }) => {
   const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
 
@@ -52,27 +54,27 @@ const CommentInput: React.FC<CommentInputProps> = ({
       </View>
       <View className='action-buttons'>
         <View
-          className={`action-button ${liked ? 'active' : ''}`}
-          onClick={onLike}
-          hoverClass='action-button-hover'
+          className={`action-button ${liked ? 'active' : ''} ${!isApproved ? 'disabled' : ''}`}
+          onClick={isApproved ? onLike : undefined}
+          hoverClass={isApproved ? 'action-button-hover' : ''}
         >
           <Text className='action-icon'>{liked ? '❤️' : '🤍'}</Text>
           <Text
             className='action-text'
-            style={liked ? { color: theme.primaryColor } : {}}
+            style={liked && isApproved ? { color: theme.primaryColor } : {}}
           >
             {likesCount}
           </Text>
         </View>
         <View
-          className={`action-button ${collected ? 'active' : ''}`}
-          onClick={onCollect}
-          hoverClass='action-button-hover'
+          className={`action-button ${collected ? 'active' : ''} ${!isApproved ? 'disabled' : ''}`}
+          onClick={isApproved ? onCollect : undefined}
+          hoverClass={isApproved ? 'action-button-hover' : ''}
         >
           <Text className='action-icon'>{collected ? '⭐' : '☆'}</Text>
           <Text
             className='action-text'
-            style={collected ? { color: theme.primaryColor } : {}}
+            style={collected && isApproved ? { color: theme.primaryColor } : {}}
           >
             {favoritesCount}
           </Text>
