@@ -106,12 +106,15 @@ function Index() {
     if (activeTab === 'discover') {
       fetchDiaries();
     } else if (activeTab === 'nearby') {
-      // 如果还没有位置信息，重新尝试获取
       if (!currentLocation && !locationRequested) {
+        // 如果还没有位置信息，初始化位置和附近游记
         initLocationAndNearbyDiaries();
-      } else if (nearbyDiaries.length === 0 && !nearbyLoading) {
-        // 如果有位置但没有数据，尝试重新加载
+      } else if (nearbyDiaries.length === 0) {
+        // 如果有位置但没有数据，加载附近游记
         fetchNearbyDiaries();
+      } else {
+        // 如果已有数据，静默刷新检查是否有更新
+        refreshNearbyDiaries();
       }
     }
 
@@ -302,9 +305,112 @@ function Index() {
     if (tab === activeTab) return;
 
     setActiveTab(tab);
-    if (tab === 'nearby' && (nearbyDiaries.length === 0 || !currentLocation)) {
-      fetchNearbyDiaries();
+    if (tab === 'nearby') {
+      refreshNearbyDiaries();
     }
+  };
+
+  // 刷新附近游记数据，静默获取并只在有变化时才更新UI
+  const refreshNearbyDiaries = async () => {
+    try {
+      // 获取位置但不显示loading
+      const location = currentLocation || await getCurrentLocation(false);
+
+      if (!location) {
+        // 如果没有位置信息，则使用标准方法获取（会显示loading）
+        fetchNearbyDiaries();
+        return;
+      }
+
+      // 使用当前位置静默获取新数据
+      const res = await api.diary.getNearby(
+        location.latitude,
+        location.longitude,
+        page,
+        10
+      );
+
+      if (res.success && res.data) {
+        // 转换API返回的数据为组件需要的格式
+        const formattedNewDiaries = res.data.items.map(item => {
+          // 格式化距离显示
+          let distanceText = '';
+          if (item.distance !== undefined) {
+            if (item.distance < 1000) {
+              distanceText = `${Math.round(item.distance)}米`;
+            } else {
+              distanceText = `${(item.distance / 1000).toFixed(1)}公里`;
+            }
+          }
+
+          return {
+            id: item._id,
+            title: item.title || '无标题',
+            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            authorName: item.author?.nickname || '未知用户',
+            authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
+            likeCount: item.likeCount || 0,
+            createdAt: item.createdAt || '',
+            location: item.location,
+            distance: item.distance,
+            distanceText: item.distanceText || distanceText
+          };
+        });
+
+        // 检查新数据与旧数据是否相同
+        const hasChanged = hasDataChanged(nearbyDiaries, formattedNewDiaries);
+
+        if (hasChanged) {
+          // 只有数据变化时才更新UI
+          setNearbyDiaries(formattedNewDiaries);
+          setTotalPages(res.data.totalPages || 1);
+
+          // 显示提示，告知用户数据已更新
+          Taro.showToast({
+            title: '发现新游记，已更新',
+            icon: 'success',
+            duration: 1500
+          });
+        }
+      }
+    } catch (error) {
+      console.error('静默刷新附近游记失败:', error);
+      // 静默刷新失败不提示用户，如有必要可以调用标准获取方法
+      if (nearbyDiaries.length === 0) {
+        fetchNearbyDiaries();
+      }
+    }
+  };
+
+  // 比较两组数据是否有变化
+  const hasDataChanged = (oldData: DiaryItem[], newData: DiaryItem[]): boolean => {
+    // 如果长度不同，数据肯定变化了
+    if (oldData.length !== newData.length) return true;
+
+    // 创建一个旧数据ID的集合，用于快速查找
+    const oldIds = new Set(oldData.map(item => item.id));
+
+    // 检查是否有新的ID不在旧数据中
+    for (const item of newData) {
+      if (!oldIds.has(item.id)) return true;
+    }
+
+    // 进一步检查内容是否变化（如点赞数等）
+    // 为简化实现，这里只比较几个关键字段
+    for (let i = 0; i < newData.length; i++) {
+      const newItem = newData[i];
+      const oldItem = oldData.find(item => item.id === newItem.id);
+
+      if (oldItem && (
+          oldItem.likeCount !== newItem.likeCount ||
+          oldItem.distance !== newItem.distance ||
+          oldItem.title !== newItem.title
+      )) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   // 点击搜索图标
