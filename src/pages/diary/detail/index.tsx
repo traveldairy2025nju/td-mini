@@ -704,14 +704,19 @@ function DiaryDetail() {
           <Text className='diary-title'>{diary.title}</Text>
           <Text className='content-text'>{diary.content}</Text>
 
-          <View className='diary-date'>
-            <Text>{formatDate(diary.createdAt)}</Text>
-            {diary.location && diary.location.name && (
+          <View className='diary-meta'>
+            {diary.location && (
               <View className='diary-location'>
                 <Text className='location-icon'>📍</Text>
-                <Text className='location-text'>{diary.location.name}</Text>
+                <View className='location-info'>
+                  <Text className='location-name'>{diary.location.name}</Text>
+                  {diary.location.address && (
+                    <Text className='location-address'>{diary.location.address.length > 30 ? `${diary.location.address.substring(0, 30)}...` : diary.location.address}</Text>
+                  )}
+                </View>
               </View>
             )}
+            <Text className='diary-date'>{formatDate(diary.createdAt)}</Text>
           </View>
         </View>
 

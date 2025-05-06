@@ -15,6 +15,12 @@ interface FormData {
   content: string;
   images: string[];
   videoUrl: string;
+  location?: {
+    name?: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+  };
 }
 
 // 表单错误类型
@@ -23,6 +29,13 @@ interface FormErrors {
   content?: string;
   images?: string;
   videoUrl?: string;
+}
+
+interface LocationData {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
 }
 
 function EditDiary() {
@@ -41,6 +54,9 @@ function EditDiary() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSelectingLocation, setIsSelectingLocation] = useState(false);
+  const [showLocationInput, setShowLocationInput] = useState(false);
+  const [locationName, setLocationName] = useState('');
 
   useEffect(() => {
     if (diaryId) {
@@ -61,14 +77,15 @@ function EditDiary() {
     try {
       setLoading(true);
       const res = await api.diary.getDetail(id);
-      
+
       if (res.success && res.data) {
         const diaryData = res.data;
         setFormData({
           title: diaryData.title || '',
           content: diaryData.content || '',
           images: Array.isArray(diaryData.images) ? diaryData.images : [],
-          videoUrl: diaryData.video || diaryData.videoUrl || ''
+          videoUrl: diaryData.video || diaryData.videoUrl || '',
+          location: diaryData.location
         });
       } else {
         throw new Error(res.message || '获取游记详情失败');
@@ -167,7 +184,7 @@ function EditDiary() {
             videoUrl: uploadedUrl
           }));
         }
-        
+
         setUploadingVideo(false);
       }
     } catch (error) {
@@ -190,6 +207,95 @@ function EditDiary() {
       ...prev,
       videoUrl: ''
     }));
+  };
+
+  // 选择位置
+  const handleChooseLocation = async () => {
+    try {
+      setIsSelectingLocation(true);
+
+      // 调用位置选择API
+      const locationData = await api.location.chooseLocation() as LocationData | null;
+
+      if (locationData) {
+        console.log('选择的位置信息:', locationData);
+
+        setFormData(prev => ({
+          ...prev,
+          location: {
+            name: locationData.name,
+            address: locationData.address,
+            latitude: locationData.latitude,
+            longitude: locationData.longitude
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('选择位置失败', error);
+      // 如果是API权限错误，提示用户手动输入
+      if (error.errMsg && error.errMsg.includes('api need to be declared')) {
+        Taro.showModal({
+          title: '位置选择不可用',
+          content: '因权限限制，无法使用位置选择功能。您可以尝试手动输入位置。',
+          confirmText: '手动输入',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              handleManualLocationInput();
+            }
+          }
+        });
+      } else {
+        Taro.showToast({
+          title: '选择位置失败，请尝试手动输入',
+          icon: 'none'
+        });
+        // 延迟一下再显示手动输入界面
+        setTimeout(() => {
+          handleManualLocationInput();
+        }, 1500);
+      }
+    } finally {
+      setIsSelectingLocation(false);
+    }
+  };
+
+  // 手动输入位置
+  const handleManualLocationInput = () => {
+    setShowLocationInput(true);
+    if (formData.location?.name) {
+      setLocationName(formData.location.name);
+    }
+  };
+
+  // 保存手动输入的位置
+  const handleSaveLocation = () => {
+    if (locationName.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          name: locationName,
+          address: '',
+          latitude: 0,
+          longitude: 0
+        }
+      }));
+      setShowLocationInput(false);
+    } else {
+      Taro.showToast({
+        title: '请输入位置名称',
+        icon: 'none'
+      });
+    }
+  };
+
+  // 移除位置
+  const handleRemoveLocation = () => {
+    setFormData(prev => {
+      const newData = { ...prev };
+      delete (newData as any).location;
+      return newData;
+    });
   };
 
   // 验证表单
@@ -225,12 +331,13 @@ function EditDiary() {
       };
 
       // 如果videoUrl为空字符串，则不提交这个字段
-      if (!submitData.videoUrl) {
-        delete submitData.videoUrl;
+      const dataToSubmit = { ...submitData };
+      if (!dataToSubmit.videoUrl) {
+        delete (dataToSubmit as any).videoUrl;
       }
 
       // 验证videoUrl格式
-      if (submitData.videoUrl && !submitData.videoUrl.match(/^https?:\/\/.+\..+/)) {
+      if (dataToSubmit.videoUrl && !dataToSubmit.videoUrl.match(/^https?:\/\/.+\..+/)) {
         Taro.showToast({
           title: '视频URL格式不正确',
           icon: 'none'
@@ -238,9 +345,8 @@ function EditDiary() {
         return;
       }
 
-      console.log('更新的游记数据:', submitData);
-
-      const result = await api.diary.update(diaryId, submitData);
+      console.log('更新的游记数据:', dataToSubmit);
+      const result = await api.diary.update(diaryId, dataToSubmit);
 
       if (result.success) {
         Taro.showToast({
@@ -296,7 +402,7 @@ function EditDiary() {
     <ScrollView className='edit-diary-container' scrollY>
       {/* 隐藏的Canvas用于处理图标 */}
       <Canvas canvasId={`iconCanvas_${Date.now()}`} style={{ position: 'absolute', left: '-9999px', width: '100px', height: '100px' }} />
-      
+
       <View className='form-title'>编辑旅行日记</View>
 
       <View className='form-section'>
@@ -329,25 +435,25 @@ function EditDiary() {
           <View className='image-preview-container'>
             {formData.images.map((url, index) => (
               <View key={`img-${index}`} className='image-preview-wrapper'>
-                <Image 
-                  className='image-preview' 
-                  src={url} 
-                  mode='aspectFill' 
+                <Image
+                  className='image-preview'
+                  src={url}
+                  mode='aspectFill'
                 />
-                <View 
-                  className='image-remove-btn' 
+                <View
+                  className='image-remove-btn'
                   onClick={() => handleRemoveImage(index)}
                 >×</View>
               </View>
             ))}
-            
+
             {formData.images.length < 9 && (
-              <View 
-                className='add-image-btn' 
+              <View
+                className='add-image-btn'
                 onClick={handleChooseImage}
               >
-                {uploadingImage ? 
-                  <Text className='uploading-text'>上传中...</Text> : 
+                {uploadingImage ?
+                  <Text className='uploading-text'>上传中...</Text> :
                   <Text className='add-icon'>+</Text>
                 }
               </View>
@@ -368,23 +474,81 @@ function EditDiary() {
                 showPlayBtn={true}
                 objectFit='contain'
               />
-              <View 
-                className='video-remove-btn' 
+              <View
+                className='video-remove-btn'
                 onClick={handleRemoveVideo}
               >×</View>
             </View>
           ) : (
-            <View 
-              className='add-video-btn' 
+            <View
+              className='add-video-btn'
               onClick={handleChooseVideo}
             >
-              {uploadingVideo ? 
-                <Text className='uploading-text'>上传中...</Text> : 
+              {uploadingVideo ?
+                <Text className='uploading-text'>上传中...</Text> :
                 <>
                   <Text className='add-icon'>+</Text>
                   <Text className='add-video-text'>添加视频</Text>
                 </>
               }
+            </View>
+          )}
+        </View>
+
+        <View className='input-field'>
+          <Text className='input-label'>位置（可选）</Text>
+          {formData.location ? (
+            <View className='location-container'>
+              <View className='location-info'>
+                <Text className='location-name'>{formData.location.name}</Text>
+                <Text className='location-address'>{formData.location.address}</Text>
+              </View>
+              <View className='location-delete' onClick={handleRemoveLocation}>×</View>
+            </View>
+          ) : showLocationInput ? (
+            <View className='manual-location-input'>
+              <Input
+                name='locationName'
+                type='text'
+                value={locationName}
+                placeholder='请输入位置名称，如：北京故宫'
+                onChange={(value) => setLocationName(value)}
+              />
+              <View className='location-buttons'>
+                <Button
+                  type='default'
+                  className='location-btn-cancel'
+                  onClick={() => setShowLocationInput(false)}
+                >
+                  取消
+                </Button>
+                <Button
+                  type='primary'
+                  className='location-btn-save'
+                  onClick={handleSaveLocation}
+                >
+                  确定
+                </Button>
+              </View>
+            </View>
+          ) : (
+            <View className='location-buttons'>
+              <Button
+                type='secondary'
+                className='location-btn'
+                onClick={handleChooseLocation}
+                loading={isSelectingLocation}
+                disabled={isSelectingLocation}
+              >
+                {isSelectingLocation ? '选择中...' : '选择位置'}
+              </Button>
+              <Button
+                type='default'
+                className='location-btn-manual'
+                onClick={handleManualLocationInput}
+              >
+                手动输入
+              </Button>
             </View>
           )}
         </View>
@@ -406,4 +570,4 @@ function EditDiary() {
   );
 }
 
-export default EditDiary; 
+export default EditDiary;
