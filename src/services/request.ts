@@ -10,7 +10,7 @@ try {
     LOCAL_CONFIG = localConfig;
   }
 } catch (e) {
-  console.log('没有找到本地环境配置，使用默认配置');
+  // 没有找到本地环境配置，使用默认配置
 }
 
 // 优先使用本地配置，如果没有则使用环境配置
@@ -24,21 +24,15 @@ function interceptor(chain) {
 
   // 添加token到请求头
   if (token) {
-    console.log(`请求拦截器: 为请求 ${url} 添加token`);
     requestParams.header = {
       ...requestParams.header,
       Authorization: `Bearer ${token}`
     };
-  } else {
-    console.log(`请求拦截器: 请求 ${url} 没有token`);
   }
 
   return chain.proceed(requestParams).then(res => {
-    console.log(`响应拦截器: ${url} 返回状态码 ${res.statusCode}`);
-
     // 处理响应结果
     if (res.statusCode === 401) {
-      console.log('响应拦截器: 收到401未授权错误，清除token和用户信息');
       // token失效，需要重新登录
       Taro.removeStorageSync('token');
       Taro.removeStorageSync('userInfo');
@@ -49,8 +43,6 @@ function interceptor(chain) {
       const isLoginPage = currentPage && currentPage.route && currentPage.route.includes('login');
 
       if (!isLoginPage) {
-        console.log('响应拦截器: 跳转到登录页面');
-
         // 显示提示并延迟跳转
         Taro.showToast({
           title: '登录已过期，请重新登录',
@@ -83,8 +75,6 @@ Taro.addInterceptor(interceptor);
 // 封装请求方法
 export const request = (options) => {
   const url = `${BASE_URL}${options.url}`;
-  console.log(`发起请求: ${options.method || 'GET'} ${url}`);
-  console.log('请求参数:', JSON.stringify(options.data));
 
   return Taro.request({
     url,
@@ -96,17 +86,14 @@ export const request = (options) => {
     }
   }).then(res => {
     const { statusCode, data } = res;
-    console.log(`请求完成: ${url} 状态码 ${statusCode}`, '响应数据:', JSON.stringify(data));
 
     if (statusCode >= 200 && statusCode < 300) {
       // 处理登录响应，保存token
       if (options.url.includes('/login') && data.success && data.data && data.data.token) {
-        console.log('登录成功，保存token');
         Taro.setStorageSync('token', data.data.token);
 
         // 保存用户信息
         if (data.data.user) {
-          console.log('保存用户信息');
           Taro.setStorageSync('userInfo', data.data.user);
         }
       }
@@ -114,17 +101,9 @@ export const request = (options) => {
       return data;
     } else {
       const errorMsg = data.message || '请求失败';
-      console.error(`请求错误: ${url} - 状态码 ${statusCode} - ${errorMsg}`, '完整响应:', JSON.stringify(data));
       throw new Error(errorMsg);
     }
   }).catch(error => {
-    console.error(`请求异常: ${url}`, error);
-
-    // 如果是网络错误，提供更详细的信息
-    if (error.errMsg) {
-      console.error('网络错误详情:', error.errMsg);
-    }
-
     throw error;
   });
 };

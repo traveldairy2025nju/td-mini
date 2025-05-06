@@ -1,12 +1,22 @@
-import { View, Text, Image } from '@tarojs/components';
+import { View, Text, Image, Button } from '@tarojs/components';
 import { useEffect, useState } from 'react';
 import Taro, { useDidShow } from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import { checkLogin } from '../../utils/auth';
 import api from '../../services/api';
 import WaterfallFlow from '../../components/WaterfallFlow';
-import Button from '../../components/taro-ui/Button';
+import { getThemeColors, ThemeColors } from '../../utils/themeManager';
+import { lightenColor } from '../../utils/colorUtils';
 import './index.scss';
+
+// SVG图标定义
+const SETTINGS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`;
+
+// 生成SVG的data URL
+const getSvgDataUrl = (svgContent: string, color: string) => {
+  const encodedSvg = encodeURIComponent(svgContent.replace('currentColor', color));
+  return `data:image/svg+xml,${encodedSvg}`;
+};
 
 // 游记项目类型
 interface DiaryItem {
@@ -28,6 +38,9 @@ function My() {
     isLoading,
     updateProfile
   } = useUserStore();
+
+  // 添加当前主题状态
+  const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
 
   // 活动标签状态
   const [activeTab, setActiveTab] = useState<'diaries' | 'favorites'>('diaries');
@@ -72,9 +85,16 @@ function My() {
     // 注册事件
     Taro.eventCenter.on('refreshMyPage', refreshHandler);
 
+    // 监听主题变化事件
+    const themeChangeHandler = (newTheme: ThemeColors) => {
+      setTheme(newTheme);
+    };
+    Taro.eventCenter.on('themeChange', themeChangeHandler);
+
     // 清理函数
     return () => {
       Taro.eventCenter.off('refreshMyPage', refreshHandler);
+      Taro.eventCenter.off('themeChange', themeChangeHandler);
     };
   }, [activeTab]);
 
@@ -270,7 +290,13 @@ function My() {
   // 渲染个人信息部分
   const renderProfileSection = () => (
     <View className='my-profile-section'>
-      <View className='my-header'>
+      <View 
+        className='my-header'
+        style={{
+          background: `linear-gradient(135deg, ${lightenColor(theme.primaryColor, 0.6)} 0%, ${theme.primaryColor} 100%)`,
+          boxShadow: `0 4px 12px ${theme.primaryColor}4d`
+        }}
+      >
         <View className='my-avatar-wrapper' onClick={handleUpdateAvatar}>
           <Image
             className='my-avatar'
@@ -286,7 +312,10 @@ function My() {
           <Text className='my-username'>@{userInfo?.username || ''}</Text>
         </View>
         <View className='settings-icon' onClick={goToSettings}>
-          <Text className='iconfont icon-settings'></Text>
+          <Image 
+            src={require('../../assets/icons/settings.svg')}
+            style={{ width: '32px', height: '32px' }}
+          />
         </View>
       </View>
     </View>
@@ -298,24 +327,28 @@ function My() {
       <Text
         className={`status-filter-item ${statusFilter === 'all' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('all')}
+        style={statusFilter === 'all' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         全部
       </Text>
       <Text
         className={`status-filter-item ${statusFilter === 'pending' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('pending')}
+        style={statusFilter === 'pending' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         待审核
       </Text>
       <Text
         className={`status-filter-item ${statusFilter === 'approved' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('approved')}
+        style={statusFilter === 'approved' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         已通过
       </Text>
       <Text
         className={`status-filter-item ${statusFilter === 'rejected' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('rejected')}
+        style={statusFilter === 'rejected' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         已拒绝
       </Text>
@@ -329,15 +362,15 @@ function My() {
         className={`tab-item ${activeTab === 'diaries' ? 'active' : ''}`}
         onClick={() => setActiveTab('diaries')}
       >
-        <Text>我的游记</Text>
-        {activeTab === 'diaries' && <View className='tab-line'></View>}
+        <Text style={activeTab === 'diaries' ? { color: theme.primaryColor } : {}}>我的游记</Text>
+        {activeTab === 'diaries' && <View className='tab-line' style={{ backgroundColor: theme.primaryColor }}></View>}
       </View>
       <View
         className={`tab-item ${activeTab === 'favorites' ? 'active' : ''}`}
         onClick={() => setActiveTab('favorites')}
       >
-        <Text>我的收藏</Text>
-        {activeTab === 'favorites' && <View className='tab-line'></View>}
+        <Text style={activeTab === 'favorites' ? { color: theme.primaryColor } : {}}>我的收藏</Text>
+        {activeTab === 'favorites' && <View className='tab-line' style={{ backgroundColor: theme.primaryColor }}></View>}
       </View>
     </View>
   );

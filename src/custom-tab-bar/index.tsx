@@ -1,64 +1,45 @@
-import { View, Image, Canvas } from '@tarojs/components';
+import { View, Image } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { isLoggedIn } from '../utils/auth';
 import { getThemeColors } from '../utils/themeManager';
-import { getPngIconWithColor } from '../utils/iconHelper';
 import './index.scss';
+
+// SVG图标内容
+const HOME_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
+
+const USER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+
+const PLUS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
 
 interface TabItem {
   pagePath: string;
   text: string;
-  iconPath: string;
-  selectedIconPath: string;
+  icon: string;
 }
 
 export default function CustomTabBar() {
   const [selected, setSelected] = useState(0);
   const [theme, setTheme] = useState(getThemeColors());
-  const [homeIcon, setHomeIcon] = useState('../assets/icons/home.png');
-  const [homeActiveIcon, setHomeActiveIcon] = useState('../assets/icons/home-active.png');
-  const [userIcon, setUserIcon] = useState('../assets/icons/user.png');
-  const [userActiveIcon, setUserActiveIcon] = useState('../assets/icons/user-active.png');
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [tabList] = useState<TabItem[]>([
     {
       pagePath: 'pages/index/index',
       text: '首页',
-      iconPath: '../assets/icons/home.png',
-      selectedIconPath: '../assets/icons/home-active.png'
+      icon: HOME_ICON
     },
     {
       pagePath: 'pages/my/index',
       text: '我的',
-      iconPath: '../assets/icons/user.png',
-      selectedIconPath: '../assets/icons/user-active.png'
+      icon: USER_ICON
     }
   ]);
 
-  // 处理图标颜色
-  useEffect(() => {
-    const updateIcons = async () => {
-      try {
-        // 处理普通图标
-        const homeIconColored = await getPngIconWithColor(tabList[0].iconPath, theme.primaryColor);
-        const userIconColored = await getPngIconWithColor(tabList[1].iconPath, theme.primaryColor);
-        setHomeIcon(homeIconColored);
-        setUserIcon(userIconColored);
-        
-        // 处理激活图标
-        const homeActiveIconColored = await getPngIconWithColor(tabList[0].selectedIconPath, theme.primaryColor);
-        const userActiveIconColored = await getPngIconWithColor(tabList[1].selectedIconPath, theme.primaryColor);
-        setHomeActiveIcon(homeActiveIconColored);
-        setUserActiveIcon(userActiveIconColored);
-      } catch (e) {
-        console.error('处理图标颜色失败', e);
-      }
-    };
-    
-    updateIcons();
-  }, [theme]);
+  // 生成SVG的data URL
+  const getSvgDataUrl = (svgContent: string, color: string) => {
+    const encodedSvg = encodeURIComponent(svgContent.replace('currentColor', color));
+    return `data:image/svg+xml,${encodedSvg}`;
+  };
 
   // 监听主题变化
   useEffect(() => {
@@ -75,13 +56,8 @@ export default function CustomTabBar() {
 
   // 组件挂载时添加路由事件监听
   useEffect(() => {
-    // 监听页面显示事件
     Taro.eventCenter.on('tabIndexChange', handleTabIndexChange);
-
-    // 初始化时执行一次
     updateSelectedTab();
-
-    // 组件卸载时移除事件监听
     return () => {
       Taro.eventCenter.off('tabIndexChange', handleTabIndexChange);
     };
@@ -104,37 +80,23 @@ export default function CustomTabBar() {
     const currentPage = Taro.getCurrentInstance();
     const path = currentPage.router?.path || '';
 
-    console.log('TabBar - 当前路径:', path);
-
-    // 根据路径精确匹配
     if (path === 'pages/index/index') {
-      console.log('TabBar - 激活首页tab');
       setSelected(0);
     } else if (path === 'pages/my/index') {
-      console.log('TabBar - 激活我的tab');
       setSelected(1);
     } else {
-      // 如果不是精确匹配，尝试模糊匹配
       if (path.includes('/pages/index')) {
-        console.log('TabBar - 模糊匹配激活首页tab');
         setSelected(0);
       } else if (path.includes('/pages/my')) {
-        console.log('TabBar - 模糊匹配激活我的tab');
         setSelected(1);
-      } else {
-        console.log('TabBar - 未匹配到主页面路径');
       }
     }
   };
 
   // 处理TabBar点击
   const switchTab = (index: number, path: string) => {
-    // 触发全局事件，通知索引变化
     Taro.eventCenter.trigger('tabIndexChange', index);
-
-    // 先设置选中状态，再切换页面
     setSelected(index);
-    console.log('TabBar - 点击Tab切换到:', index, path);
     Taro.switchTab({ url: `/${path}` });
   };
 
@@ -164,7 +126,7 @@ export default function CustomTabBar() {
       <View className='tab-bar-item' onClick={() => switchTab(0, tabList[0].pagePath)}>
         <Image
           className='tab-bar-icon'
-          src={selected === 0 ? homeActiveIcon : homeIcon}
+          src={getSvgDataUrl(tabList[0].icon, selected === 0 ? theme.primaryColor : '#999999')}
         />
         <View 
           className={`tab-bar-text ${selected === 0 ? 'selected' : ''}`} 
@@ -176,14 +138,17 @@ export default function CustomTabBar() {
 
       <View className='tab-bar-plus-container' onClick={handleCreateDiary}>
         <View className='tab-bar-plus-button' style={{ background: theme.secondaryColor }}>
-          <Image className='tab-bar-plus-icon' src='../assets/icons/plus.png' />
+          <Image 
+            className='tab-bar-plus-icon' 
+            src={getSvgDataUrl(PLUS_ICON, '#ffffff')}
+          />
         </View>
       </View>
 
       <View className='tab-bar-item' onClick={() => switchTab(1, tabList[1].pagePath)}>
         <Image
           className='tab-bar-icon'
-          src={selected === 1 ? userActiveIcon : userIcon}
+          src={getSvgDataUrl(tabList[1].icon, selected === 1 ? theme.primaryColor : '#999999')}
         />
         <View 
           className={`tab-bar-text ${selected === 1 ? 'selected' : ''}`}
@@ -192,9 +157,6 @@ export default function CustomTabBar() {
           {tabList[1].text}
         </View>
       </View>
-      
-      {/* 隐藏的Canvas用于处理图标 */}
-      <Canvas canvasId={`iconCanvas_${Date.now()}`} style={{ position: 'absolute', left: '-9999px', width: '100px', height: '100px' }} />
     </View>
   );
 }

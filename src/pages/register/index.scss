@@ -1,6 +1,6 @@
 .register-container {
   padding: 0;
-  background: linear-gradient(135deg, #6ec6ff 0%, #1296db 100%);
+  background: linear-gradient(135deg, var(--primary-light-color) 0%, var(--primary-color) 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -59,7 +59,7 @@
   overflow: hidden;
   margin: 0 auto 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border: 2px dashed #1296db;
+  border: 2px dashed var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,13 +77,13 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-color: rgba(18, 150, 219, 0.1);
+  background-color: var(--primary-light);
 }
 
 .avatar-upload__text {
   margin-top: 10px;
   font-size: 24px;
-  color: #1296db;
+  color: var(--primary-color);
 }
 
 .icon-camera:before {
@@ -117,7 +117,7 @@
 
 .input-icon .iconfont {
   font-size: 36px;
-  color: #1296db;
+  color: var(--primary-color);
 }
 
 /* 假设我们没有实际的图标字体，用这些伪元素代替 */
@@ -167,8 +167,8 @@
   font-size: 32px;
   font-weight: bold;
   letter-spacing: 2px;
-  background: linear-gradient(90deg, #1296db 0%, #0f85c6 100%);
-  box-shadow: 0 8px 16px rgba(18, 150, 219, 0.3);
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  box-shadow: 0 8px 16px var(--primary-shadow);
   border: none;
 }
 
@@ -184,7 +184,7 @@
 
 .register-login-link {
   font-size: 28px;
-  color: #1296db;
+  color: var(--primary-color);
   position: relative;
   display: inline-block;
 }
@@ -196,7 +196,7 @@
   left: 0;
   width: 100%;
   height: 1px;
-  background-color: #1296db;
+  background-color: var(--primary-color);
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }

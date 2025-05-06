@@ -5,9 +5,23 @@ import api from '../../services/api';
 import { Comment, CommentAction, CommentSectionProps } from './interfaces';
 import './index.scss';
 import CommentInput from './CommentInput';
+import { ThemeColors, getThemeColors } from '../../utils/themeManager';
 
 // 默认头像
 const DEFAULT_AVATAR = 'https://api.dicebear.com/6.x/initials/svg?seed=TD';
+
+// 辅助函数: 颜色转rgba
+const hexToRgba = (hex: string, alpha: number): string => {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 转为RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 const CommentSection: React.FC<CommentSectionProps> = ({
   diaryId,
@@ -22,6 +36,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const [totalComments, setTotalComments] = useState(0);
+  const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
 
   // 评论弹窗相关状态
   const [commentModalVisible, setCommentModalVisible] = useState(false);
@@ -32,6 +47,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     if (diaryId) {
       fetchComments(diaryId);
     }
+    
+    // 监听主题变化事件
+    const themeChangeHandler = (newTheme: ThemeColors) => {
+      setTheme(newTheme);
+    };
+    Taro.eventCenter.on('themeChange', themeChangeHandler);
+    
+    // 清理函数
+    return () => {
+      Taro.eventCenter.off('themeChange', themeChangeHandler);
+    };
   }, [diaryId]);
 
   // 添加事件监听器以响应外部评论弹窗请求
@@ -441,7 +467,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                   <Text className='reply-date'>{formatDate(reply.createdAt)}</Text>
                 </View>
                 <Text className='reply-text'>
-                  回复 {parentComment.user?.nickname || '用户'}：{reply.content}
+                  回复 <Text style={{ color: theme.primaryColor }}>{parentComment.user?.nickname || '用户'}</Text>：{reply.content}
                 </Text>
               </View>
             </View>
@@ -529,22 +555,34 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               <Text className='comment-modal-title'>
                 {replyToComment ? `回复 ${replyToComment.user?.nickname || '用户'}` : '发表评论'}
               </Text>
-              <Text className='comment-modal-close' onClick={closeCommentModal}>关闭</Text>
             </View>
             <View className='comment-modal-body'>
               <Input
                 className='comment-modal-input'
+                type='text'
+                placeholder='写下你的评论...'
                 value={commentText}
                 onInput={e => setCommentText(e.detail.value)}
-                placeholder='写下你的评论...'
-                focus
-                confirmType='send'
-                onConfirm={submitComment}
+                style={{ borderColor: commentText ? theme.primaryColor : '#eaeaea' }}
               />
             </View>
             <View className='comment-modal-footer'>
-              <View className='comment-modal-btn' onClick={closeCommentModal}>取消</View>
-              <View className='comment-modal-btn primary' onClick={submitComment}>发布</View>
+              <View 
+                className='comment-modal-btn cancel'
+                onClick={closeCommentModal}
+              >
+                取消
+              </View>
+              <View 
+                className='comment-modal-btn primary'
+                onClick={submitComment}
+                style={{
+                  backgroundColor: theme.primaryColor,
+                  boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
+                }}
+              >
+                发布
+              </View>
             </View>
           </View>
         </View>
