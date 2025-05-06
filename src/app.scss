@@ -27,12 +27,29 @@ page {
 }
 
 /* 修复在微信小程序上一些常见的样式问题 */
-.at-button--primary {
-  background-color: var(--primary-color) !important;
-}
+page .at-button {
+  position: relative;
+  
+  &--primary {
+    background: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
+    color: #fff !important;
 
-.at-button--primary::after {
-  border: none !important;
+    &::after {
+      border: none !important;
+    }
+
+    &.at-button--disabled {
+      opacity: 0.6;
+      background: var(--primary-color) !important;
+    }
+  }
+
+  &--secondary {
+    background: #fff !important;
+    border: 1px solid #dcdfe6 !important;
+    color: #606266 !important;
+  }
 }
 
 /* 确保图标能够显示 */
@@ -76,8 +93,8 @@ input {
 .input-icon {
   position: absolute !important;
   left: 20px !important;
-  top: 50% !important; /* 将固定高度改为50% */
-  transform: translateY(-30%) !important; /* 修改偏移量，使图标向下移动 */
+  top: 50% !important;
+  transform: translateY(-30%) !important;
   width: 36px !important;
   height: 36px !important;
   display: flex !important;

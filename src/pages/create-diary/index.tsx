@@ -1,9 +1,12 @@
-import { View, Text, Textarea, ScrollView, Image, Video } from '@tarojs/components';
+import { View, Text, ScrollView, Image, Video } from '@tarojs/components';
 import { useState } from 'react';
 import Taro from '@tarojs/taro';
 import Button from '../../components/taro-ui/Button';
 import Input from '../../components/taro-ui/Input';
+import Textarea from '../../components/taro-ui/Textarea';
 import api from '../../services/api';
+import { getThemeColors } from '../../utils/themeManager';
+import { hexToRgba } from '../../utils/colorUtils';
 import './index.scss';
 
 interface FormData {
@@ -20,6 +23,7 @@ interface FormErrors {
 }
 
 function CreateDiary() {
+  const theme = getThemeColors();
   const [formData, setFormData] = useState<FormData>({
     title: '',
     content: '',
@@ -347,15 +351,16 @@ function CreateDiary() {
       </View>
 
       <View className='form-actions'>
-        <Button
-          type='primary'
-          className='submit-button'
+        <View
+          className={`submit-button ${isSubmitting || uploadingImage || uploadingVideo ? 'disabled' : ''}`}
           onClick={handleSubmit}
-          loading={isSubmitting}
-          disabled={isSubmitting || uploadingImage || uploadingVideo}
+          style={{
+            backgroundColor: theme.primaryColor,
+            boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
+          }}
         >
-          {isSubmitting ? '提交中...' : '提交游记'}
-        </Button>
+          <Text className='submit-text'>{isSubmitting ? '提交中...' : '提交游记'}</Text>
+        </View>
       </View>
     </ScrollView>
   );

@@ -1,9 +1,12 @@
-import { View, Text, Image, ScrollView, Canvas, Textarea, Video } from '@tarojs/components';
+import { View, Text, Image, ScrollView, Canvas, Video } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro, { useRouter } from '@tarojs/taro';
 import api from '../../services/api';
 import Input from '../../components/taro-ui/Input';
 import Button from '../../components/taro-ui/Button';
+import Textarea from '../../components/taro-ui/Textarea';
+import { getThemeColors } from '../../utils/themeManager';
+import { hexToRgba } from '../../utils/colorUtils';
 import './index.scss';
 
 // 表单数据类型
@@ -23,6 +26,7 @@ interface FormErrors {
 }
 
 function EditDiary() {
+  const theme = getThemeColors();
   const router = useRouter();
   const diaryId = router?.params?.id;
 
@@ -387,15 +391,16 @@ function EditDiary() {
       </View>
 
       <View className='form-actions'>
-        <Button
-          type='primary'
-          className='submit-button'
+        <View
+          className={`submit-button ${isSubmitting || uploadingImage || uploadingVideo ? 'disabled' : ''}`}
           onClick={handleSubmit}
-          loading={isSubmitting}
-          disabled={isSubmitting || uploadingImage || uploadingVideo}
+          style={{
+            backgroundColor: theme.primaryColor,
+            boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
+          }}
         >
-          {isSubmitting ? '提交中...' : '保存修改'}
-        </Button>
+          <Text className='submit-text'>{isSubmitting ? '提交中...' : '保存修改'}</Text>
+        </View>
       </View>
     </ScrollView>
   );

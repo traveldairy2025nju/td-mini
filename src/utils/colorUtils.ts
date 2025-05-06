@@ -20,4 +20,23 @@ export function lightenColor(hex: string, amount: number): string {
   
   // 转回hex
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+/**
+ * 将十六进制颜色转换为RGBA颜色
+ * @param hex 十六进制颜色值
+ * @param alpha 透明度（0-1）
+ * @returns RGBA颜色字符串
+ */
+export function hexToRgba(hex: string, alpha: number): string {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 转为RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // 返回rgba格式
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 } 
