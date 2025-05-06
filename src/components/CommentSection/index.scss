@@ -224,15 +224,28 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 .comment-modal-content {
   position: relative;
   background-color: #fff;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
   overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
 }
 
 .comment-modal-header {
@@ -259,16 +272,23 @@
 
 .comment-modal-input {
   width: 100%;
-  height: 100px;
-  padding: 10px;
-  border: 1px solid #eee;
-  border-radius: 5px;
-  font-size: 14px;
+  min-height: 100px;
+  padding: 14px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.comment-modal-input:focus {
+  border-color: var(--primary-color);
+  background-color: #fff;
 }
 
 .comment-modal-footer {
   display: flex;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #f2f2f2;
 }
 
 .comment-modal-btn {
@@ -276,9 +296,24 @@
   text-align: center;
   padding: 15px 0;
   font-size: 16px;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
 }
 
-.primary {
-  color: #0086f6;
+.comment-modal-btn:active {
+  background-color: #f5f5f5;
+}
+
+.comment-modal-btn.primary {
+  color: #fff;
   font-weight: bold;
+  background-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.3);
+  border-radius: 0 0 16px 0;
+}
+
+.comment-modal-btn.primary:active {
+  background-color: var(--primary-shadow);
+  transform: translateY(1px);
 }

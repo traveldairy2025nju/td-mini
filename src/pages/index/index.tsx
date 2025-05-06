@@ -45,7 +45,6 @@ function Index() {
 
   // 组件挂载时和Tab切换时获取数据
   useDidShow(() => {
-    console.log('首页 - 页面显示');
     fetchDiaries();
 
     // 通知TabBar更新选中状态
@@ -55,7 +54,6 @@ function Index() {
   // 添加事件监听器，监听收藏状态变化
   useEffect(() => {
     const refreshHandler = () => {
-      console.log('接收到刷新首页事件');
       fetchDiaries();
     };
 
@@ -81,12 +79,10 @@ function Index() {
       setLoading(true);
       // 添加时间戳参数避免缓存
       const res = await api.diary.getAll({ _t: Date.now() });
-      console.log('首页 - API返回的原始数据:', res);
 
       if (res.success && res.data && res.data.items) {
         // 转换API返回的数据为组件需要的格式
         const formattedDiaries = res.data.items.map(item => {
-          console.log('首页 - 处理游记项:', item);
           // 使用MongoDB的_id字段作为唯一标识
           return {
             id: item._id, // 使用_id而不是id
@@ -99,14 +95,12 @@ function Index() {
           };
         });
 
-        console.log('首页 - 格式化后的游记列表:', formattedDiaries);
         setDiaries(formattedDiaries);
       } else {
         // 如果API调用失败，显示错误信息
         throw new Error(res.message || '获取游记列表失败');
       }
     } catch (error) {
-      console.error('获取游记列表失败', error);
       Taro.showToast({
         title: '获取游记列表失败',
         icon: 'none'
@@ -120,9 +114,7 @@ function Index() {
 
   // 点击游记项目，跳转到详情页
   const handleDiaryItemClick = (id: string) => {
-    console.log('首页 - 点击游记，ID:', id);
     if (!id) {
-      console.error('首页 - 游记ID无效');
       Taro.showToast({
         title: '游记ID无效',
         icon: 'none'
@@ -140,7 +132,6 @@ function Index() {
 
   // 点击搜索图标
   const handleSearchClick = () => {
-    console.log('点击搜索图标，准备跳转到搜索页面');
     Taro.navigateTo({ url: '/pages/search/index' });
   };
 

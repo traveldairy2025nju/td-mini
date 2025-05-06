@@ -25,7 +25,6 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
   const [rightColumn, setRightColumn] = useState<DiaryItem[]>([]);
 
   useEffect(() => {
-    console.log('WaterfallFlow - 收到游记列表:', diaryList);
     const left: DiaryItem[] = [];
     const right: DiaryItem[] = [];
 
@@ -43,13 +42,9 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
   }, [diaryList]);
 
   const handleItemClick = (item: DiaryItem) => {
-    console.log('WaterfallFlow - 点击游记项:', item);
     // 确保ID存在且有效
     if (item && item.id) {
-      console.log('WaterfallFlow - 传递ID:', item.id);
       onItemClick(item.id);
-    } else {
-      console.error('WaterfallFlow - 游记ID无效:', item);
     }
   };
 

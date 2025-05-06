@@ -1,3 +1,5 @@
+@import "../../../styles/theme.scss";
+
 .diary-detail-page {
   position: relative;
   height: 100vh;
@@ -456,6 +458,6 @@
 }
 
 .comment-modal-btn.primary {
-  background-color: #1677ff;
+  background-color: var(--primary-color, #1296db);
   color: #fff;
 }

@@ -51,6 +51,11 @@ export function applyTheme(theme: ThemeColors = getThemeColors()): void {
   if (typeof document !== 'undefined') {
     // H5环境
     document.documentElement.style.setProperty('--primary-color', theme.primaryColor);
+    
+    // 设置RGB值，用于rgba计算
+    const rgb = hexToRgb(theme.primaryColor);
+    document.documentElement.style.setProperty('--primary-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    
     document.documentElement.style.setProperty('--primary-light', `${theme.primaryColor}1a`); // 10%透明度
     document.documentElement.style.setProperty('--primary-dark', darkenColor(theme.primaryColor, 0.2));
     document.documentElement.style.setProperty('--primary-light-color', lightenColor(theme.primaryColor, 0.6)); // 浅色版主题色
@@ -65,6 +70,19 @@ export function applyTheme(theme: ThemeColors = getThemeColors()): void {
       Taro.eventCenter.trigger('themeChange', theme);
     });
   }
+}
+
+// 辅助函数: Hex转RGB
+function hexToRgb(hex: string): {r: number, g: number, b: number} {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 转为RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return { r, g, b };
 }
 
 // 保存并应用主题
