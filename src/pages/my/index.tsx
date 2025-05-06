@@ -185,7 +185,7 @@ function My() {
             id: item._id,
             title: item.title || '无标题',
             coverImage: coverImage,
-            videoUrl: item.video || '', // 添加视频URL
+            videoUrl: item.video || undefined, // 避免使用空字符串，使用undefined代替
             authorName: userInfo?.nickname || '我',
             authorAvatar: userInfo?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
@@ -236,7 +236,7 @@ function My() {
             id: item._id || item.id,
             title: item.title || '无标题',
             coverImage: coverImage,
-            videoUrl: item.video || '', // 添加视频URL
+            videoUrl: item.video || undefined, // 避免使用空字符串，使用undefined代替
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,

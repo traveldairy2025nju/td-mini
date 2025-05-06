@@ -71,8 +71,8 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
     // 生成随机高度让瀑布流更自然
     const imageHeight = Math.floor(Math.random() * 80) + 200; // 200-280px之间的随机高度
 
-    // 判断是否有视频
-    const hasVideo = !!item.videoUrl;
+    // 判断是否有视频（确保空字符串不被视为有效视频）
+    const hasVideo = !!(item.videoUrl && item.videoUrl.trim() !== '');
 
     return (
       <View

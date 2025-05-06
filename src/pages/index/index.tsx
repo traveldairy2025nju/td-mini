@@ -174,7 +174,7 @@ function Index() {
             id: item._id,
             title: item.title || '无标题',
             coverImage: coverImage,
-            videoUrl: item.video || '', // 添加视频URL
+            videoUrl: item.video || undefined, // 添加视频URL
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
@@ -244,7 +244,7 @@ function Index() {
             id: item._id, // 使用_id而不是id
             title: item.title || '无标题',
             coverImage: coverImage,
-            videoUrl: item.video || '', // 添加视频URL
+            videoUrl: item.video || undefined, // 避免使用空字符串，使用undefined代替
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
@@ -358,10 +358,17 @@ function Index() {
             }
           }
 
+          // 如果有视频，优先使用视频的封面图
+          const hasVideo = !!item.video;
+          const coverImage = (hasVideo && item.images && item.images.length > 0)
+            ? item.images[0]
+            : (item.images?.[0] || 'https://placeholder.com/300');
+
           return {
             id: item._id,
             title: item.title || '无标题',
-            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            coverImage: coverImage,
+            videoUrl: item.video || undefined, // 添加视频URL
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
