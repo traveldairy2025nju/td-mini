@@ -1,14 +1,40 @@
 /* Button样式 */
 .at-button {
-  /* 自定义样式可以在这里添加 */
+  position: relative;
+  
   &--primary {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
+    color: #fff !important;
+
+    &::after {
+      border: none !important;
+    }
+
+    &.at-button--disabled {
+      opacity: 0.6;
+      background-color: var(--primary-color) !important;
+    }
   }
   
   &--secondary {
     background-color: #fff !important;
     border: 1px solid #dcdfe6 !important;
     color: #606266 !important;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+    pointer-events: none;
+    box-sizing: border-box;
+    border: 0 solid black;
+    border-radius: 48px;
   }
 } 

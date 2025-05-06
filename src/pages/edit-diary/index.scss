@@ -149,6 +149,27 @@
   border-radius: 4px;
   font-size: 20px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all 0.2s ease-in-out;
+
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+.submit-text {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 500;
 }
 
 /* 加载中样式 */

@@ -1,0 +1,27 @@
+.td-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  font-size: 28px;
+  line-height: 1.5;
+  color: #333;
+  background-color: #fff;
+  resize: none;
+
+  &:focus {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+
+  &:disabled {
+    background-color: #f5f7fa;
+    cursor: not-allowed;
+  }
+} 
