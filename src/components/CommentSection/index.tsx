@@ -553,36 +553,33 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           <View className='comment-modal-content'>
             <View className='comment-modal-header'>
               <Text className='comment-modal-title'>
-                {replyToComment ? (
-                  <Text>
-                    回复 <Text style={{ color: theme.primaryColor }}>{replyToComment.user?.nickname || '用户'}</Text>
-                  </Text>
-                ) : '发表评论'}
+                {replyToComment ? `回复 ${replyToComment.user?.nickname || '用户'}` : '发表评论'}
               </Text>
-              <Text className='comment-modal-close' onClick={closeCommentModal}>关闭</Text>
             </View>
             <View className='comment-modal-body'>
               <Input
                 className='comment-modal-input'
+                type='text'
+                placeholder='写下你的评论...'
                 value={commentText}
                 onInput={e => setCommentText(e.detail.value)}
-                placeholder='写下你的评论...'
-                focus
-                confirmType='send'
-                onConfirm={submitComment}
                 style={{ borderColor: commentText ? theme.primaryColor : '#eaeaea' }}
               />
             </View>
             <View className='comment-modal-footer'>
               <View 
-                className='comment-modal-btn' 
+                className='comment-modal-btn cancel'
                 onClick={closeCommentModal}
               >
                 取消
               </View>
               <View 
-                className='comment-modal-btn primary' 
+                className='comment-modal-btn primary'
                 onClick={submitComment}
+                style={{
+                  backgroundColor: theme.primaryColor,
+                  boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
+                }}
               >
                 发布
               </View>

@@ -1,10 +1,19 @@
-import { View, Text } from '@tarojs/components';
+import { View, Text, Image } from '@tarojs/components';
 import { useEffect, useState } from 'react';
 import Taro, { useDidShow } from '@tarojs/taro';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import api from '../../services/api';
 import { getThemeColors, ThemeColors } from '../../utils/themeManager';
 import './index.scss';
+
+// SVG图标定义
+const SEARCH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+
+// 生成SVG的data URL
+const getSvgDataUrl = (svgContent: string, color: string) => {
+  const encodedSvg = encodeURIComponent(svgContent.replace('currentColor', color));
+  return `data:image/svg+xml,${encodedSvg}`;
+};
 
 // 游记项目类型
 interface DiaryItem {
@@ -211,7 +220,11 @@ function Index() {
 
         {/* 搜索图标 */}
         <View className='search-icon' onClick={handleSearchClick}>
-          🔍
+          <Image 
+            className='search-icon-img'
+            src={require('../../assets/icons/search.svg')}
+            style={{ width: '28px', height: '28px' }}
+          />
         </View>
       </View>
 
