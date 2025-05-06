@@ -20,6 +20,7 @@ interface DiaryItem {
   id: string;
   title: string;
   coverImage: string;
+  videoUrl?: string; // 添加视频URL字段
   authorName: string;
   authorAvatar?: string; // 添加作者头像字段
   likeCount: number;
@@ -163,10 +164,17 @@ function Index() {
             }
           }
 
+          // 如果有视频，优先使用视频的封面图
+          const hasVideo = !!item.video;
+          const coverImage = (hasVideo && item.images && item.images.length > 0)
+            ? item.images[0]
+            : (item.images?.[0] || 'https://placeholder.com/300');
+
           return {
             id: item._id,
             title: item.title || '无标题',
-            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            coverImage: coverImage,
+            videoUrl: item.video || '', // 添加视频URL
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
@@ -225,14 +233,21 @@ function Index() {
       if (res.success && res.data && res.data.items) {
         // 转换API返回的数据为组件需要的格式
         const formattedDiaries = res.data.items.map(item => {
+          // 如果有视频，优先使用视频的封面图
+          const hasVideo = !!item.video;
+          const coverImage = (hasVideo && item.images && item.images.length > 0)
+            ? item.images[0]
+            : (item.images?.[0] || 'https://placeholder.com/300');
+
           // 使用MongoDB的_id字段作为唯一标识
           return {
             id: item._id, // 使用_id而不是id
             title: item.title || '无标题',
-            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            coverImage: coverImage,
+            videoUrl: item.video || '', // 添加视频URL
             authorName: item.author?.nickname || '未知用户',
-            authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD', // 添加作者头像
-            likeCount: item.likeCount || 0, // 使用likeCount字段
+            authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
+            likeCount: item.likeCount || 0,
             createdAt: item.createdAt || '',
             location: item.location,
             distance: item.distance,

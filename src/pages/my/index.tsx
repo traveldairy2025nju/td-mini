@@ -23,6 +23,7 @@ interface DiaryItem {
   id: string;
   title: string;
   coverImage: string;
+  videoUrl: string;
   authorName: string;
   authorAvatar?: string;
   likeCount: number;
@@ -174,10 +175,17 @@ function My() {
       if (res.success && res.data) {
         // 转换API返回的数据为组件需要的格式
         const formattedDiaries = res.data.items.map(item => {
+          // 如果有视频，优先使用视频的封面图
+          const hasVideo = !!item.video;
+          const coverImage = (hasVideo && item.images && item.images.length > 0)
+            ? item.images[0]
+            : (item.images?.[0] || 'https://placeholder.com/300');
+
           return {
             id: item._id,
             title: item.title || '无标题',
-            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            coverImage: coverImage,
+            videoUrl: item.video || '', // 添加视频URL
             authorName: userInfo?.nickname || '我',
             authorAvatar: userInfo?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
@@ -197,7 +205,7 @@ function My() {
     }
   };
 
-  // 获取我的收藏列表
+  // 获取收藏的游记列表
   const fetchFavorites = async () => {
     // 检查登录状态，确保token存在
     const token = Taro.getStorageSync('token');
@@ -218,21 +226,21 @@ function My() {
 
         // 转换API返回的数据为组件需要的格式
         const formattedFavorites = itemsArray.map((item) => {
-          // 确保有有效的封面图
-          let coverImage = '';
-          if (item.images && Array.isArray(item.images) && item.images.length > 0) {
-            coverImage = item.images[0];
-          }
+          // 如果有视频，优先使用视频的封面图
+          const hasVideo = !!item.video;
+          const coverImage = (hasVideo && item.images && item.images.length > 0)
+            ? item.images[0]
+            : (item.images?.[0] || 'https://placeholder.com/300');
 
           return {
-            id: item._id,
+            id: item._id || item.id,
             title: item.title || '无标题',
-            coverImage: coverImage || 'https://placeholder.com/300',
+            coverImage: coverImage,
+            videoUrl: item.video || '', // 添加视频URL
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
-            createdAt: item.createdAt || '',
-            status: item.status
+            createdAt: item.createdAt || ''
           };
         });
 
@@ -290,7 +298,7 @@ function My() {
   // 渲染个人信息部分
   const renderProfileSection = () => (
     <View className='my-profile-section'>
-      <View 
+      <View
         className='my-header'
         style={{
           background: `linear-gradient(135deg, ${lightenColor(theme.primaryColor, 0.6)} 0%, ${theme.primaryColor} 100%)`,
@@ -312,7 +320,7 @@ function My() {
           <Text className='my-username'>@{userInfo?.username || ''}</Text>
         </View>
         <View className='settings-icon' onClick={goToSettings}>
-          <Image 
+          <Image
             src={require('../../assets/icons/settings.svg')}
             style={{ width: '32px', height: '32px' }}
           />
