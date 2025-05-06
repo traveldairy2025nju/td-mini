@@ -3,7 +3,7 @@
 
 // 开发环境配置
 export const DEV_CONFIG = {
-  BASE_URL: 'http://10.4.42.150:3000',
+  BASE_URL: 'http://localhost:3000',
 };
 
 // 生产环境配置
