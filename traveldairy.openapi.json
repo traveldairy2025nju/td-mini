@@ -22,60 +22,27 @@
   "paths": {
     "/api/admin/diaries/pending": {
       "get": {
-        "summary": "获取待审核游记列表",
+        "summary": "获取待审核的游记列表",
         "deprecated": false,
         "description": "",
-        "operationId": "AdminController_findPendingDiaries",
+        "operationId": "AdminController_findAllPendingDiaries",
         "tags": [
           "管理员"
         ],
         "parameters": [
           {
-            "name": "page",
+            "name": "keyword",
             "in": "query",
-            "description": "页码",
-            "required": false,
+            "description": "",
+            "required": true,
             "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "每页数量",
-            "required": false,
-            "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "获取成功",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "401": {
-            "description": "未授权",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "403": {
-            "description": "无权限",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -103,7 +70,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "游记ID",
+            "description": "",
             "required": true,
             "example": "",
             "schema": {
@@ -113,55 +80,7 @@
         ],
         "responses": {
           "200": {
-            "description": "审核通过成功",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "400": {
-            "description": "游记已审核",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "401": {
-            "description": "未授权",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "403": {
-            "description": "无权限",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "404": {
-            "description": "游记未找到",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -189,7 +108,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "游记ID",
+            "description": "",
             "required": true,
             "example": "",
             "schema": {
@@ -209,55 +128,7 @@
         },
         "responses": {
           "200": {
-            "description": "拒绝成功",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "400": {
-            "description": "请提供拒绝原因 或 游记已审核",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "401": {
-            "description": "未授权",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "403": {
-            "description": "无权限",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "404": {
-            "description": "游记未找到",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -274,7 +145,7 @@
     },
     "/api/admin/diaries/{id}": {
       "delete": {
-        "summary": "管理员删除游记",
+        "summary": "删除游记",
         "deprecated": false,
         "description": "",
         "operationId": "AdminController_removeDiary",
@@ -285,7 +156,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "游记ID",
+            "description": "",
             "required": true,
             "example": "",
             "schema": {
@@ -295,7 +166,7 @@
         ],
         "responses": {
           "200": {
-            "description": "删除成功",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -305,38 +176,39 @@
               }
             },
             "headers": {}
-          },
-          "401": {
-            "description": "未授权",
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/admin/diaries/{id}/ai-review": {
+      "get": {
+        "summary": "AI辅助审核游记",
+        "deprecated": false,
+        "description": "",
+        "operationId": "AdminController_aiReviewDiary",
+        "tags": [
+          "管理员"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI审核结果",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "403": {
-            "description": "无权限",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          },
-          "404": {
-            "description": "游记未找到",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/AiReviewResultDto"
                 }
               }
             },
@@ -2017,6 +1889,13 @@
             "examples": [
               "http://172.29.4.76:9000/travel-diary/video123.mp4"
             ]
+          },
+          "video": {
+            "type": "string",
+            "description": "视频URL(videoUrl的别名，兼容旧版前端)",
+            "examples": [
+              "http://172.29.4.76:9000/travel-diary/video123.mp4"
+            ]
           }
         },
         "required": [
@@ -2122,6 +2001,29 @@
         },
         "required": [
           "diaryId"
+        ]
+      },
+      "AiReviewResultDto": {
+        "type": "object",
+        "properties": {
+          "approved": {
+            "type": "boolean",
+            "description": "AI审核是否通过",
+            "examples": [
+              true
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "AI审核意见和理由",
+            "examples": [
+              "内容符合规范，未发现违规内容。"
+            ]
+          }
+        },
+        "required": [
+          "approved",
+          "reason"
         ]
       }
     },

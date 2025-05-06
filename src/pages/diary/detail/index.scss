@@ -48,9 +48,27 @@
   font-weight: 500;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.options-icon {
+  font-size: 24px;
+  color: #666;
+  padding: 5px 10px;
+  font-weight: bold;
+}
+
 .publish-date {
   font-size: 18px;
   color: #999;
+}
+
+.publish-date-stat {
+  font-size: 18px;
+  color: #999;
+  margin-left: auto; /* 将日期推到右边 */
 }
 
 /* 主内容区域 - 可滚动 */
