@@ -83,26 +83,26 @@ function DiaryDetail() {
         // 获取登录状态
         const loginStatus = await api.user.checkLoginStatus();
         console.log('登录状态检查结果:', loginStatus);
-        
+
         // 用户ID
         let userId: string | null = null;
-        
+
         if (loginStatus.isLoggedIn && loginStatus.user) {
           const user = loginStatus.user;
           console.log('已登录用户详情:', JSON.stringify(user));
-          
+
           // 获取用户ID，提供多种可能的字段名
           userId = user._id || user.id || user.userId;
-          
+
           // 如果所有常规ID字段都不存在，尝试从嵌套对象中获取
           if (!userId && typeof user === 'object') {
             // 输出所有字段以便调试
             console.log('用户对象所有字段:', Object.keys(user));
-            
+
             // 尝试在对象的所有一级属性中查找id字段
             for (const key in user) {
               if (
-                (key.toLowerCase().includes('id') || key === '_id') && 
+                (key.toLowerCase().includes('id') || key === '_id') &&
                 typeof user[key] === 'string' &&
                 user[key].length > 0
               ) {
@@ -112,7 +112,7 @@ function DiaryDetail() {
               }
             }
           }
-          
+
           if (userId) {
             console.log('设置当前用户ID:', userId);
             setCurrentUserId(userId);
@@ -139,31 +139,31 @@ function DiaryDetail() {
         } else {
           console.log('用户未登录或登录已过期');
         }
-        
+
         // 获取游记详情
         if (id) {
           try {
             setLoading(true);
             console.log(`详情页 - 开始请求游记详情, ID: ${id}`);
-            
+
             // 尝试获取游记详情
             const res = await api.diary.getDetailWithStatus(id);
             console.log('详情页 - API响应(with-status):', res);
-            
+
             if (res.success && res.data) {
               const diaryData = res.data;
-              
+
               // 判断是否是当前用户的游记
               const diaryAuthorId = diaryData.author?._id || diaryData.author?.id;
               // 确保显示全部有用信息便于调试
               console.log('游记作者数据:', JSON.stringify(diaryData.author));
               console.log('当前用户ID:', userId);
               console.log('游记作者ID:', diaryAuthorId);
-              
+
               const isOwner = !!userId && userId === diaryAuthorId;
               setIsMyDiary(isOwner);
               console.log('是否是当前用户的游记:', isOwner);
-              
+
               // 设置游记数据
               setDiary({
                 id: diaryData._id,
@@ -182,7 +182,7 @@ function DiaryDetail() {
                 favorites: diaryData.favoriteCount || 0,
                 isFavorited: diaryData.isFavorited || false
               });
-              
+
               // 更新状态
               setLiked(diaryData.isLiked || false);
               setCollected(diaryData.isFavorited || false);
@@ -196,13 +196,13 @@ function DiaryDetail() {
               const res = await api.diary.getDetail(id);
               if (res.success && res.data) {
                 const diaryData = res.data;
-                
+
                 // 判断是否是当前用户的游记
                 const diaryAuthorId = diaryData.author?._id || diaryData.author?.id;
                 const isOwner = !!userId && userId === diaryAuthorId;
                 setIsMyDiary(isOwner);
                 console.log('备用接口 - 是否是当前用户的游记:', isOwner);
-                
+
                 // 设置游记数据
                 setDiary({
                   id: diaryData._id,
@@ -253,7 +253,7 @@ function DiaryDetail() {
         setLoading(false);
       }
     };
-    
+
     loadData();
   }, [id, Taro.getCurrentInstance().router?.params.refresh]);
 
@@ -519,7 +519,7 @@ function DiaryDetail() {
   // 处理游记操作菜单
   const handleDiaryOptions = () => {
     if (!id) return;
-    
+
     Taro.showActionSheet({
       itemList: ['编辑游记', '删除游记'],
       success: (res) => {
@@ -546,7 +546,7 @@ function DiaryDetail() {
   // 处理删除游记
   const handleDeleteDiary = () => {
     if (!id) return;
-    
+
     Taro.showModal({
       title: '确认删除',
       content: '确定要删除这篇游记吗？此操作不可恢复。',
@@ -556,18 +556,18 @@ function DiaryDetail() {
           try {
             Taro.showLoading({ title: '删除中...' });
             const response = await api.diary.delete(id);
-            
+
             if (response.success) {
               Taro.showToast({
                 title: '删除成功',
                 icon: 'success',
                 duration: 2000
               });
-              
+
               // 触发刷新事件
               Taro.eventCenter.trigger('refreshHomePage');
               Taro.eventCenter.trigger('refreshMyPage');
-              
+
               // 延迟返回
               setTimeout(() => {
                 Taro.navigateBack();
@@ -696,16 +696,8 @@ function DiaryDetail() {
           <Text className='diary-title'>{diary.title}</Text>
           <Text className='content-text'>{diary.content}</Text>
 
-          <View className='diary-stats'>
-            <View className='stat-item'>
-              <Text className='stat-icon'>❤️</Text>
-              <Text className='stat-value'>{diary.likes} 赞</Text>
-            </View>
-            <View className='stat-item'>
-              <Text className='stat-icon'>⭐</Text>
-              <Text className='stat-value'>{diary.favorites || 0} 收藏</Text>
-            </View>
-            <Text className='publish-date-stat'>{formatDate(diary.createdAt)}</Text>
+          <View className='diary-date'>
+            <Text>{formatDate(diary.createdAt)}</Text>
           </View>
         </View>
 
@@ -730,6 +722,8 @@ function DiaryDetail() {
         collected={collected}
         onLike={handleLike}
         onCollect={handleCollect}
+        likesCount={diary.likes}
+        favoritesCount={diary.favorites || 0}
       />
     </View>
   );

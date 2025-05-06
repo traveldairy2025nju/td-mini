@@ -12,6 +12,8 @@ interface CommentInputProps {
   onLike: () => void;
   onCollect: () => void;
   onShare?: () => void;
+  likesCount?: number;
+  favoritesCount?: number;
 }
 
 const CommentInput: React.FC<CommentInputProps> = ({
@@ -20,7 +22,9 @@ const CommentInput: React.FC<CommentInputProps> = ({
   collected,
   onLike,
   onCollect,
-  onShare
+  onShare,
+  likesCount = 0,
+  favoritesCount = 0
 }) => {
   const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
 
@@ -30,7 +34,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
       setTheme(newTheme);
     };
     Taro.eventCenter.on('themeChange', themeChangeHandler);
-    
+
     // 清理函数
     return () => {
       Taro.eventCenter.off('themeChange', themeChangeHandler);
@@ -39,8 +43,8 @@ const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <View className='fixed-footer'>
-      <View 
-        className='comment-input-area' 
+      <View
+        className='comment-input-area'
         onClick={onOpenCommentModal}
         style={{ boxShadow: `0 0 0 1px ${theme.primaryColor}22` }}
       >
@@ -53,11 +57,11 @@ const CommentInput: React.FC<CommentInputProps> = ({
           hoverClass='action-button-hover'
         >
           <Text className='action-icon'>{liked ? '❤️' : '🤍'}</Text>
-          <Text 
+          <Text
             className='action-text'
             style={liked ? { color: theme.primaryColor } : {}}
           >
-            {liked ? '已赞' : '点赞'}
+            {likesCount}
           </Text>
         </View>
         <View
@@ -66,11 +70,11 @@ const CommentInput: React.FC<CommentInputProps> = ({
           hoverClass='action-button-hover'
         >
           <Text className='action-icon'>{collected ? '⭐' : '☆'}</Text>
-          <Text 
+          <Text
             className='action-text'
             style={collected ? { color: theme.primaryColor } : {}}
           >
-            {collected ? '已收藏' : '收藏'}
+            {favoritesCount}
           </Text>
         </View>
         {onShare && (
