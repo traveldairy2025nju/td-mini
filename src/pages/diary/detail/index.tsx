@@ -19,6 +19,12 @@ interface DiaryDetail {
   isLiked?: boolean; // 当前用户是否点赞
   favorites?: number; // 收藏数
   isFavorited?: boolean; // 当前用户是否已收藏
+  location?: {
+    name?: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+  };
 }
 
 // 默认占位图
@@ -180,7 +186,8 @@ function DiaryDetail() {
                 likes: diaryData.likeCount || 0,
                 isLiked: diaryData.isLiked || false,
                 favorites: diaryData.favoriteCount || 0,
-                isFavorited: diaryData.isFavorited || false
+                isFavorited: diaryData.isFavorited || false,
+                location: diaryData.location || undefined
               });
 
               // 更新状态
@@ -219,7 +226,8 @@ function DiaryDetail() {
                   likes: diaryData.likeCount || 0,
                   isLiked: false,
                   favorites: 0,
-                  isFavorited: false
+                  isFavorited: false,
+                  location: diaryData.location || undefined
                 });
               } else {
                 throw new Error(res.message || '获取游记详情失败');
@@ -698,6 +706,12 @@ function DiaryDetail() {
 
           <View className='diary-date'>
             <Text>{formatDate(diary.createdAt)}</Text>
+            {diary.location && diary.location.name && (
+              <View className='diary-location'>
+                <Text className='location-icon'>📍</Text>
+                <Text className='location-text'>{diary.location.name}</Text>
+              </View>
+            )}
           </View>
         </View>
 

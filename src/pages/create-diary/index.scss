@@ -158,6 +158,80 @@
   margin-bottom: 20px;
 }
 
+/* 位置样式 */
+.location-container {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  border: 1px solid #eee;
+}
+
+.location-info {
+  flex: 1;
+  padding-right: 44px;
+}
+
+.location-name {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.location-address {
+  font-size: 24px;
+  color: #666;
+  display: block;
+}
+
+.location-delete {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.location-btn {
+  width: 100%;
+  height: 88px;
+}
+
+.location-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.location-btn, .location-btn-manual {
+  flex: 1;
+  height: 88px;
+}
+
+.manual-location-input {
+  margin-bottom: 20px;
+}
+
+.location-btn-cancel, .location-btn-save {
+  flex: 1;
+  height: 80px;
+  margin-top: 16px;
+}
+
 .form-actions {
   padding: 0 30px 60px;
 }

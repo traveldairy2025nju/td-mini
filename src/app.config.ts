@@ -43,5 +43,15 @@ export default {
         selectedIconPath: "./assets/icons/user-active.png"
       }
     ]
+  },
+  // 添加位置相关隐私权限声明
+  requiredPrivateInfos: [
+    "chooseLocation",
+    "getLocation"
+  ],
+  permission: {
+    "scope.userLocation": {
+      desc: "您的位置信息将用于添加游记位置标记"
+    }
   }
 };

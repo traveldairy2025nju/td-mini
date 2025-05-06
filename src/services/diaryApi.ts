@@ -40,7 +40,7 @@ const diaryApi = {
 
   // 创建游记
   create: async (data) => {
-    // data包含：title, content, images 数组，可选 videoUrl
+    // data包含：title, content, images 数组，可选 videoUrl, location
 
     // 如果客户端使用videoUrl字段，但服务器使用video字段，需要转换
     const apiData = { ...data };

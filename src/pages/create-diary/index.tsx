@@ -14,12 +14,25 @@ interface FormData {
   content: string;
   images: string[];
   videoUrl?: string;
+  location?: {
+    name?: string;
+    address?: string;
+    latitude: number;
+    longitude: number;
+  };
 }
 
 interface FormErrors {
   title?: string;
   content?: string;
   images?: string;
+}
+
+interface LocationData {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
 }
 
 function CreateDiary() {
@@ -34,6 +47,9 @@ function CreateDiary() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [isSelectingLocation, setIsSelectingLocation] = useState(false);
+  const [showLocationInput, setShowLocationInput] = useState(false);
+  const [locationName, setLocationName] = useState('');
 
   // 处理表单变化
   const handleChange = (name: string, value: string) => {
@@ -108,7 +124,7 @@ function CreateDiary() {
 
       if (res.tempFilePath) {
         setUploadingVideo(true);
-        
+
         // 检查视频大小，过大的视频可能上传失败或占用过多带宽
         if (res.size > 50 * 1024 * 1024) { // 50MB
           Taro.showToast({
@@ -167,7 +183,7 @@ function CreateDiary() {
       console.log('开始上传视频, 文件路径:', filePath);
       const result = await api.upload.uploadFile(filePath);
       console.log('视频上传响应:', JSON.stringify(result));
-      
+
       if (result.success && result.data.url) {
         console.log('视频上传成功, URL:', result.data.url);
         return result.data.url;
@@ -197,6 +213,92 @@ function CreateDiary() {
       ...prev,
       videoUrl: ''
     }));
+  };
+
+  // 选择位置
+  const handleChooseLocation = async () => {
+    try {
+      setIsSelectingLocation(true);
+
+      // 调用位置选择API
+      const locationData = await api.location.chooseLocation() as LocationData | null;
+
+      if (locationData) {
+        console.log('选择的位置信息:', locationData);
+
+        setFormData(prev => ({
+          ...prev,
+          location: {
+            name: locationData.name,
+            address: locationData.address,
+            latitude: locationData.latitude,
+            longitude: locationData.longitude
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('选择位置失败', error);
+      // 如果是API权限错误，提示用户手动输入
+      if (error.errMsg && error.errMsg.includes('api need to be declared')) {
+        Taro.showModal({
+          title: '位置选择不可用',
+          content: '因权限限制，无法使用位置选择功能。您可以尝试手动输入位置。',
+          confirmText: '手动输入',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              handleManualLocationInput();
+            }
+          }
+        });
+      } else {
+        Taro.showToast({
+          title: '选择位置失败，请尝试手动输入',
+          icon: 'none'
+        });
+        // 延迟一下再显示手动输入界面
+        setTimeout(() => {
+          handleManualLocationInput();
+        }, 1500);
+      }
+    } finally {
+      setIsSelectingLocation(false);
+    }
+  };
+
+  // 手动输入位置
+  const handleManualLocationInput = () => {
+    setShowLocationInput(true);
+  };
+
+  // 保存手动输入的位置
+  const handleSaveLocation = () => {
+    if (locationName.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          name: locationName,
+          address: '',
+          latitude: 0,
+          longitude: 0
+        }
+      }));
+      setShowLocationInput(false);
+    } else {
+      Taro.showToast({
+        title: '请输入位置名称',
+        icon: 'none'
+      });
+    }
+  };
+
+  // 移除位置
+  const handleRemoveLocation = () => {
+    setFormData(prev => {
+      const newData = { ...prev };
+      delete newData.location;
+      return newData;
+    });
   };
 
   // 验证表单
@@ -347,6 +449,64 @@ function CreateDiary() {
             </Button>
           )}
           <Text className='input-tip'>视频最长60秒</Text>
+        </View>
+
+        <View className='input-field'>
+          <Text className='input-label'>位置（可选）</Text>
+          {formData.location ? (
+            <View className='location-container'>
+              <View className='location-info'>
+                <Text className='location-name'>{formData.location.name}</Text>
+                <Text className='location-address'>{formData.location.address}</Text>
+              </View>
+              <View className='location-delete' onClick={handleRemoveLocation}>×</View>
+            </View>
+          ) : showLocationInput ? (
+            <View className='manual-location-input'>
+              <Input
+                name='locationName'
+                type='text'
+                value={locationName}
+                placeholder='请输入位置名称，如：北京故宫'
+                onChange={(value) => setLocationName(value)}
+              />
+              <View className='location-buttons'>
+                <Button
+                  type='default'
+                  className='location-btn-cancel'
+                  onClick={() => setShowLocationInput(false)}
+                >
+                  取消
+                </Button>
+                <Button
+                  type='primary'
+                  className='location-btn-save'
+                  onClick={handleSaveLocation}
+                >
+                  确定
+                </Button>
+              </View>
+            </View>
+          ) : (
+            <View className='location-buttons'>
+              <Button
+                type='secondary'
+                className='location-btn'
+                onClick={handleChooseLocation}
+                loading={isSelectingLocation}
+                disabled={isSelectingLocation}
+              >
+                {isSelectingLocation ? '选择中...' : '选择位置'}
+              </Button>
+              <Button
+                type='default'
+                className='location-btn-manual'
+                onClick={handleManualLocationInput}
+              >
+                手动输入
+              </Button>
+            </View>
+          )}
         </View>
       </View>
 
