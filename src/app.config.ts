@@ -14,7 +14,8 @@ export default {
     "pages/create-diary/index",
     "pages/diary/detail/index",
     "pages/search/index",
-    "pages/custom-theme/index"
+    "pages/custom-theme/index",
+    "pages/edit-diary/index"
   ],
   window: {
     backgroundTextStyle: "light",

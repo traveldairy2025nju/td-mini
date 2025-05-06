@@ -11,28 +11,44 @@
 }
 
 .diary-item {
-  margin-bottom: 16px;
+  margin-bottom: 24px; // 增加项目间距
   background-color: #ffffff;
-  border-radius: 12px;
+  border-radius: 16px; // 增大圆角
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08); // 更明显的阴影效果
   position: relative;
+  transition: all 0.3s ease; // 添加过渡效果
+  
+  &:active {
+    transform: scale(0.98); // 点击时轻微缩小效果
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.diary-cover-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
 .diary-cover {
   width: 100%;
-  height: 240px; // 固定高度，使图片变成长方形
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
   object-fit: cover; // 保持比例裁剪显示
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05); // 鼠标悬停时放大效果
+  }
 }
 
 .diary-info {
-  padding: 16px; // 增加内边距
+  padding: 16px; // 保持内边距
 }
 
 .diary-title {
-  font-size: 28px; // 增大字体
+  font-size: 28px; // 保持字体大小
   font-weight: bold;
   color: #333;
   display: -webkit-box;
@@ -40,46 +56,76 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 12px; // 增加间距
+  margin-bottom: 16px; // 增加底部间距
+  line-height: 1.4;
 }
 
-.diary-meta {
+// 新的底部布局
+.diary-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 24px; // 增大字体
-  color: #999;
+  width: 100%;
 }
 
-.diary-author {
-  max-width: 50%;
+// 作者信息
+.author-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.author-avatar {
+  width: 36px; // 缩小头像尺寸
+  height: 36px; // 缩小头像尺寸
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.author-name {
+  font-size: 22px;
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 110px;
 }
 
-.diary-stats {
+// 点赞信息
+.like-info {
   display: flex;
+  align-items: center;
+  background-color: rgba(255, 230, 230, 0.3);
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
-.diary-likes {
-  margin-right: 12px; // 增加间距
+.like-icon {
+  font-size: 18px;
+  margin-right: 4px;
 }
 
-.diary-views {
-  // 没有特殊样式，使用基础样式
+.like-count {
+  color: #ff4d4f;
+  font-size: 18px;
+  font-weight: 500;
 }
 
 /* 游记状态标签 */
 .status-label {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  top: 12px;
+  left: 12px; // 改为左上角
+  padding: 6px 12px;
+  border-radius: 20px; // 增大圆角
+  font-size: 20px; // 增大字体
   color: #fff;
   z-index: 2;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .status-pending {

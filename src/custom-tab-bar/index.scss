@@ -6,12 +6,13 @@
   left: 0;
   right: 0;
   height: 110px;
-  background: var(--white);
+  background-color: var(--white);
   display: flex;
   align-items: center;
   justify-content: space-around;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;
+  border-top: 1px solid var(--border-color);
 }
 
 .tab-bar-border {

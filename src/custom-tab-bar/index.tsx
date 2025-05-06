@@ -158,7 +158,7 @@ export default function CustomTabBar() {
   };
 
   return (
-    <View className='custom-tab-bar'>
+    <View className='custom-tab-bar' style={{ backgroundColor: '#ffffff' }}>
       <View className='tab-bar-border'></View>
       
       <View className='tab-bar-item' onClick={() => switchTab(0, tabList[0].pagePath)}>

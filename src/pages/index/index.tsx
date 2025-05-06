@@ -11,6 +11,7 @@ interface DiaryItem {
   title: string;
   coverImage: string;
   authorName: string;
+  authorAvatar?: string; // 添加作者头像字段
   likeCount: number;
   createdAt: string;
 }
@@ -64,6 +65,7 @@ function Index() {
             title: item.title || '无标题',
             coverImage: item.images?.[0] || 'https://placeholder.com/300',
             authorName: item.author?.nickname || '未知用户',
+            authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD', // 添加作者头像
             likeCount: item.likeCount || 0, // 使用likeCount字段
             createdAt: item.createdAt || ''
           };

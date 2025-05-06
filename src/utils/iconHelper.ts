@@ -69,17 +69,22 @@ export function getPngIconWithColor(pngPath: string, color: string): Promise<str
   }
   
   return new Promise((resolve, reject) => {
+    // 处理相对路径，尝试将相对路径转换为绝对路径
+    const fixedPath = pngPath.startsWith('../') 
+      ? pngPath.replace('../', '/') 
+      : pngPath;
+    
     // 创建一个临时canvas进行颜色处理
     const canvasId = `iconCanvas_${Date.now()}`;
     
     // 获取图片信息
     Taro.getImageInfo({
-      src: pngPath,
+      src: fixedPath,
       success: (imgInfo) => {
         const ctx = Taro.createCanvasContext(canvasId);
         
         // 绘制原图
-        ctx.drawImage(pngPath, 0, 0, imgInfo.width, imgInfo.height);
+        ctx.drawImage(fixedPath, 0, 0, imgInfo.width, imgInfo.height);
         
         // 应用颜色
         ctx.globalCompositeOperation = 'source-in';
@@ -95,11 +100,19 @@ export function getPngIconWithColor(pngPath: string, color: string): Promise<str
               iconCache[cacheKey] = res.tempFilePath;
               resolve(res.tempFilePath);
             },
-            fail: reject
+            fail: (err) => {
+              console.error('生成临时图片失败:', err);
+              // 失败时返回原路径
+              resolve(pngPath);
+            }
           });
         });
       },
-      fail: reject
+      fail: (err) => {
+        console.error('获取图片信息失败:', err, '图片路径:', fixedPath);
+        // 图片不存在或无法加载时，直接返回原路径
+        resolve(pngPath);
+      }
     });
   });
 }

@@ -42,6 +42,7 @@ function DiaryDetail() {
   const [collected, setCollected] = useState(false);
   const [failedImages, setFailedImages] = useState<{[key: string]: boolean}>({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isMyDiary, setIsMyDiary] = useState(false); // 是否是当前用户的游记
 
   // 记录用户信息
   const userInfoRef = useRef<any>(null);
@@ -75,147 +76,186 @@ function DiaryDetail() {
   });
 
   useEffect(() => {
-    // 获取当前用户信息
-    const getUserInfo = async () => {
+    // 获取当前用户信息和游记详情
+    const loadData = async () => {
       try {
         console.log('检查登录状态');
+        // 获取登录状态
         const loginStatus = await api.user.checkLoginStatus();
         console.log('登录状态检查结果:', loginStatus);
-
+        
+        // 用户ID
+        let userId: string | null = null;
+        
         if (loginStatus.isLoggedIn && loginStatus.user) {
           const user = loginStatus.user;
-          console.log('已登录用户:', user);
-
-          // 获取用户ID
-          const userId = user._id || user.id || user.userId;
+          console.log('已登录用户详情:', JSON.stringify(user));
+          
+          // 获取用户ID，提供多种可能的字段名
+          userId = user._id || user.id || user.userId;
+          
+          // 如果所有常规ID字段都不存在，尝试从嵌套对象中获取
+          if (!userId && typeof user === 'object') {
+            // 输出所有字段以便调试
+            console.log('用户对象所有字段:', Object.keys(user));
+            
+            // 尝试在对象的所有一级属性中查找id字段
+            for (const key in user) {
+              if (
+                (key.toLowerCase().includes('id') || key === '_id') && 
+                typeof user[key] === 'string' &&
+                user[key].length > 0
+              ) {
+                userId = user[key];
+                console.log(`从字段 ${key} 找到用户ID:`, userId);
+                break;
+              }
+            }
+          }
+          
           if (userId) {
             console.log('设置当前用户ID:', userId);
             setCurrentUserId(userId);
             userInfoRef.current = user;
           } else {
-            console.warn('用户信息中没有找到ID字段');
+            console.warn('用户信息中没有找到ID字段, 尝试直接获取用户信息');
+            // 尝试直接获取用户信息
+            try {
+              const userData = await api.user.getCurrentUser();
+              if (userData) {
+                console.log('直接获取的用户详情:', JSON.stringify(userData));
+                const directUserId = userData._id || userData.id || userData.userId;
+                if (directUserId) {
+                  console.log('通过直接API获取到用户ID:', directUserId);
+                  userId = directUserId;
+                  setCurrentUserId(directUserId);
+                  userInfoRef.current = userData;
+                }
+              }
+            } catch (userErr) {
+              console.error('直接获取用户信息失败:', userErr);
+            }
           }
         } else {
           console.log('用户未登录或登录已过期');
         }
+        
+        // 获取游记详情
+        if (id) {
+          try {
+            setLoading(true);
+            console.log(`详情页 - 开始请求游记详情, ID: ${id}`);
+            
+            // 尝试获取游记详情
+            const res = await api.diary.getDetailWithStatus(id);
+            console.log('详情页 - API响应(with-status):', res);
+            
+            if (res.success && res.data) {
+              const diaryData = res.data;
+              
+              // 判断是否是当前用户的游记
+              const diaryAuthorId = diaryData.author?._id || diaryData.author?.id;
+              // 确保显示全部有用信息便于调试
+              console.log('游记作者数据:', JSON.stringify(diaryData.author));
+              console.log('当前用户ID:', userId);
+              console.log('游记作者ID:', diaryAuthorId);
+              
+              const isOwner = !!userId && userId === diaryAuthorId;
+              setIsMyDiary(isOwner);
+              console.log('是否是当前用户的游记:', isOwner);
+              
+              // 设置游记数据
+              setDiary({
+                id: diaryData._id,
+                _id: diaryData._id,
+                title: diaryData.title,
+                content: diaryData.content,
+                images: Array.isArray(diaryData.images)
+                  ? diaryData.images.filter(img => img && typeof img === 'string')
+                  : [],
+                videoUrl: diaryData.video,
+                authorName: diaryData.author?.nickname || '未知用户',
+                authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
+                createdAt: diaryData.createdAt || '',
+                likes: diaryData.likeCount || 0,
+                isLiked: diaryData.isLiked || false,
+                favorites: diaryData.favoriteCount || 0,
+                isFavorited: diaryData.isFavorited || false
+              });
+              
+              // 更新状态
+              setLiked(diaryData.isLiked || false);
+              setCollected(diaryData.isFavorited || false);
+            } else {
+              throw new Error(res.message || '获取游记详情失败');
+            }
+          } catch (error) {
+            console.error('获取游记详情失败', error);
+            // 尝试备用接口
+            try {
+              const res = await api.diary.getDetail(id);
+              if (res.success && res.data) {
+                const diaryData = res.data;
+                
+                // 判断是否是当前用户的游记
+                const diaryAuthorId = diaryData.author?._id || diaryData.author?.id;
+                const isOwner = !!userId && userId === diaryAuthorId;
+                setIsMyDiary(isOwner);
+                console.log('备用接口 - 是否是当前用户的游记:', isOwner);
+                
+                // 设置游记数据
+                setDiary({
+                  id: diaryData._id,
+                  _id: diaryData._id,
+                  title: diaryData.title,
+                  content: diaryData.content,
+                  images: Array.isArray(diaryData.images)
+                    ? diaryData.images.filter(img => img && typeof img === 'string')
+                    : [],
+                  videoUrl: diaryData.video,
+                  authorName: diaryData.author?.nickname || '未知用户',
+                  authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
+                  createdAt: diaryData.createdAt || '',
+                  likes: diaryData.likeCount || 0,
+                  isLiked: false,
+                  favorites: 0,
+                  isFavorited: false
+                });
+              } else {
+                throw new Error(res.message || '获取游记详情失败');
+              }
+            } catch (backupError) {
+              console.error('备用接口也失败', backupError);
+              Taro.showToast({
+                title: '获取游记详情失败',
+                icon: 'none'
+              });
+              setTimeout(() => {
+                Taro.navigateBack();
+              }, 2000);
+            }
+          } finally {
+            setLoading(false);
+          }
+        } else {
+          console.error('详情页 - ID不存在或无效');
+          Taro.showToast({
+            title: '游记ID不存在',
+            icon: 'none',
+            duration: 2000
+          });
+          setTimeout(() => {
+            Taro.navigateBack();
+          }, 2000);
+        }
       } catch (error) {
-        console.error('获取用户信息失败:', error);
+        console.error('加载数据失败', error);
+        setLoading(false);
       }
     };
-
-    // 执行获取用户信息
-    getUserInfo();
-
-    console.log('详情页 - useEffect中的ID:', id);
-    if (id) {
-      fetchDiaryDetail(id);
-    } else {
-      console.error('详情页 - ID不存在或无效');
-      Taro.showToast({
-        title: '游记ID不存在',
-        icon: 'none',
-        duration: 2000
-      });
-      setTimeout(() => {
-        Taro.navigateBack();
-      }, 2000);
-    }
+    
+    loadData();
   }, [id, Taro.getCurrentInstance().router?.params.refresh]);
-
-  const fetchDiaryDetail = async (diaryId: string) => {
-    try {
-      setLoading(true);
-      console.log(`详情页 - 开始请求游记详情, ID: ${diaryId}`);
-
-      // 首先尝试使用with-status接口获取带点赞和收藏状态的详情
-      let res;
-      let usedFallback = false;
-
-      try {
-        // 使用with-status接口获取游记详情（包括点赞和收藏状态）
-        res = await api.diary.getDetailWithStatus(diaryId);
-        console.log('详情页 - API响应(with-status):', res);
-      } catch (error) {
-        console.warn('详情页 - with-status接口请求失败，回退到with-like-status:', error);
-        usedFallback = true;
-
-        // 如果with-status接口失败，回退到with-like-status接口
-        try {
-          res = await api.diary.getDetailWithLikeStatus(diaryId);
-          console.log('详情页 - API响应(with-like-status):', res);
-        } catch (likeError) {
-          console.error('详情页 - with-like-status接口也失败，回退到基本详情接口:', likeError);
-
-          // 如果with-like-status也失败，继续回退到基本详情接口
-          res = await api.diary.getDetail(diaryId);
-          console.log('详情页 - API响应(基本详情):', res);
-        }
-      }
-
-      if (res.success && res.data) {
-        const diaryData = res.data;
-
-        // 打印详细的图片数据
-        console.log('详情页 - 图片数据:', diaryData.images);
-        console.log('详情页 - 视频数据:', diaryData.video);
-
-        // 检查图片URL
-        if (Array.isArray(diaryData.images)) {
-          diaryData.images.forEach((img, index) => {
-            console.log(`图片${index+1}:`, img);
-
-            // 确保图片URL是有效的
-            if (!img || typeof img !== 'string' || !img.startsWith('http')) {
-              console.warn(`图片${index+1}的URL可能不正确:`, img);
-            }
-          });
-        } else {
-          console.warn('图片数据不是数组:', diaryData.images);
-        }
-
-        setDiary({
-          id: diaryData._id,
-          _id: diaryData._id,
-          title: diaryData.title,
-          content: diaryData.content,
-          // 确保images是数组，并过滤掉无效URL
-          images: Array.isArray(diaryData.images)
-            ? diaryData.images.filter(img => img && typeof img === 'string')
-            : [],
-          videoUrl: diaryData.video,
-          authorName: diaryData.author?.nickname || '未知用户',
-          authorAvatar: diaryData.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
-          createdAt: diaryData.createdAt || '',
-          likes: diaryData.likeCount || 0,
-          isLiked: diaryData.isLiked || false,
-          favorites: diaryData.favoriteCount || 0,
-          isFavorited: diaryData.isFavorited || false
-        });
-
-        // 根据API返回的点赞和收藏状态更新UI
-        setLiked(diaryData.isLiked || false);
-        setCollected(diaryData.isFavorited || false);
-
-        // 如果使用了回退接口，且没有收藏相关信息，则告知用户
-        if (usedFallback) {
-          console.log('使用了回退接口，收藏功能可能不完整');
-        }
-      } else {
-        throw new Error(res.message || '获取游记详情失败');
-      }
-    } catch (error) {
-      console.error('获取游记详情失败', error);
-      Taro.showToast({
-        title: error instanceof Error ? error.message : '获取游记详情失败',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        Taro.navigateBack();
-      }, 2000);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 格式化日期
   const formatDate = (dateString: string) => {
@@ -339,7 +379,19 @@ function DiaryDetail() {
       });
 
       // 重新获取最新数据以确保状态一致
-      fetchDiaryDetail(id);
+      if (id) {
+        const res = await api.diary.getDetailWithStatus(id);
+        if (res.success && res.data) {
+          setLiked(res.data.isLiked || false);
+          if (diary) {
+            setDiary({
+              ...diary,
+              likes: res.data.likeCount || 0,
+              isLiked: res.data.isLiked || false
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error('点赞操作失败', error);
       Taro.showToast({
@@ -464,6 +516,79 @@ function DiaryDetail() {
     return url;
   };
 
+  // 处理游记操作菜单
+  const handleDiaryOptions = () => {
+    if (!id) return;
+    
+    Taro.showActionSheet({
+      itemList: ['编辑游记', '删除游记'],
+      success: (res) => {
+        switch(res.tapIndex) {
+          case 0: // 编辑游记
+            handleEditDiary();
+            break;
+          case 1: // 删除游记
+            handleDeleteDiary();
+            break;
+        }
+      }
+    });
+  };
+
+  // 处理编辑游记
+  const handleEditDiary = () => {
+    if (!id) return;
+    Taro.navigateTo({
+      url: `/pages/edit-diary/index?id=${id}`
+    });
+  };
+
+  // 处理删除游记
+  const handleDeleteDiary = () => {
+    if (!id) return;
+    
+    Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这篇游记吗？此操作不可恢复。',
+      confirmColor: '#ff4d4f',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            Taro.showLoading({ title: '删除中...' });
+            const response = await api.diary.delete(id);
+            
+            if (response.success) {
+              Taro.showToast({
+                title: '删除成功',
+                icon: 'success',
+                duration: 2000
+              });
+              
+              // 触发刷新事件
+              Taro.eventCenter.trigger('refreshHomePage');
+              Taro.eventCenter.trigger('refreshMyPage');
+              
+              // 延迟返回
+              setTimeout(() => {
+                Taro.navigateBack();
+              }, 1500);
+            } else {
+              throw new Error(response.message || '删除失败');
+            }
+          } catch (error) {
+            console.error('删除游记失败', error);
+            Taro.showToast({
+              title: error instanceof Error ? error.message : '删除失败',
+              icon: 'none'
+            });
+          } finally {
+            Taro.hideLoading();
+          }
+        }
+      }
+    });
+  };
+
   if (loading) {
     return (
       <View className='loading-container'>
@@ -496,7 +621,11 @@ function DiaryDetail() {
           <Image className='author-avatar' src={diary.authorAvatar} mode='aspectFill' />
           <Text className='author-name'>{diary.authorName}</Text>
         </View>
-        <Text className='publish-date'>{formatDate(diary.createdAt)}</Text>
+        <View className='header-right'>
+          {isMyDiary && (
+            <Text className='options-icon' onClick={handleDiaryOptions}>⋮</Text>
+          )}
+        </View>
       </View>
 
       {/* 主内容区域 - 可滚动 */}
@@ -576,6 +705,7 @@ function DiaryDetail() {
               <Text className='stat-icon'>⭐</Text>
               <Text className='stat-value'>{diary.favorites || 0} 收藏</Text>
             </View>
+            <Text className='publish-date-stat'>{formatDate(diary.createdAt)}</Text>
           </View>
         </View>
 

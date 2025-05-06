@@ -7,6 +7,7 @@ interface DiaryItem {
   title: string;
   coverImage: string;
   authorName: string;
+  authorAvatar?: string; // 添加作者头像字段
   likeCount: number;
   createdAt: string;
   status?: 'pending' | 'approved' | 'rejected'; // 添加状态字段
@@ -66,27 +67,57 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
     }
   };
 
+  // 默认头像
+  const defaultAvatar = 'https://api.dicebear.com/6.x/initials/svg?seed=TD';
+
   const renderDiaryItem = (item: DiaryItem) => {
     const statusInfo = getStatusLabel(item.status);
-
+    // 生成随机高度让瀑布流更自然
+    const imageHeight = Math.floor(Math.random() * 80) + 200; // 200-280px之间的随机高度
+    
     return (
       <View
         className='diary-item'
         key={item.id}
         onClick={() => handleItemClick(item)}
       >
-        <Image className='diary-cover' src={item.coverImage} mode='aspectFill' />
-        {showStatus && item.status && (
-          <View className={`status-label ${statusInfo.className}`}>
-            {statusInfo.text}
-          </View>
-        )}
+        {/* 封面图片区域 */}
+        <View className='diary-cover-container'>
+          <Image 
+            className='diary-cover' 
+            src={item.coverImage} 
+            mode='aspectFill' 
+            style={{ height: `${imageHeight}px` }}
+          />
+          
+          {/* 状态标签 */}
+          {showStatus && item.status && (
+            <View className={`status-label ${statusInfo.className}`}>
+              {statusInfo.text}
+            </View>
+          )}
+        </View>
+        
+        {/* 游记信息区域 */}
         <View className='diary-info'>
+          {/* 游记标题 */}
           <Text className='diary-title'>{item.title}</Text>
-          <View className='diary-meta'>
-            <Text className='diary-author'>{item.authorName}</Text>
-            <View className='diary-stats'>
-              <Text className='diary-likes'>❤️ {item.likeCount}</Text>
+          
+          {/* 底部信息区域：头像、作者名称和点赞数 */}
+          <View className='diary-footer'>
+            <View className='author-info'>
+              <Image 
+                className='author-avatar' 
+                src={item.authorAvatar || defaultAvatar} 
+                mode='aspectFill' 
+              />
+              <Text className='author-name'>{item.authorName}</Text>
+            </View>
+            
+            {/* 点赞数 */}
+            <View className='like-info'>
+              <Text className='like-icon'>❤️</Text>
+              <Text className='like-count'>{item.likeCount}</Text>
             </View>
           </View>
         </View>
