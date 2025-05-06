@@ -6,6 +6,7 @@ import { checkLogin } from '../../utils/auth';
 import api from '../../services/api';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import Button from '../../components/taro-ui/Button';
+import { getThemeColors, ThemeColors } from '../../utils/themeManager';
 import './index.scss';
 
 // 游记项目类型
@@ -20,6 +21,25 @@ interface DiaryItem {
   status?: 'pending' | 'approved' | 'rejected';
 }
 
+// 浅色处理函数
+function lightenColor(hex: string, amount: number): string {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 转为RGB
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+  
+  // 变浅颜色
+  r = Math.min(255, Math.floor(r + (255 - r) * amount));
+  g = Math.min(255, Math.floor(g + (255 - g) * amount));
+  b = Math.min(255, Math.floor(b + (255 - b) * amount));
+  
+  // 转回hex
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 function My() {
   // 从zustand中获取状态和方法
   const {
@@ -28,6 +48,9 @@ function My() {
     isLoading,
     updateProfile
   } = useUserStore();
+
+  // 添加当前主题状态
+  const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
 
   // 活动标签状态
   const [activeTab, setActiveTab] = useState<'diaries' | 'favorites'>('diaries');
@@ -72,9 +95,16 @@ function My() {
     // 注册事件
     Taro.eventCenter.on('refreshMyPage', refreshHandler);
 
+    // 监听主题变化事件
+    const themeChangeHandler = (newTheme: ThemeColors) => {
+      setTheme(newTheme);
+    };
+    Taro.eventCenter.on('themeChange', themeChangeHandler);
+
     // 清理函数
     return () => {
       Taro.eventCenter.off('refreshMyPage', refreshHandler);
+      Taro.eventCenter.off('themeChange', themeChangeHandler);
     };
   }, [activeTab]);
 
@@ -270,7 +300,13 @@ function My() {
   // 渲染个人信息部分
   const renderProfileSection = () => (
     <View className='my-profile-section'>
-      <View className='my-header'>
+      <View 
+        className='my-header'
+        style={{
+          background: `linear-gradient(135deg, ${lightenColor(theme.primaryColor, 0.6)} 0%, ${theme.primaryColor} 100%)`,
+          boxShadow: `0 4px 12px ${theme.primaryColor}4d`
+        }}
+      >
         <View className='my-avatar-wrapper' onClick={handleUpdateAvatar}>
           <Image
             className='my-avatar'
@@ -298,24 +334,28 @@ function My() {
       <Text
         className={`status-filter-item ${statusFilter === 'all' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('all')}
+        style={statusFilter === 'all' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         全部
       </Text>
       <Text
         className={`status-filter-item ${statusFilter === 'pending' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('pending')}
+        style={statusFilter === 'pending' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         待审核
       </Text>
       <Text
         className={`status-filter-item ${statusFilter === 'approved' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('approved')}
+        style={statusFilter === 'approved' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         已通过
       </Text>
       <Text
         className={`status-filter-item ${statusFilter === 'rejected' ? 'active' : ''}`}
         onClick={() => handleStatusFilterChange('rejected')}
+        style={statusFilter === 'rejected' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
       >
         已拒绝
       </Text>
@@ -329,15 +369,15 @@ function My() {
         className={`tab-item ${activeTab === 'diaries' ? 'active' : ''}`}
         onClick={() => setActiveTab('diaries')}
       >
-        <Text>我的游记</Text>
-        {activeTab === 'diaries' && <View className='tab-line'></View>}
+        <Text style={activeTab === 'diaries' ? { color: theme.primaryColor } : {}}>我的游记</Text>
+        {activeTab === 'diaries' && <View className='tab-line' style={{ backgroundColor: theme.primaryColor }}></View>}
       </View>
       <View
         className={`tab-item ${activeTab === 'favorites' ? 'active' : ''}`}
         onClick={() => setActiveTab('favorites')}
       >
-        <Text>我的收藏</Text>
-        {activeTab === 'favorites' && <View className='tab-line'></View>}
+        <Text style={activeTab === 'favorites' ? { color: theme.primaryColor } : {}}>我的收藏</Text>
+        {activeTab === 'favorites' && <View className='tab-line' style={{ backgroundColor: theme.primaryColor }}></View>}
       </View>
     </View>
   );

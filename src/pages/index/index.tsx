@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Taro, { useDidShow } from '@tarojs/taro';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import api from '../../services/api';
+import { getThemeColors, ThemeColors } from '../../utils/themeManager';
 import './index.scss';
 
 // 游记项目类型
@@ -16,11 +17,31 @@ interface DiaryItem {
   createdAt: string;
 }
 
+// 浅色处理函数
+function lightenColor(hex: string, amount: number): string {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 转为RGB
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+  
+  // 变浅颜色
+  r = Math.min(255, Math.floor(r + (255 - r) * amount));
+  g = Math.min(255, Math.floor(g + (255 - g) * amount));
+  b = Math.min(255, Math.floor(b + (255 - b) * amount));
+  
+  // 转回hex
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 function Index() {
   const [diaries, setDiaries] = useState<DiaryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [activeTab, setActiveTab] = useState('discover'); // 默认选中"发现"标签
+  const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
 
   // 组件挂载时和Tab切换时获取数据
   useDidShow(() => {
@@ -41,9 +62,16 @@ function Index() {
     // 注册事件
     Taro.eventCenter.on('refreshHomePage', refreshHandler);
 
+    // 监听主题变化事件
+    const themeChangeHandler = (newTheme: ThemeColors) => {
+      setTheme(newTheme);
+    };
+    Taro.eventCenter.on('themeChange', themeChangeHandler);
+
     // 清理函数
     return () => {
       Taro.eventCenter.off('refreshHomePage', refreshHandler);
+      Taro.eventCenter.off('themeChange', themeChangeHandler);
     };
   }, []);
 
@@ -151,13 +179,43 @@ function Index() {
           className={`tab-item ${activeTab === 'discover' ? 'active' : ''}`}
           onClick={() => handleTabChange('discover')}
         >
-          发现
+          <Text style={activeTab === 'discover' ? { color: theme.primaryColor } : {}}>发现</Text>
+          {activeTab === 'discover' && (
+            <View 
+              className='active-indicator' 
+              style={{ 
+                position: 'absolute', 
+                bottom: 0, 
+                left: '50%', 
+                transform: 'translateX(-50%)', 
+                width: '60px', 
+                height: '6px',
+                backgroundColor: theme.primaryColor,
+                borderRadius: '3px'
+              }}
+            ></View>
+          )}
         </View>
         <View
           className={`tab-item ${activeTab === 'nearby' ? 'active' : ''}`}
           onClick={() => handleTabChange('nearby')}
         >
-          附近
+          <Text style={activeTab === 'nearby' ? { color: theme.primaryColor } : {}}>附近</Text>
+          {activeTab === 'nearby' && (
+            <View 
+              className='active-indicator' 
+              style={{ 
+                position: 'absolute', 
+                bottom: 0, 
+                left: '50%', 
+                transform: 'translateX(-50%)', 
+                width: '60px', 
+                height: '6px',
+                backgroundColor: theme.primaryColor,
+                borderRadius: '3px'
+              }}
+            ></View>
+          )}
         </View>
 
         {/* 搜索图标 */}

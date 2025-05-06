@@ -2,8 +2,8 @@
 .at-button {
   /* 自定义样式可以在这里添加 */
   &--primary {
-    background-color: #1296db !important;
-    border-color: #1296db !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
   }
   
   &--secondary {

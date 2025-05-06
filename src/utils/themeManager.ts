@@ -53,6 +53,8 @@ export function applyTheme(theme: ThemeColors = getThemeColors()): void {
     document.documentElement.style.setProperty('--primary-color', theme.primaryColor);
     document.documentElement.style.setProperty('--primary-light', `${theme.primaryColor}1a`); // 10%透明度
     document.documentElement.style.setProperty('--primary-dark', darkenColor(theme.primaryColor, 0.2));
+    document.documentElement.style.setProperty('--primary-light-color', lightenColor(theme.primaryColor, 0.6)); // 浅色版主题色
+    document.documentElement.style.setProperty('--primary-shadow', `${theme.primaryColor}4d`); // 30%透明度
     document.documentElement.style.setProperty('--secondary-color', theme.secondaryColor);
   } else {
     // 小程序环境下，使用页面样式设置
@@ -127,6 +129,25 @@ function darkenColor(hex: string, amount: number): string {
   r = Math.max(0, Math.floor(r * (1 - amount)));
   g = Math.max(0, Math.floor(g * (1 - amount)));
   b = Math.max(0, Math.floor(b * (1 - amount)));
+  
+  // 转回hex
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+// 辅助函数: 颜色变浅
+function lightenColor(hex: string, amount: number): string {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 转为RGB
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
+  
+  // 变浅颜色
+  r = Math.min(255, Math.floor(r + (255 - r) * amount));
+  g = Math.min(255, Math.floor(g + (255 - g) * amount));
+  b = Math.min(255, Math.floor(b + (255 - b) * amount));
   
   // 转回hex
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;

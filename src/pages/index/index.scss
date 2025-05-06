@@ -103,7 +103,7 @@ page {
 }
 
 .tab-item.active {
-  color: #1296db;
+  color: var(--primary-color);
   font-weight: bold;
 }
 
@@ -115,7 +115,7 @@ page {
   transform: translateX(-50%);
   width: 60px;
   height: 6px;
-  background-color: #1296db;
+  background-color: var(--primary-color);
   border-radius: 3px;
 }
 
@@ -130,7 +130,7 @@ page {
 .index-title {
   font-size: 48px;
   font-weight: bold;
-  color: #1296db;
+  color: var(--primary-color);
   display: block;
   margin-bottom: 20px;
 }
@@ -187,7 +187,7 @@ page {
   top: 8px;
   height: 32px;
   width: 8px;
-  background-color: #1296db;
+  background-color: var(--primary-color);
   border-radius: 4px;
 }
 
