@@ -1,0 +1,93 @@
+.nearby-diary-item {
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+.diary-cover {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.diary-info {
+  padding: 15px;
+}
+
+.diary-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.diary-location {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.location-icon {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.location-name {
+  -webkit-line-clamp: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.diary-distance {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+.diary-author {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #999;
+}
+
+.author-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.author-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.like-count {
+  display: flex;
+  align-items: center;
+}
+
+.like-icon {
+  font-size: 14px;
+  margin-right: 3px;
+}
+
+.like-number {
+  font-size: 14px;
+}

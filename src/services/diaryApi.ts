@@ -12,6 +12,33 @@ const diaryApi = {
     });
   },
 
+  // 获取附近的游记
+  getNearby: (latitude, longitude, page = 1, limit = 10) => {
+    // 参数校验
+    if (typeof latitude !== 'number' || latitude < -90 || latitude > 90) {
+      return Promise.reject(new Error('纬度值必须在-90到90之间'));
+    }
+
+    if (typeof longitude !== 'number' || longitude < -180 || longitude > 180) {
+      return Promise.reject(new Error('经度值必须在-180到180之间'));
+    }
+
+    // 构建请求参数
+    const params = {
+      latitude,
+      longitude,
+      page,
+      limit,
+      _t: Date.now() // 添加时间戳避免缓存
+    };
+
+    return request({
+      url: '/api/diaries/nearby',
+      method: 'GET',
+      data: params
+    });
+  },
+
   // 获取单个游记详情
   getDetail: (id) => {
     return request({

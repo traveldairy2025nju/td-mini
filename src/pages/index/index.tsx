@@ -24,46 +24,64 @@ interface DiaryItem {
   authorAvatar?: string; // 添加作者头像字段
   likeCount: number;
   createdAt: string;
+  location?: {
+    name?: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  distance?: number; // 距离（米）
+  distanceText?: string; // 格式化后的距离文本
 }
 
 // 浅色处理函数
 function lightenColor(hex: string, amount: number): string {
   // 移除#号
   hex = hex.replace('#', '');
-  
+
   // 转为RGB
   let r = parseInt(hex.substring(0, 2), 16);
   let g = parseInt(hex.substring(2, 4), 16);
   let b = parseInt(hex.substring(4, 6), 16);
-  
+
   // 变浅颜色
   r = Math.min(255, Math.floor(r + (255 - r) * amount));
   g = Math.min(255, Math.floor(g + (255 - g) * amount));
   b = Math.min(255, Math.floor(b + (255 - b) * amount));
-  
+
   // 转回hex
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
 function Index() {
   const [diaries, setDiaries] = useState<DiaryItem[]>([]);
+  const [nearbyDiaries, setNearbyDiaries] = useState<DiaryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nearbyLoading, setNearbyLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [nearbyError, setNearbyError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('discover'); // 默认选中"发现"标签
   const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentLocation, setCurrentLocation] = useState<{latitude: number; longitude: number} | null>(null);
+  const [locationRequested, setLocationRequested] = useState(false);
 
-  // 组件挂载时和Tab切换时获取数据
-  useDidShow(() => {
+  // 组件挂载时
+  useEffect(() => {
+    // 立即加载常规游记列表
     fetchDiaries();
 
-    // 通知TabBar更新选中状态
-    Taro.eventCenter.trigger('tabIndexChange', 0);
-  });
+    // 同时尝试获取位置并预加载附近游记
+    initLocationAndNearbyDiaries();
 
-  // 添加事件监听器，监听收藏状态变化
-  useEffect(() => {
+    // 注册刷新事件监听
     const refreshHandler = () => {
-      fetchDiaries();
+      if (activeTab === 'discover') {
+        fetchDiaries();
+      } else if (activeTab === 'nearby') {
+        fetchNearbyDiaries();
+      }
     };
 
     // 注册事件
@@ -81,6 +99,118 @@ function Index() {
       Taro.eventCenter.off('themeChange', themeChangeHandler);
     };
   }, []);
+
+  // Tab切换时获取数据
+  useDidShow(() => {
+    // 更新选中的标签页
+    if (activeTab === 'discover') {
+      fetchDiaries();
+    } else if (activeTab === 'nearby') {
+      // 如果还没有位置信息，重新尝试获取
+      if (!currentLocation && !locationRequested) {
+        initLocationAndNearbyDiaries();
+      } else if (nearbyDiaries.length === 0 && !nearbyLoading) {
+        // 如果有位置但没有数据，尝试重新加载
+        fetchNearbyDiaries();
+      }
+    }
+
+    // 通知TabBar更新选中状态
+    Taro.eventCenter.trigger('tabIndexChange', 0);
+  });
+
+  // 初始化位置和附近游记
+  const initLocationAndNearbyDiaries = async () => {
+    setLocationRequested(true);
+    try {
+      // 静默获取位置权限和数据，不显示loading
+      const location = await getCurrentLocation(false);
+      if (location) {
+        // 预加载附近游记数据，但不影响用户体验
+        loadNearbyDiaries(location);
+      }
+    } catch (error) {
+      console.log('预加载附近游记失败:', error);
+      // 这里不显示错误，只记录日志，等用户切换到附近标签时再提示
+    }
+  };
+
+  // 加载附近游记（被预加载或主动加载调用）
+  const loadNearbyDiaries = async (location) => {
+    try {
+      setNearbyError(null);
+
+      const res = await api.diary.getNearby(
+        location.latitude,
+        location.longitude,
+        page,
+        10
+      );
+
+      if (res.success && res.data) {
+        // 转换API返回的数据为组件需要的格式
+        const formattedNearbyDiaries = res.data.items.map(item => {
+          // 格式化距离显示
+          let distanceText = '';
+          if (item.distance !== undefined) {
+            if (item.distance < 1000) {
+              distanceText = `${Math.round(item.distance)}米`;
+            } else {
+              distanceText = `${(item.distance / 1000).toFixed(1)}公里`;
+            }
+          }
+
+          return {
+            id: item._id,
+            title: item.title || '无标题',
+            coverImage: item.images?.[0] || 'https://placeholder.com/300',
+            authorName: item.author?.nickname || '未知用户',
+            authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
+            likeCount: item.likeCount || 0,
+            createdAt: item.createdAt || '',
+            location: item.location,
+            distance: item.distance,
+            distanceText: item.distanceText || distanceText
+          };
+        });
+
+        setNearbyDiaries(formattedNearbyDiaries);
+        setTotalPages(res.data.totalPages || 1);
+      } else {
+        throw new Error(res.message || '获取附近游记列表失败');
+      }
+    } catch (error) {
+      console.error('获取附近游记失败:', error);
+      setNearbyError(error instanceof Error ? error.message : '获取附近游记列表失败');
+      setNearbyDiaries([]);
+    } finally {
+      setNearbyLoading(false);
+    }
+  };
+
+  // 获取当前位置，showLoading参数控制是否显示加载状态
+  const getCurrentLocation = async (showLoading = true): Promise<{latitude: number; longitude: number} | null> => {
+    try {
+      if (showLoading) {
+        setNearbyLoading(true);
+      }
+
+      const res = await api.location.getCurrentLocation();
+      const location = res as {latitude: number; longitude: number};
+      setCurrentLocation(location);
+      return location;
+    } catch (error) {
+      console.error('获取位置失败:', error);
+      if (showLoading) {
+        Taro.showToast({
+          title: '获取位置失败，请检查位置权限',
+          icon: 'none'
+        });
+        setNearbyError('获取位置失败，请检查位置权限');
+      }
+      return null;
+    }
+  };
 
   // 获取游记列表
   const fetchDiaries = async () => {
@@ -100,7 +230,10 @@ function Index() {
             authorName: item.author?.nickname || '未知用户',
             authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD', // 添加作者头像
             likeCount: item.likeCount || 0, // 使用likeCount字段
-            createdAt: item.createdAt || ''
+            createdAt: item.createdAt || '',
+            location: item.location,
+            distance: item.distance,
+            distanceText: item.distanceText
           };
         });
 
@@ -121,6 +254,37 @@ function Index() {
     }
   };
 
+  // 获取附近游记列表（用户主动切换到附近标签时调用）
+  const fetchNearbyDiaries = async () => {
+    try {
+      setNearbyLoading(true);
+      setNearbyError(null);
+
+      // 获取位置并显示加载状态
+      const location = await getCurrentLocation(true);
+
+      if (!location) {
+        throw new Error('获取位置失败，请检查位置权限');
+      }
+
+      // 加载附近游记数据
+      await loadNearbyDiaries(location);
+
+    } catch (error) {
+      let errorMessage = '获取附近游记列表失败';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      Taro.showToast({
+        title: errorMessage,
+        icon: 'none'
+      });
+      // 加载失败时设置为空数组
+      setNearbyDiaries([]);
+      setNearbyLoading(false);
+    }
+  };
+
   // 点击游记项目，跳转到详情页
   const handleDiaryItemClick = (id: string) => {
     if (!id) {
@@ -135,8 +299,12 @@ function Index() {
 
   // 切换标签页
   const handleTabChange = (tab: string) => {
+    if (tab === activeTab) return;
+
     setActiveTab(tab);
-    // 如果是附近标签，未来可以在这里实现获取附近的游记
+    if (tab === 'nearby' && (nearbyDiaries.length === 0 || !currentLocation)) {
+      fetchNearbyDiaries();
+    }
   };
 
   // 点击搜索图标
@@ -165,7 +333,18 @@ function Index() {
       // 附近标签的内容
       return (
         <View className='nearby-content'>
-          <View className='empty-container'>附近功能即将上线，敬请期待！</View>
+          {nearbyLoading ? (
+            <View className='loading-container'>加载中...</View>
+          ) : nearbyDiaries.length > 0 ? (
+            <WaterfallFlow
+              diaryList={nearbyDiaries}
+              onItemClick={handleDiaryItemClick}
+            />
+          ) : (
+            <View className='empty-container'>
+              {nearbyError ? nearbyError : '附近暂无游记，快来创建第一篇吧！'}
+            </View>
+          )}
         </View>
       );
     }
@@ -181,14 +360,14 @@ function Index() {
         >
           <Text style={activeTab === 'discover' ? { color: theme.primaryColor } : {}}>发现</Text>
           {activeTab === 'discover' && (
-            <View 
-              className='active-indicator' 
-              style={{ 
-                position: 'absolute', 
-                bottom: 0, 
-                left: '50%', 
-                transform: 'translateX(-50%)', 
-                width: '60px', 
+            <View
+              className='active-indicator'
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60px',
                 height: '6px',
                 backgroundColor: theme.primaryColor,
                 borderRadius: '3px'
@@ -202,14 +381,14 @@ function Index() {
         >
           <Text style={activeTab === 'nearby' ? { color: theme.primaryColor } : {}}>附近</Text>
           {activeTab === 'nearby' && (
-            <View 
-              className='active-indicator' 
-              style={{ 
-                position: 'absolute', 
-                bottom: 0, 
-                left: '50%', 
-                transform: 'translateX(-50%)', 
-                width: '60px', 
+            <View
+              className='active-indicator'
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60px',
                 height: '6px',
                 backgroundColor: theme.primaryColor,
                 borderRadius: '3px'
@@ -220,7 +399,7 @@ function Index() {
 
         {/* 搜索图标 */}
         <View className='search-icon' onClick={handleSearchClick}>
-          <Image 
+          <Image
             className='search-icon-img'
             src={require('../../assets/icons/search.svg')}
             style={{ width: '28px', height: '28px' }}
