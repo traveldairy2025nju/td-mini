@@ -14,6 +14,7 @@ interface DiaryItem {
   title: string;
   coverImage: string;
   authorName: string;
+  authorAvatar?: string;
   likeCount: number;
   createdAt: string;
   status?: 'pending' | 'approved' | 'rejected';
@@ -158,6 +159,7 @@ function My() {
             title: item.title || '无标题',
             coverImage: item.images?.[0] || 'https://placeholder.com/300',
             authorName: userInfo?.nickname || '我',
+            authorAvatar: userInfo?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
             createdAt: item.createdAt || '',
             status: item.status
@@ -207,6 +209,7 @@ function My() {
             title: item.title || '无标题',
             coverImage: coverImage || 'https://placeholder.com/300',
             authorName: item.author?.nickname || '未知用户',
+            authorAvatar: item.author?.avatar || 'https://api.dicebear.com/6.x/initials/svg?seed=TD',
             likeCount: item.likeCount || 0,
             createdAt: item.createdAt || '',
             status: item.status
