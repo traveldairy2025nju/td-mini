@@ -7,6 +7,8 @@ import Textarea from '../../components/taro-ui/Textarea';
 import api from '../../services/api';
 import { getThemeColors } from '../../utils/themeManager';
 import { hexToRgba } from '../../utils/colorUtils';
+import { useTheme } from '../../hooks';
+import { useRouter } from '../../hooks';
 import './index.scss';
 
 interface FormData {
@@ -37,6 +39,7 @@ interface LocationData {
 
 function CreateDiary() {
   const theme = getThemeColors();
+  const { navigateBack } = useRouter();
   const [formData, setFormData] = useState<FormData>({
     title: '',
     content: '',
@@ -359,7 +362,7 @@ function CreateDiary() {
         });
 
         setTimeout(() => {
-          Taro.navigateBack();
+          navigateBack();
         }, 2000);
       } else {
         throw new Error(result.message || '创建失败');

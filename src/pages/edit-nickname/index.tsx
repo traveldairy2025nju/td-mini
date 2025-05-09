@@ -3,12 +3,14 @@ import { useState } from 'react';
 import Taro from '@tarojs/taro';
 import { AtInput, AtButton } from 'taro-ui';
 import useUserStore from '../../store/user';
+import { useRouter } from '../../hooks';
 import './index.scss';
 
 function EditNickname() {
   const { userInfo, updateNickname, isLoading } = useUserStore();
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [error, setError] = useState('');
+  const { navigateBack } = useRouter();
 
   // 处理昵称变化
   const handleChange = (value) => {
@@ -37,7 +39,7 @@ function EditNickname() {
         
         // 返回上一页
         setTimeout(() => {
-          Taro.navigateBack();
+          navigateBack();
         }, 2000);
       } else {
         setError('更新昵称失败');

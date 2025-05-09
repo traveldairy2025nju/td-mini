@@ -37,4 +37,11 @@
     border: 0 solid black;
     border-radius: 48px;
   }
+  
+  /* 自定义主题色按钮样式 */
+  &.custom-primary {
+    background-color: var(--button-primary-color) !important;
+    border-color: var(--button-primary-color) !important;
+    color: #fff !important;
+  }
 } 

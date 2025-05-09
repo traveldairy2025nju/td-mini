@@ -1,12 +1,13 @@
 import { View, Text, Image, ScrollView, Canvas, Video } from '@tarojs/components';
 import { useState, useEffect } from 'react';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter as useTaroRouter } from '@tarojs/taro';
 import api from '../../services/api';
 import Input from '../../components/taro-ui/Input';
 import Button from '../../components/taro-ui/Button';
 import Textarea from '../../components/taro-ui/Textarea';
 import { getThemeColors } from '../../utils/themeManager';
 import { hexToRgba } from '../../utils/colorUtils';
+import { useRouter } from '../../hooks';
 import './index.scss';
 
 // 表单数据类型
@@ -39,9 +40,10 @@ interface LocationData {
 }
 
 function EditDiary() {
+  const router = useTaroRouter();
+  const diaryId = router.params.id;
   const theme = getThemeColors();
-  const router = useRouter();
-  const diaryId = router?.params?.id;
+  const { navigateBack } = useRouter();
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -67,7 +69,7 @@ function EditDiary() {
         icon: 'none'
       });
       setTimeout(() => {
-        Taro.navigateBack();
+        navigateBack();
       }, 1500);
     }
   }, [diaryId]);
@@ -97,7 +99,7 @@ function EditDiary() {
         icon: 'none'
       });
       setTimeout(() => {
-        Taro.navigateBack();
+        navigateBack();
       }, 1500);
     } finally {
       setLoading(false);
@@ -361,20 +363,7 @@ function EditDiary() {
 
         setTimeout(() => {
           // 返回到详情页，并传递刷新参数
-          Taro.navigateBack({
-            delta: 1,
-            success: () => {
-              const pages = Taro.getCurrentPages();
-              const prevPage = pages[pages.length - 1];
-              if (prevPage && prevPage.route && prevPage.route.includes('detail')) {
-                // 设置刷新标志
-                if (prevPage.$component && prevPage.$component.props && prevPage.$component.props.router &&
-                    prevPage.$component.props.router.params) {
-                  prevPage.$component.props.router.params.refresh = Date.now().toString();
-                }
-              }
-            }
-          });
+          navigateBack();
         }, 1500);
       } else {
         throw new Error(result.message || '更新失败');

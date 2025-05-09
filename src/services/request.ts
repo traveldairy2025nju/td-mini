@@ -1,4 +1,5 @@
 import Taro from '@tarojs/taro';
+import router from '../routes';
 import ENV_CONFIG from '../config/env';
 
 // 尝试导入本地环境配置（如果存在）
@@ -51,7 +52,7 @@ function interceptor(chain) {
         });
 
         setTimeout(() => {
-          Taro.navigateTo({ url: '/pages/login/index' });
+          router.navigateToLogin();
         }, 1500);
       }
 

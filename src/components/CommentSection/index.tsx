@@ -6,6 +6,7 @@ import { Comment, CommentAction, CommentSectionProps } from './interfaces';
 import './index.scss';
 import CommentInput from './CommentInput';
 import { ThemeColors, getThemeColors } from '../../utils/themeManager';
+import router from '../../routes';
 
 // 默认头像
 const DEFAULT_AVATAR = 'https://api.dicebear.com/6.x/initials/svg?seed=TD';
@@ -42,6 +43,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [replyToComment, setReplyToComment] = useState<Comment | null>(null);
   const [activeComment, setActiveComment] = useState<Comment | null>(null);
+
+  // 添加展开状态的记录
+  const [expandedReplies, setExpandedReplies] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     if (diaryId) {
@@ -179,9 +183,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
     // 延迟跳转到登录页
     setTimeout(() => {
-      Taro.navigateTo({
-        url: '/pages/login/index'
-      });
+      router.navigateToLogin();
     }, 1500);
   };
 
@@ -435,13 +437,26 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
+  // 切换回复展开/收起状态
+  const toggleRepliesExpand = (commentId: string) => {
+    setExpandedReplies(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId]
+    }));
+  };
+
   // 渲染回复评论
   const renderReplies = (parentComment: Comment, replies: Comment[]) => {
     if (!replies || replies.length === 0) return null;
+    
+    const commentId = parentComment._id || parentComment.id || '';
+    const isExpanded = expandedReplies[commentId] || false;
+    const showExpandButton = replies.length > 3;
+    const visibleReplies = isExpanded ? replies : replies.slice(0, 3);
 
     return (
       <View className='reply-comments'>
-        {replies.map(reply => {
+        {visibleReplies.map(reply => {
           const replyAuthor = reply.user || {
             _id: '',
             nickname: '未知用户',
@@ -467,12 +482,35 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                   <Text className='reply-date'>{formatDate(reply.createdAt)}</Text>
                 </View>
                 <Text className='reply-text'>
-                  回复 <Text style={{ color: theme.primaryColor }}>{parentComment.user?.nickname || '用户'}</Text>：{reply.content}
+                  {reply.content}
                 </Text>
               </View>
             </View>
           );
         })}
+        
+        {showExpandButton && (
+          <View 
+            className='replies-expand-button'
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleRepliesExpand(commentId);
+            }}
+          >
+            <Text 
+              className='expand-text'
+              style={{
+                color: theme.primaryColor,
+                backgroundColor: `${hexToRgba(theme.primaryColor, 0.06)}`,
+                marginLeft: '22px',
+                fontSize: '9px',
+                padding: '6px 16px'
+              }}
+            >
+              {isExpanded ? '收起回复' : `展开更多${replies.length - 3}条回复`}
+            </Text>
+          </View>
+        )}
       </View>
     );
   };

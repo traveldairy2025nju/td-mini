@@ -1,5 +1,5 @@
 import { View, Image, Text } from '@tarojs/components';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, CSSProperties } from 'react';
 import './index.scss';
 
 interface DiaryItem {
@@ -12,15 +12,38 @@ interface DiaryItem {
   likeCount: number;
   createdAt: string;
   status?: 'pending' | 'approved' | 'rejected'; // 添加状态字段
+  location?: {
+    name?: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  distance?: number;
+  distanceText?: string;
 }
 
 interface WaterfallFlowProps {
-  diaryList: DiaryItem[];
+  items: DiaryItem[];
+  diaryList?: DiaryItem[]; // 保留兼容旧代码
   onItemClick: (id: string) => void;
   showStatus?: boolean; // 是否显示状态标签
+  columnGap?: number;
+  style?: CSSProperties;
+  locationBadge?: boolean;
 }
 
-const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, showStatus = false }) => {
+const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ 
+  items, 
+  diaryList, 
+  onItemClick, 
+  showStatus = false,
+  columnGap = 10,
+  style = {},
+  locationBadge = false
+}) => {
+  // 兼容两种属性名
+  const diaryItems = items || diaryList || [];
+  
   // 将数据分成左右两列
   const [leftColumn, setLeftColumn] = useState<DiaryItem[]>([]);
   const [rightColumn, setRightColumn] = useState<DiaryItem[]>([]);
@@ -30,7 +53,7 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
     const right: DiaryItem[] = [];
 
     // 简单的左右分列
-    diaryList.forEach((item, index) => {
+    diaryItems.forEach((item, index) => {
       if (index % 2 === 0) {
         left.push(item);
       } else {
@@ -40,7 +63,7 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
 
     setLeftColumn(left);
     setRightColumn(right);
-  }, [diaryList]);
+  }, [diaryItems]);
 
   const handleItemClick = (item: DiaryItem) => {
     // 确保ID存在且有效
@@ -102,6 +125,13 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
               {statusInfo.text}
             </View>
           )}
+          
+          {/* 距离标签 */}
+          {locationBadge && item.distanceText && (
+            <View className='location-badge'>
+              <Text className='location-text'>{item.distanceText}</Text>
+            </View>
+          )}
         </View>
 
         {/* 游记信息区域 */}
@@ -132,11 +162,17 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({ diaryList, onItemClick, s
   };
 
   return (
-    <View className='waterfall-container'>
-      <View className='waterfall-column left-column'>
+    <View className='waterfall-container' style={style}>
+      <View 
+        className='waterfall-column left-column'
+        style={{ marginRight: `${columnGap / 2}px` }}
+      >
         {leftColumn.map(renderDiaryItem)}
       </View>
-      <View className='waterfall-column right-column'>
+      <View 
+        className='waterfall-column right-column'
+        style={{ marginLeft: `${columnGap / 2}px` }}
+      >
         {rightColumn.map(renderDiaryItem)}
       </View>
     </View>

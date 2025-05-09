@@ -1,5 +1,6 @@
 import Taro from '@tarojs/taro';
 import { clearIconCache } from './iconHelper';
+import router from '../routes';
 
 // 主题色类型定义
 export interface ThemeColors {
@@ -103,12 +104,7 @@ export function setTheme(theme: ThemeColors, needReload: boolean = true): void {
         // 重新加载小程序
         const currentPage = Taro.getCurrentPages().pop();
         const route = currentPage ? currentPage.route : 'pages/index/index';
-        Taro.reLaunch({
-          url: `/${route}`,
-          success: () => {
-            console.log('小程序已重新加载以应用主题');
-          }
-        });
+        router.reLaunch(`/${route}`, undefined);
       }, 500);
     }
   } catch (e) {

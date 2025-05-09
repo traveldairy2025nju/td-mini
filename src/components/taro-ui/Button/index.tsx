@@ -36,6 +36,12 @@ const Button: React.FC<TaroButtonProps> = ({
   let buttonSize: "normal" | "small" = "normal";
   if (size === 'small') buttonSize = 'small';
 
+  // 处理自定义样式，确保背景色和边框色可以被正确应用
+  const mergedStyle = {
+    ...style,
+    '--button-primary-color': style?.backgroundColor,
+  } as React.CSSProperties;
+
   return (
     <AtButton
       type={buttonType}
@@ -44,8 +50,8 @@ const Button: React.FC<TaroButtonProps> = ({
       loading={loading}
       disabled={disabled}
       onClick={onClick}
-      className={className}
-      customStyle={style}
+      className={`${className || ''} ${style?.backgroundColor ? 'custom-primary' : ''}`}
+      customStyle={mergedStyle}
     >
       {children}
     </AtButton>

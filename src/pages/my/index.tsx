@@ -7,6 +7,7 @@ import api from '../../services/api';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import { getThemeColors, ThemeColors } from '../../utils/themeManager';
 import { lightenColor } from '../../utils/colorUtils';
+import router, { ROUTES } from '../../routes';
 import './index.scss';
 
 // SVG图标定义
@@ -150,7 +151,7 @@ function My() {
   // 前往设置页面
   const goToSettings = () => {
     if (checkLogin()) {
-      Taro.navigateTo({ url: '/pages/settings/index' });
+      router.navigateTo(ROUTES.SETTINGS);
     }
   };
 
@@ -278,7 +279,7 @@ function My() {
       });
       return;
     }
-    Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
+    router.navigateToDiaryDetail(id);
   };
 
   // 渲染未登录状态
@@ -288,7 +289,7 @@ function My() {
       <Button
         type='primary'
         className='my-login-button'
-        onClick={() => Taro.navigateTo({ url: '/pages/login/index' })}
+        onClick={() => router.navigateToLogin()}
       >
         去登录
       </Button>
@@ -390,7 +391,7 @@ function My() {
         <View className='loading-container'>加载中...</View>
       ) : diaries.length > 0 ? (
         <WaterfallFlow
-          diaryList={diaries}
+          items={diaries}
           onItemClick={handleDiaryClick}
           showStatus={true}
         />
@@ -400,7 +401,7 @@ function My() {
           <Button
             type='primary'
             className='create-diary-btn'
-            onClick={() => Taro.navigateTo({ url: '/pages/create-diary/index' })}
+            onClick={() => router.navigateToCreateDiary()}
           >
             创建游记
           </Button>
@@ -416,7 +417,7 @@ function My() {
         <View className='loading-container'>加载中...</View>
       ) : favorites.length > 0 ? (
         <WaterfallFlow
-          diaryList={favorites}
+          items={favorites}
           onItemClick={handleDiaryClick}
           showStatus={false}
         />
@@ -426,7 +427,7 @@ function My() {
           <Button
             type='primary'
             className='create-diary-btn'
-            onClick={() => Taro.switchTab({ url: '/pages/index/index' })}
+            onClick={() => router.switchToHome()}
           >
             探索游记
           </Button>
