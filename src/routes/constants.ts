@@ -24,7 +24,8 @@ export const PAGE_ROUTES = {
   
   // 其他
   SEARCH: '/pages/search/index',
-  CUSTOM_THEME: '/pages/custom-theme/index'
+  CUSTOM_THEME: '/pages/custom-theme/index',
+  THEME_SELECTOR: '/pages/theme-selector/index'
 };
 
 // 合并所有路由常量，便于导出
