@@ -1,44 +1,10 @@
 import { View, Text, Image } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
-import useUserStore from '../../store/user';
-import { isLoggedIn } from '../../utils/auth';
+import { useAuth, useTheme } from '../../hooks';
 import Button from '../../components/taro-ui/Button';
 import Input from '../../components/taro-ui/Input';
-import { getThemeColors, ThemeColors } from '../../utils/themeManager';
 import './index.scss';
-
-// 浅色处理函数
-function lightenColor(hex: string, amount: number): string {
-  // 移除#号
-  hex = hex.replace('#', '');
-  
-  // 转为RGB
-  let r = parseInt(hex.substring(0, 2), 16);
-  let g = parseInt(hex.substring(2, 4), 16);
-  let b = parseInt(hex.substring(4, 6), 16);
-  
-  // 变浅颜色
-  r = Math.min(255, Math.floor(r + (255 - r) * amount));
-  g = Math.min(255, Math.floor(g + (255 - g) * amount));
-  b = Math.min(255, Math.floor(b + (255 - b) * amount));
-  
-  // 转回hex
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-}
-
-// 颜色转rgba
-function hexToRgba(hex: string, alpha: number): string {
-  // 移除#号
-  hex = hex.replace('#', '');
-  
-  // 转为RGB
-  let r = parseInt(hex.substring(0, 2), 16);
-  let g = parseInt(hex.substring(2, 4), 16);
-  let b = parseInt(hex.substring(4, 6), 16);
-  
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 interface FormData {
   username: string;
@@ -56,29 +22,17 @@ function Login() {
     password: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
-
-  // 从zustand中获取状态和方法
-  const { login, isLoading, error } = useUserStore();
+  
+  // 使用hooks
+  const { theme, lightenColor, hexToRgba } = useTheme();
+  const { isLoggedIn, login, isLoading, error } = useAuth();
 
   // 如果已登录，直接跳转到首页
   useEffect(() => {
-    const loggedIn = isLoggedIn();
-
-    if (loggedIn) {
+    if (isLoggedIn) {
       Taro.switchTab({ url: '/pages/index/index' });
     }
-    
-    // 监听主题变化事件
-    const themeChangeHandler = (newTheme: ThemeColors) => {
-      setTheme(newTheme);
-    };
-    Taro.eventCenter.on('themeChange', themeChangeHandler);
-    
-    return () => {
-      Taro.eventCenter.off('themeChange', themeChangeHandler);
-    };
-  }, []);
+  }, [isLoggedIn]);
 
   // 处理表单变化
   const handleChange = (name: string, value: string) => {
@@ -220,23 +174,18 @@ function Login() {
 
         <Button
           type='primary'
-          className='login-button'
           loading={isLoading}
           onClick={handleSubmit}
           style={{
-            background: `linear-gradient(90deg, ${theme.primaryColor} 0%, ${theme.primaryColor}cc 100%)`,
-            boxShadow: `0 8px 16px ${hexToRgba(theme.primaryColor, 0.3)}`
+            backgroundColor: theme.primaryColor,
+            borderColor: theme.primaryColor
           }}
         >
-          登 录
+          登录
         </Button>
 
         <View className='login-footer'>
-          <Text 
-            className='login-register-link' 
-            onClick={goToRegister}
-            style={{ color: theme.primaryColor }}
-          >
+          <Text className='register-link' onClick={goToRegister}>
             没有账号？立即注册
           </Text>
         </View>
