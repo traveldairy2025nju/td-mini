@@ -5,6 +5,7 @@ import useUserStore from '../../store/user';
 import { checkLogin } from '../../utils/auth';
 import Button from '../../components/taro-ui/Button';
 import { THEMES, ThemeColors, getThemeColors, switchToPresetTheme, createCustomTheme } from '../../utils/themeManager';
+import { useRouter } from '../../hooks';
 import './index.scss';
 
 function Settings() {
@@ -15,6 +16,9 @@ function Settings() {
     logout,
     updateProfile 
   } = useUserStore();
+  
+  // 路由钩子
+  const { navigateTo, redirectTo, reLaunch, ROUTES } = useRouter();
   
   // 当前主题色
   const [currentTheme, setCurrentTheme] = useState<ThemeColors>(getThemeColors());
@@ -29,7 +33,7 @@ function Settings() {
         icon: 'none',
         duration: 2000,
         complete: () => {
-          Taro.redirectTo({ url: '/pages/login/index' });
+          redirectTo(ROUTES.LOGIN);
         }
       });
     }
@@ -51,7 +55,7 @@ function Settings() {
   
   // 更新昵称
   const handleUpdateNickname = () => {
-    Taro.navigateTo({ url: '/pages/edit-nickname/index' });
+    navigateTo(ROUTES.EDIT_NICKNAME);
   };
   
   // 退出登录
@@ -62,7 +66,7 @@ function Settings() {
       success: (res) => {
         if (res.confirm) {
           logout();
-          Taro.reLaunch({ url: '/pages/login/index' });
+          reLaunch(ROUTES.LOGIN);
         }
       }
     });
@@ -70,12 +74,12 @@ function Settings() {
 
   // 关于我们
   const handleAboutUs = () => {
-    Taro.navigateTo({ url: '/pages/about/index' });
+    navigateTo('/pages/about/index');
   };
   
   // 管理员中心
   const handleAdminCenter = () => {
-    Taro.navigateTo({ url: '/pages/admin/index' });
+    navigateTo('/pages/admin/index');
   };
   
   // 切换主题色
@@ -109,9 +113,7 @@ function Settings() {
           // 无需返回，小程序将自动重新加载
         } else {
           // 自定义颜色 - 跳转到一个专门的输入页面
-          Taro.navigateTo({
-            url: '/pages/custom-theme/index'
-          });
+          navigateTo(ROUTES.CUSTOM_THEME);
         }
       }
     });

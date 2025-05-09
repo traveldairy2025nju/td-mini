@@ -1,4 +1,5 @@
 import Taro from '@tarojs/taro';
+import router, { ROUTES } from '../routes';
 
 export interface UserInfo {
   _id: string;
@@ -48,13 +49,13 @@ export const isAdmin = (): boolean => {
 // 登出
 export const logout = () => {
   clearUserInfo();
-  Taro.reLaunch({ url: '/pages/login/index' });
+  router.reLaunch(ROUTES.LOGIN);
 };
 
 // 检查登录状态，如未登录跳转到登录页
 export const checkLogin = () => {
   if (!isLoggedIn()) {
-    Taro.navigateTo({ url: '/pages/login/index' });
+    router.navigateToLogin();
     return false;
   }
   return true;

@@ -3,6 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import { isLoggedIn } from '../utils/auth';
 import { getThemeColors } from '../utils/themeManager';
+import router, { ROUTES, TAB_ROUTES } from '../routes';
 import './index.scss';
 
 // SVG图标内容
@@ -24,12 +25,12 @@ export default function CustomTabBar() {
   
   const [tabList] = useState<TabItem[]>([
     {
-      pagePath: 'pages/index/index',
+      pagePath: TAB_ROUTES.HOME.slice(1), // 移除前导斜杠
       text: '首页',
       icon: HOME_ICON
     },
     {
-      pagePath: 'pages/my/index',
+      pagePath: TAB_ROUTES.MY.slice(1), // 移除前导斜杠
       text: '我的',
       icon: USER_ICON
     }
@@ -97,13 +98,13 @@ export default function CustomTabBar() {
   const switchTab = (index: number, path: string) => {
     Taro.eventCenter.trigger('tabIndexChange', index);
     setSelected(index);
-    Taro.switchTab({ url: `/${path}` });
+    router.switchTab(`/${path}`);
   };
 
   // 处理中间加号按钮点击
   const handleCreateDiary = () => {
     if (isLoggedIn()) {
-      Taro.navigateTo({ url: '/pages/create-diary/index' });
+      router.navigateToCreateDiary();
     } else {
       Taro.showModal({
         title: '提示',
@@ -112,7 +113,7 @@ export default function CustomTabBar() {
         cancelText: '取消',
         success: (res) => {
           if (res.confirm) {
-            Taro.navigateTo({ url: '/pages/login/index' });
+            router.navigateToLogin();
           }
         }
       });

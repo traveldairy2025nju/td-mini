@@ -2,7 +2,7 @@ import { View, Text, Image } from '@tarojs/components';
 import { useEffect, useState, useMemo } from 'react';
 import Taro, { useDidShow } from '@tarojs/taro';
 import WaterfallFlow from '../../components/WaterfallFlow';
-import { useDiary, useNearbyDiaries, useTheme, DiaryItem } from '../../hooks';
+import { useDiary, useNearbyDiaries, useTheme, useRouter, DiaryItem } from '../../hooks';
 import './index.scss';
 
 // SVG图标定义
@@ -26,6 +26,12 @@ function Index() {
     fetchNearbyDiaries,
     refreshNearbyDiaries
   } = useNearbyDiaries({ autoFetch: true });
+  const { 
+    toDiaryDetail, 
+    toCreateDiary, 
+    navigateTo, 
+    ROUTES 
+  } = useRouter();
 
   const [activeTab, setActiveTab] = useState('discover'); // 默认选中"发现"标签
 
@@ -77,9 +83,7 @@ function Index() {
 
   // 点击日记项
   const handleDiaryItemClick = (id: string) => {
-    Taro.navigateTo({
-      url: `/pages/diary/detail/index?id=${id}`
-    });
+    toDiaryDetail(id);
   };
 
   // Tab切换处理
@@ -94,7 +98,7 @@ function Index() {
 
   // 点击搜索
   const handleSearchClick = () => {
-    Taro.navigateTo({ url: '/pages/search/index' });
+    navigateTo(ROUTES.SEARCH);
   };
 
   // 渲染内容
@@ -168,7 +172,7 @@ function Index() {
             <View
               className='create-diary-button'
               style={{ backgroundColor: theme.primaryColor }}
-              onClick={() => Taro.navigateTo({ url: '/pages/create-diary/index' })}
+              onClick={toCreateDiary}
             >
               创建游记
             </View>

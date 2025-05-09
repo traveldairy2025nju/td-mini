@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import api from '../../services/api';
 import WaterfallFlow from '../../components/WaterfallFlow';
+import router from '../../routes';
 import './index.scss';
 
 // SVG图标定义
@@ -109,7 +110,7 @@ function Search() {
 
   // 点击游记项目，跳转到详情页
   const handleDiaryItemClick = (id: string) => {
-    Taro.navigateTo({ url: `/pages/diary/detail/index?id=${id}` });
+    router.navigateToDiaryDetail(id);
   };
 
   // 渲染搜索结果
@@ -140,7 +141,7 @@ function Search() {
 
     return (
       <WaterfallFlow
-        diaryList={diaryList}
+        items={diaryList}
         onItemClick={handleDiaryItemClick}
       />
     );

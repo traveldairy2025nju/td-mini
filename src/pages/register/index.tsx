@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import Button from '../../components/taro-ui/Button';
 import Input from '../../components/taro-ui/Input';
+import { useRouter } from '../../hooks';
 import './index.scss';
 
 interface FormData {
@@ -32,6 +33,7 @@ function Register() {
   
   // 从zustand中获取状态和方法
   const { register, isLoading, error } = useUserStore();
+  const { toHome, navigateBack } = useRouter();
   
   // 处理表单变化
   const handleChange = (name: string, value: string) => {
@@ -118,7 +120,7 @@ function Register() {
       
       // 跳转到首页
       setTimeout(() => {
-        Taro.switchTab({ url: '/pages/index/index' });
+        toHome();
       }, 2000);
     } else if (error) {
       Taro.showToast({
@@ -131,7 +133,7 @@ function Register() {
   
   // 返回登录页
   const goToLogin = () => {
-    Taro.navigateBack();
+    navigateBack();
   };
   
   return (

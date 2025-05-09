@@ -2,7 +2,9 @@ import { View, Text, Image, ScrollView, Video, Swiper, SwiperItem, Button } from
 import { useEffect, useState, useRef } from 'react';
 import Taro, { useRouter, useShareAppMessage } from '@tarojs/taro';
 import api from '../../../services/api';
-import { CommentSection, CommentInput } from '../../../components/CommentSection';
+import CommentSection from '../../../components/CommentSection';
+import CommentInput from '../../../components/CommentSection/CommentInput';
+import router from '../../../routes';
 import './index.scss';
 
 interface DiaryDetail {
@@ -32,17 +34,9 @@ interface DiaryDetail {
 const DEFAULT_IMAGE = 'https://placehold.co/600x400/f5f5f5/cccccc?text=图片加载失败';
 
 function DiaryDetail() {
-  const router = useRouter();
-  console.log('详情页 - 完整router对象:', JSON.stringify(router));
-
-  let id: string | undefined;
-  if (router && router.params) {
-    id = router.params.id;
-    console.log('详情页 - 从router获取的ID:', id);
-  } else {
-    console.error('详情页 - 无法获取router参数');
-  }
-
+  const taroRouter = useRouter();
+  const id = taroRouter.params.id;
+  
   const [diary, setDiary] = useState<DiaryDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -242,7 +236,7 @@ function DiaryDetail() {
                 icon: 'none'
               });
               setTimeout(() => {
-                Taro.navigateBack();
+                router.navigateBack();
               }, 2000);
             }
           } finally {
@@ -256,7 +250,7 @@ function DiaryDetail() {
             duration: 2000
           });
           setTimeout(() => {
-            Taro.navigateBack();
+            router.navigateBack();
           }, 2000);
         }
       } catch (error) {
@@ -316,9 +310,7 @@ function DiaryDetail() {
 
       // 延迟跳转到登录页
       setTimeout(() => {
-        Taro.navigateTo({
-          url: '/pages/login/index'
-        });
+        router.navigateToLogin();
       }, 1500);
       return;
     }
@@ -371,9 +363,7 @@ function DiaryDetail() {
         });
 
         setTimeout(() => {
-          Taro.navigateTo({
-            url: '/pages/login/index'
-          });
+          router.navigateToLogin();
         }, 1500);
         return;
       }
@@ -466,9 +456,7 @@ function DiaryDetail() {
         });
 
         setTimeout(() => {
-          Taro.navigateTo({
-            url: '/pages/login/index'
-          });
+          router.navigateToLogin();
         }, 1500);
         return;
       }
@@ -572,9 +560,7 @@ function DiaryDetail() {
   // 处理编辑游记
   const handleEditDiary = () => {
     if (!id) return;
-    Taro.navigateTo({
-      url: `/pages/edit-diary/index?id=${id}`
-    });
+    router.navigateToEditDiary(id);
   };
 
   // 处理删除游记
@@ -604,7 +590,7 @@ function DiaryDetail() {
 
               // 延迟返回
               setTimeout(() => {
-                Taro.navigateBack();
+                router.navigateBack();
               }, 1500);
             } else {
               throw new Error(response.message || '删除失败');

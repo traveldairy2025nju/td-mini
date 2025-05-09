@@ -1,7 +1,7 @@
 import { View, Text, Image } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
-import { useAuth, useTheme } from '../../hooks';
+import { useAuth, useTheme, useRouter } from '../../hooks';
 import Button from '../../components/taro-ui/Button';
 import Input from '../../components/taro-ui/Input';
 import './index.scss';
@@ -26,11 +26,12 @@ function Login() {
   // 使用hooks
   const { theme, lightenColor, hexToRgba } = useTheme();
   const { isLoggedIn, login, isLoading, error } = useAuth();
+  const { toHome, navigateTo, ROUTES } = useRouter();
 
   // 如果已登录，直接跳转到首页
   useEffect(() => {
     if (isLoggedIn) {
-      Taro.switchTab({ url: '/pages/index/index' });
+      toHome();
     }
   }, [isLoggedIn]);
 
@@ -79,7 +80,7 @@ function Login() {
 
         // 跳转到首页
         setTimeout(() => {
-          Taro.switchTab({ url: '/pages/index/index' });
+          toHome();
         }, 2000);
       } else {
         // 显示具体的错误信息
@@ -102,7 +103,7 @@ function Login() {
 
   // 前往注册页
   const goToRegister = () => {
-    Taro.navigateTo({ url: '/pages/register/index' });
+    navigateTo(ROUTES.REGISTER);
   };
 
   return (
