@@ -466,7 +466,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
                   <Text className='reply-date'>{formatDate(reply.createdAt)}</Text>
                 </View>
                 <Text className='reply-text'>
-                  回复 <Text style={{ color: theme.primaryColor }}>{parentComment.user?.nickname || '用户'}</Text>：{reply.content}
+                  回复 <Text>{parentComment.user?.nickname || '用户'}</Text>：{reply.content}
                 </Text>
               </View>
             </View>

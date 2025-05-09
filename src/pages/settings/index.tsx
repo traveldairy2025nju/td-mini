@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import { checkLogin } from '../../utils/auth';
-import Button from '../../components/taro-ui/Button';
+import { useTheme } from '../../hooks';
 import { THEMES, ThemeColors, getThemeColors, switchToPresetTheme, createCustomTheme } from '../../utils/themeManager';
 import { useRouter } from '../../hooks';
 import './index.scss';
@@ -22,6 +22,7 @@ function Settings() {
   
   // 当前主题色
   const [currentTheme, setCurrentTheme] = useState<ThemeColors>(getThemeColors());
+  const { hexToRgba } = useTheme();
   
   useEffect(() => {
     // 检查登录状态并更新用户资料
@@ -159,12 +160,16 @@ function Settings() {
         </View>
       </View>
       
-      <Button 
+      <View 
         className='logout-button'
         onClick={handleLogout}
+        style={{
+          boxShadow: `0 4px 12px ${hexToRgba('#ff4d4f', 0.1)}, 0 2px 4px ${hexToRgba('#ff4d4f', 0.05)}`,
+          border: `1px solid ${hexToRgba('#ff4d4f', 0.15)}`
+        }}
       >
         退出登录
-      </Button>
+      </View>
     </View>
   );
 }
