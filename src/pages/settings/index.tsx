@@ -3,9 +3,8 @@ import { useEffect, useState } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
 import { checkLogin } from '../../utils/auth';
-import { useTheme } from '../../hooks';
+import { useTheme, useRouter } from '../../hooks';
 import { THEMES, ThemeColors, getThemeColors, switchToPresetTheme, createCustomTheme } from '../../utils/themeManager';
-import { useRouter } from '../../hooks';
 import './index.scss';
 
 function Settings() {
@@ -85,39 +84,8 @@ function Settings() {
   
   // 切换主题色
   const handleSwitchTheme = () => {
-    const themeList = Object.keys(THEMES);
-    const currentThemeName = themeList.find(name => 
-      THEMES[name].primaryColor === currentTheme.primaryColor
-    ) || 'default';
-    
-    // 显示主题选择器
-    Taro.showActionSheet({
-      itemList: [
-        '默认蓝色', 
-        '活力红色', 
-        '自然绿色', 
-        '高雅紫色', 
-        '自定义颜色'
-      ],
-      success: (res) => {
-        const { tapIndex } = res;
-        if (tapIndex < 4) {
-          // 显示加载提示
-          Taro.showLoading({
-            title: '正在应用主题...',
-            mask: true
-          });
-          
-          // 预设主题
-          const themeName = themeList[tapIndex];
-          switchToPresetTheme(themeName as keyof typeof THEMES);
-          // 无需返回，小程序将自动重新加载
-        } else {
-          // 自定义颜色 - 跳转到一个专门的输入页面
-          navigateTo(ROUTES.CUSTOM_THEME);
-        }
-      }
-    });
+    // 跳转到主题选择页面
+    navigateTo(ROUTES.THEME_SELECTOR);
   };
   
   return (
