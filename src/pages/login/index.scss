@@ -124,9 +124,11 @@
   font-size: 32px;
   font-weight: bold;
   letter-spacing: 2px;
-  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
   box-shadow: 0 8px 16px var(--primary-shadow);
   border: none;
+  color: #fff !important;
 }
 
 .login-button::after {
@@ -178,4 +180,22 @@
   word-break: break-all;
   display: block;
   margin-top: 10px;
+}
+
+.submit-button {
+  width: 100%;
+  text-align: center;
+  padding: 24px 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+  border-radius: 50px;
+  margin-top: 40px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  
+  &:active {
+    transform: translateY(1px);
+    opacity: 0.9;
+  }
 }

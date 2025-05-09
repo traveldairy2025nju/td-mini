@@ -173,17 +173,16 @@ function Login() {
           )}
         </View>
 
-        <Button
-          type='primary'
-          loading={isLoading}
-          onClick={handleSubmit}
+        <View
+          className='submit-button'
+          onClick={!isLoading ? handleSubmit : undefined}
           style={{
             backgroundColor: theme.primaryColor,
-            borderColor: theme.primaryColor
+            boxShadow: `0 8px 16px ${hexToRgba(theme.primaryColor, 0.3)}`
           }}
         >
-          登录
-        </Button>
+          {isLoading ? '登录中...' : '登录'}
+        </View>
 
         <View className='login-footer'>
           <Text className='register-link' onClick={goToRegister}>

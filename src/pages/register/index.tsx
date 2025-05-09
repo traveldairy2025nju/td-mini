@@ -2,7 +2,7 @@ import { View, Text, Image } from '@tarojs/components';
 import { useState } from 'react';
 import Taro from '@tarojs/taro';
 import useUserStore from '../../store/user';
-import Button from '../../components/taro-ui/Button';
+import { useTheme } from '../../hooks';
 import Input from '../../components/taro-ui/Input';
 import { useRouter } from '../../hooks';
 import './index.scss';
@@ -34,6 +34,7 @@ function Register() {
   // 从zustand中获取状态和方法
   const { register, isLoading, error } = useUserStore();
   const { toHome, navigateBack } = useRouter();
+  const { theme, hexToRgba, lightenColor } = useTheme();
   
   // 处理表单变化
   const handleChange = (name: string, value: string) => {
@@ -137,7 +138,11 @@ function Register() {
   };
   
   return (
-    <View className='register-container'>
+    <View className='register-container'
+      style={{
+        background: `linear-gradient(135deg, ${lightenColor(theme.primaryColor, 0.6)} 0%, ${theme.primaryColor} 100%)`
+      }}
+    >
       <View className='register-header'>
         <Image 
           className='register-logo'
@@ -249,14 +254,16 @@ function Register() {
           )}
         </View>
         
-        <Button 
-          type='primary' 
-          className='register-button'
-          loading={isLoading}
-          onClick={handleSubmit}
+        <View 
+          className='submit-button'
+          onClick={!isLoading ? handleSubmit : undefined}
+          style={{
+            backgroundColor: theme.primaryColor,
+            boxShadow: `0 8px 16px ${hexToRgba(theme.primaryColor, 0.3)}`
+          }}
         >
-          注 册
-        </Button>
+          {isLoading ? '注册中...' : '注 册'}
+        </View>
         
         <View className='register-footer'>
           <Text className='register-login-link' onClick={goToLogin}>
