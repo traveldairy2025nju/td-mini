@@ -176,11 +176,21 @@ function My() {
       if (res.success && res.data) {
         // 转换API返回的数据为组件需要的格式
         const formattedDiaries = res.data.items.map(item => {
-          // 如果有视频，优先使用视频的封面图
+          // 判断是否有视频
           const hasVideo = !!item.video;
-          const coverImage = (hasVideo && item.images && item.images.length > 0)
-            ? item.images[0]
-            : (item.images?.[0] || 'https://placeholder.com/300');
+          
+          // 封面图片处理：
+          // 1. 如果有视频，直接使用视频作为封面
+          // 2. 如果没有视频，则使用第一张图片
+          let coverImage = 'https://placeholder.com/300'; // 默认占位图
+          
+          if (hasVideo) {
+            // 使用视频本身的URL作为封面
+            coverImage = item.video;
+          } else if (item.images && item.images.length > 0) {
+            // 没有视频，使用第一张图片
+            coverImage = item.images[0];
+          }
 
           return {
             id: item._id,
@@ -227,11 +237,21 @@ function My() {
 
         // 转换API返回的数据为组件需要的格式
         const formattedFavorites = itemsArray.map((item) => {
-          // 如果有视频，优先使用视频的封面图
+          // 判断是否有视频
           const hasVideo = !!item.video;
-          const coverImage = (hasVideo && item.images && item.images.length > 0)
-            ? item.images[0]
-            : (item.images?.[0] || 'https://placeholder.com/300');
+          
+          // 封面图片处理：
+          // 1. 如果有视频，直接使用视频作为封面
+          // 2. 如果没有视频，则使用第一张图片
+          let coverImage = 'https://placeholder.com/300'; // 默认占位图
+          
+          if (hasVideo) {
+            // 使用视频本身的URL作为封面
+            coverImage = item.video;
+          } else if (item.images && item.images.length > 0) {
+            // 没有视频，使用第一张图片
+            coverImage = item.images[0];
+          }
 
           return {
             id: item._id || item.id,

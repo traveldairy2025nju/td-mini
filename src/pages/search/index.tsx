@@ -20,6 +20,7 @@ interface DiaryItem {
   id: string;
   title: string;
   coverImage: string;
+  videoUrl?: string;  // 添加视频URL字段
   authorName: string;
   likeCount: number;
   viewCount: number;
@@ -64,15 +65,34 @@ function Search() {
 
       if (res.success && res.data && res.data.items) {
         // 格式化返回的数据
-        const formattedDiaries = res.data.items.map(item => ({
-          id: item._id,
-          title: item.title || '无标题',
-          coverImage: item.images?.[0] || 'https://placeholder.com/300',
-          authorName: item.author?.nickname || '未知用户',
-          likeCount: item.likes || 0,
-          viewCount: item.views || 0,
-          createdAt: item.createdAt || ''
-        }));
+        const formattedDiaries = res.data.items.map(item => {
+          // 判断是否有视频
+          const hasVideo = !!item.video;
+          
+          // 封面图片处理：
+          // 1. 如果有视频，直接使用视频作为封面
+          // 2. 如果没有视频，则使用第一张图片
+          let coverImage = 'https://placeholder.com/300'; // 默认占位图
+          
+          if (hasVideo) {
+            // 使用视频本身的URL作为封面
+            coverImage = item.video;
+          } else if (item.images && item.images.length > 0) {
+            // 没有视频，使用第一张图片
+            coverImage = item.images[0];
+          }
+
+          return {
+            id: item._id,
+            title: item.title || '无标题',
+            coverImage: coverImage,
+            videoUrl: item.video || undefined,  // 添加视频URL
+            authorName: item.author?.nickname || '未知用户',
+            likeCount: item.likes || 0,
+            viewCount: item.views || 0,
+            createdAt: item.createdAt || ''
+          };
+        });
 
         setDiaryList(formattedDiaries);
         console.log('格式化后的搜索结果:', formattedDiaries);
