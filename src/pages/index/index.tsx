@@ -1,5 +1,5 @@
 import { View, Text, Image } from '@tarojs/components';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Taro, { useDidShow } from '@tarojs/taro';
 import WaterfallFlow from '../../components/WaterfallFlow';
 import { useDiary, useNearbyDiaries, useTheme, useRouter, DiaryItem } from '../../hooks';
@@ -14,18 +14,41 @@ const getSvgDataUrl = (svgContent: string, color: string) => {
   return `data:image/svg+xml,${encodedSvg}`;
 };
 
+// 防抖函数
+const debounce = (fn: Function, delay: number) => {
+  let timer: NodeJS.Timeout | null = null;
+  return function(...args: any[]) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn(...args);
+      timer = null;
+    }, delay);
+  };
+};
+
 function Index() {
   // 使用hooks
   const { theme, lightenColor } = useTheme();
-  const { diaries, loading: diaryLoading, error: diaryError, fetchDiaries } = useDiary();
+  const { 
+    diaries, 
+    loading: diaryLoading, 
+    error: diaryError, 
+    fetchDiaries,
+    loadMore: loadMoreDiaries,
+    hasMore: hasMoreDiaries 
+  } = useDiary({ pageSize: 20 }); // 增加页面大小
+  
   const { 
     nearbyDiaries, 
     loading: nearbyLoading, 
     error: nearbyError,
     locationRequested,
     fetchNearbyDiaries,
-    refreshNearbyDiaries
-  } = useNearbyDiaries({ autoFetch: true });
+    refreshNearbyDiaries,
+    loadMore: loadMoreNearby,
+    hasMore: hasMoreNearby
+  } = useNearbyDiaries({ autoFetch: true, pageSize: 20 });
+  
   const { 
     toDiaryDetail, 
     toCreateDiary, 
@@ -34,6 +57,12 @@ function Index() {
   } = useRouter();
 
   const [activeTab, setActiveTab] = useState('discover'); // 默认选中"发现"标签
+  const [scrollTop, setScrollTop] = useState(0);
+
+  // 记忆化SVG URL，避免重复计算
+  const searchIconUrl = useMemo(() => {
+    return theme ? getSvgDataUrl(SEARCH_ICON, theme.primaryColor) : '';
+  }, [theme]);
 
   // 根据主题设置CSS变量
   useEffect(() => {
@@ -41,6 +70,40 @@ function Index() {
       document.documentElement.style.setProperty('--primary-color', theme.primaryColor);
     }
   }, [theme]);
+
+  // 防抖处理的滚动事件处理器
+  const handleScroll = useCallback(debounce((e) => {
+    const { scrollTop, scrollHeight, offsetHeight } = e.detail;
+    setScrollTop(scrollTop);
+    
+    // 判断是否滚动到底部，预加载数据
+    if (scrollHeight - scrollTop - offsetHeight < 100) {
+      if (activeTab === 'discover' && hasMoreDiaries) {
+        loadMoreDiaries();
+      } else if (activeTab === 'nearby' && hasMoreNearby) {
+        loadMoreNearby();
+      }
+    }
+  }, 200), [activeTab, hasMoreDiaries, hasMoreNearby, loadMoreDiaries, loadMoreNearby]);
+
+  // 监听页面滚动
+  useEffect(() => {
+    Taro.createSelectorQuery()
+      .selectViewport()
+      .scrollOffset((res) => {
+        setScrollTop(res.scrollTop);
+      })
+      .exec();
+
+    const onPageScroll = (e) => {
+      handleScroll(e);
+    };
+
+    Taro.eventCenter.on('onPageScroll', onPageScroll);
+    return () => {
+      Taro.eventCenter.off('onPageScroll', onPageScroll);
+    };
+  }, [handleScroll]);
 
   // 组件挂载时
   useEffect(() => {
@@ -66,7 +129,9 @@ function Index() {
   useDidShow(() => {
     // 更新选中的标签页
     if (activeTab === 'discover') {
-      fetchDiaries();
+      if (diaries.length === 0) {
+        fetchDiaries();
+      }
     } else if (activeTab === 'nearby') {
       if (nearbyDiaries.length === 0) {
         // 如果没有数据，加载附近游记
@@ -82,30 +147,30 @@ function Index() {
   });
 
   // 点击日记项
-  const handleDiaryItemClick = (id: string) => {
+  const handleDiaryItemClick = useCallback((id: string) => {
     toDiaryDetail(id);
-  };
+  }, [toDiaryDetail]);
 
   // Tab切换处理
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = useCallback((tab: string) => {
     if (tab === activeTab) return;
     setActiveTab(tab);
 
     if (tab === 'nearby' && nearbyDiaries.length === 0) {
       fetchNearbyDiaries();
     }
-  };
+  }, [activeTab, nearbyDiaries.length, fetchNearbyDiaries]);
 
   // 点击搜索
-  const handleSearchClick = () => {
+  const handleSearchClick = useCallback(() => {
     navigateTo(ROUTES.SEARCH);
-  };
+  }, [navigateTo, ROUTES.SEARCH]);
 
-  // 渲染内容
-  const renderContent = () => {
+  // 渲染内容 - 使用useMemo减少不必要的重渲染
+  const renderContent = useMemo(() => {
     // 根据选中的标签页显示不同内容
     if (activeTab === 'discover') {
-      if (diaryLoading) {
+      if (diaryLoading && diaries.length === 0) {
         return (
           <View className='loading-container'>
             <View className='loading-spinner'></View>
@@ -121,7 +186,7 @@ function Index() {
             <View
               className='error-retry-button'
               onClick={() => fetchDiaries()}
-              style={{ backgroundColor: theme.primaryColor }}
+              style={{ backgroundColor: theme?.primaryColor }}
             >
               重试
             </View>
@@ -138,7 +203,7 @@ function Index() {
         />
       );
     } else if (activeTab === 'nearby') {
-      if (nearbyLoading) {
+      if (nearbyLoading && nearbyDiaries.length === 0) {
         return (
           <View className='loading-container'>
             <View className='loading-spinner'></View>
@@ -156,7 +221,7 @@ function Index() {
             <View
               className='error-retry-button'
               onClick={() => fetchNearbyDiaries()}
-              style={{ backgroundColor: theme.primaryColor }}
+              style={{ backgroundColor: theme?.primaryColor }}
             >
               重试
             </View>
@@ -171,7 +236,7 @@ function Index() {
             <Text className='empty-subtext'>成为第一个记录这里的人吧！</Text>
             <View
               className='create-diary-button'
-              style={{ backgroundColor: theme.primaryColor }}
+              style={{ backgroundColor: theme?.primaryColor }}
               onClick={toCreateDiary}
             >
               创建游记
@@ -192,7 +257,20 @@ function Index() {
     }
 
     return null;
-  };
+  }, [
+    activeTab, 
+    diaries, 
+    diaryLoading, 
+    diaryError, 
+    nearbyDiaries, 
+    nearbyLoading, 
+    nearbyError, 
+    theme, 
+    fetchDiaries, 
+    fetchNearbyDiaries, 
+    handleDiaryItemClick, 
+    toCreateDiary
+  ]);
 
   return (
     <View className='index'>
@@ -201,8 +279,9 @@ function Index() {
         <View className='search-bar-inner'>
           <Image
             className='search-icon'
-            src={getSvgDataUrl(SEARCH_ICON, theme.primaryColor)}
+            src={searchIconUrl}
             mode='aspectFit'
+            lazyLoad={true}
           />
           <Text className='search-placeholder'>搜索游记、地点</Text>
         </View>
@@ -219,7 +298,7 @@ function Index() {
             {activeTab === 'discover' && (
               <View
                 className='tab-indicator'
-                style={{ backgroundColor: theme.primaryColor }}
+                style={{ backgroundColor: theme?.primaryColor }}
               ></View>
             )}
           </View>
@@ -231,7 +310,7 @@ function Index() {
             {activeTab === 'nearby' && (
               <View
                 className='tab-indicator'
-                style={{ backgroundColor: theme.primaryColor }}
+                style={{ backgroundColor: theme?.primaryColor }}
               ></View>
             )}
           </View>
@@ -240,8 +319,16 @@ function Index() {
 
       {/* 内容区域 */}
       <View className='content-container'>
-        {renderContent()}
+        {renderContent}
       </View>
+
+      {/* 加载更多提示 */}
+      {((activeTab === 'discover' && diaryLoading && diaries.length > 0) ||
+        (activeTab === 'nearby' && nearbyLoading && nearbyDiaries.length > 0)) && (
+        <View className='loading-more'>
+          <Text>加载更多...</Text>
+        </View>
+      )}
     </View>
   );
 }
