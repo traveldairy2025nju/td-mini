@@ -1,4 +1,4 @@
-import { View, Image, Text } from '@tarojs/components';
+import { View, Image, Text, Video } from '@tarojs/components';
 import { useEffect, useState, CSSProperties, useRef, useCallback } from 'react';
 import { getOptimizedImageUrl, getPlaceholderImage } from '../../utils/imageOptimizer';
 import './index.scss';
@@ -131,11 +131,12 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
     // 判断是否有视频（确保空字符串不被视为有效视频）
     const hasVideo = !!(item.videoUrl && item.videoUrl.trim() !== '');
     
-    // 优化图片URL
-    const optimizedCoverImage = optimizeImageUrl(item.coverImage);
-    const optimizedAvatar = item.authorAvatar ? optimizeAvatarUrl(item.authorAvatar) : defaultAvatar;
+    // 是否视频直接作为封面
+    const isVideoCover = hasVideo && item.coverImage === item.videoUrl;
     
-    // 不使用placeholder属性，因为Taro的Image组件不支持
+    // 优化图片URL
+    const optimizedCoverImage = !isVideoCover ? optimizeImageUrl(item.coverImage) : '';
+    const optimizedAvatar = item.authorAvatar ? optimizeAvatarUrl(item.authorAvatar) : defaultAvatar;
 
     return (
       <View
@@ -143,19 +144,43 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
         key={item.id}
         onClick={() => handleItemClick(item)}
       >
-        {/* 封面图片区域 */}
+        {/* 封面区域 */}
         <View className='diary-cover-container'>
-          <Image
-            className='diary-cover'
-            src={optimizedCoverImage}
-            mode='aspectFill'
-            style={{ height: `${imageHeight}px` }}
-            lazyLoad={true}
-            onLoad={() => handleImageLoad(item.coverImage)}
-          />
+          {isVideoCover ? (
+            // 使用视频作为封面
+            <>
+              <Video
+                className='diary-cover'
+                src={item.videoUrl!}
+                controls={false}
+                autoplay={false}
+                loop={true}
+                muted={true}
+                showPlayBtn={false}
+                enableProgressGesture={false}
+                style={{ height: `${imageHeight}px` }}
+                objectFit='cover'
+                initialTime={0.1} // 避免显示视频第一帧
+              />
+              {/* 视频封面悬停时显示的播放按钮 */}
+              <View className='video-play-button'>
+                <View className='video-play-icon'>▶</View>
+              </View>
+            </>
+          ) : (
+            // 使用图片作为封面
+            <Image
+              className='diary-cover'
+              src={optimizedCoverImage}
+              mode='aspectFill'
+              style={{ height: `${imageHeight}px` }}
+              lazyLoad={true}
+              onLoad={() => handleImageLoad(item.coverImage)}
+            />
+          )}
 
-          {/* 视频标识 */}
-          {hasVideo && (
+          {/* 视频标识 - 只在使用图片作为封面且有视频时显示 */}
+          {hasVideo && !isVideoCover && (
             <View className='video-indicator'>
               <View className='video-icon'>▶</View>
             </View>

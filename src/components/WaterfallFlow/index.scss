@@ -27,8 +27,56 @@
 
 .diary-cover-container {
   position: relative;
-  width: 100%;
+  border-radius: 8px 8px 0 0;
   overflow: hidden;
+  
+  .diary-cover {
+    width: 100%;
+    display: block;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  // 视频相关样式
+  .taro-video {
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+    object-fit: cover;
+  }
+
+  // 添加自定义的视频播放图标
+  .video-play-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  // 视频封面悬停效果
+  &:hover .video-play-button {
+    opacity: 1;
+  }
+  
+  .video-play-icon {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 28px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .diary-cover {
