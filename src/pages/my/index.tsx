@@ -128,6 +128,9 @@ function My() {
           try {
             Taro.showLoading({ title: '上传中...' });
             await useUserStore.getState().updateAvatar(tempFilePath);
+            
+            // 更新成功后，重新获取最新的用户资料
+            await updateProfile();
 
             Taro.showToast({
               title: '头像更新成功',

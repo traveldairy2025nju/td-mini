@@ -47,7 +47,16 @@ const userApi = {
         
         // 保存用户信息
         if (result.data.user) {
-          Taro.setStorageSync('userInfo', result.data.user);
+          // 确保存储的是对象而不是字符串
+          let userInfo = result.data.user;
+          if (typeof userInfo === 'string') {
+            try {
+              userInfo = JSON.parse(userInfo);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+            }
+          }
+          Taro.setStorageSync('userInfo', userInfo);
         }
       }
       
@@ -81,7 +90,16 @@ const userApi = {
         // 保存用户信息
         if (res.data.user) {
           console.log('保存用户信息到本地');
-          Taro.setStorageSync('userInfo', res.data.user);
+          // 确保存储的是对象而不是字符串
+          let userInfo = res.data.user;
+          if (typeof userInfo === 'string') {
+            try {
+              userInfo = JSON.parse(userInfo);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+            }
+          }
+          Taro.setStorageSync('userInfo', userInfo);
         }
       }
       
@@ -120,9 +138,18 @@ const userApi = {
       console.log('获取当前用户信息结果:', res);
       
       if (res.success && res.data) {
+        // 确保存储的是对象而不是字符串
+        let userInfo = res.data;
+        if (typeof userInfo === 'string') {
+          try {
+            userInfo = JSON.parse(userInfo);
+          } catch (e) {
+            console.error('解析用户信息失败:', e);
+          }
+        }
         // 更新本地存储的用户信息
-        Taro.setStorageSync('userInfo', res.data);
-        return res.data;
+        Taro.setStorageSync('userInfo', userInfo);
+        return userInfo;
       }
       
       return null;
@@ -151,8 +178,20 @@ const userApi = {
       
       // 如果更新成功，同时更新本地存储的用户信息
       if (updateRes.success && updateRes.data) {
-        const userInfo = Taro.getStorageSync('userInfo');
-        if (userInfo) {
+        const userInfoStr = Taro.getStorageSync('userInfo');
+        if (userInfoStr) {
+          // 确保userInfo是对象，如果是字符串则解析
+          let userInfo = userInfoStr;
+          if (typeof userInfoStr === 'string') {
+            try {
+              userInfo = JSON.parse(userInfoStr);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+              // 如果解析失败，使用API返回的用户信息
+              userInfo = updateRes.data;
+            }
+          }
+          
           userInfo.avatar = uploadRes.data.url;
           Taro.setStorageSync('userInfo', userInfo);
         }
@@ -176,8 +215,21 @@ const userApi = {
       
       // 如果更新成功，同时更新本地存储的用户信息
       if (updateRes.success && updateRes.data) {
-        const userInfo = Taro.getStorageSync('userInfo');
-        if (userInfo) {
+        const userInfoStr = Taro.getStorageSync('userInfo');
+        if (userInfoStr) {
+          // 确保userInfo是对象，如果是字符串则解析
+          let userInfo = userInfoStr;
+          if (typeof userInfoStr === 'string') {
+            try {
+              userInfo = JSON.parse(userInfoStr);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+              // 如果解析失败，使用API返回的用户信息
+              userInfo = updateRes.data;
+            }
+          }
+          
+          // 更新昵称
           userInfo.nickname = nickname;
           Taro.setStorageSync('userInfo', userInfo);
         }
@@ -196,7 +248,23 @@ const userApi = {
     
     // 检查本地存储
     const token = Taro.getStorageSync('token');
-    const userInfo = Taro.getStorageSync('userInfo');
+    const userInfoStr = Taro.getStorageSync('userInfo');
+    
+    // 解析用户信息
+    let userInfo = null;
+    if (userInfoStr) {
+      if (typeof userInfoStr === 'string') {
+        try {
+          userInfo = JSON.parse(userInfoStr);
+        } catch (e) {
+          console.error('解析用户信息失败:', e);
+          // 解析失败时清除存储的信息，强制重新登录
+          Taro.removeStorageSync('userInfo');
+        }
+      } else {
+        userInfo = userInfoStr;
+      }
+    }
     
     console.log('本地token:', token ? '已存在' : '不存在');
     console.log('本地用户信息:', userInfo ? '已存在' : '不存在');
