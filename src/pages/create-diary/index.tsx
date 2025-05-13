@@ -1,7 +1,6 @@
-import { View, Text, ScrollView, Image, Video } from '@tarojs/components';
+import { View, Text, ScrollView, Image, Video, Button } from '@tarojs/components';
 import { useState } from 'react';
 import Taro from '@tarojs/taro';
-import Button from '../../components/taro-ui/Button';
 import Input from '../../components/taro-ui/Input';
 import Textarea from '../../components/taro-ui/Textarea';
 import api from '../../services/api';
@@ -442,11 +441,9 @@ function CreateDiary() {
                 <View className='video-delete' onClick={handleRemoveVideo}>×</View>
               </View>
             ) : (
-              <Button
-                type='secondary'
+              <Button 
                 className='video-upload-btn'
                 onClick={handleChooseVideo}
-                loading={uploadingVideo}
                 disabled={uploadingVideo}
               >
                 {uploadingVideo ? '上传中...' : '添加视频'}
@@ -476,14 +473,12 @@ function CreateDiary() {
                 />
                 <View className='location-buttons'>
                   <Button
-                    type='default'
                     className='location-btn-cancel'
                     onClick={() => setShowLocationInput(false)}
                   >
                     取消
                   </Button>
                   <Button
-                    type='primary'
                     className='location-btn-save'
                     onClick={handleSaveLocation}
                   >
@@ -494,16 +489,13 @@ function CreateDiary() {
             ) : (
               <View className='location-buttons'>
                 <Button
-                  type='secondary'
                   className='location-btn'
                   onClick={handleChooseLocation}
-                  loading={isSelectingLocation}
                   disabled={isSelectingLocation}
                 >
                   {isSelectingLocation ? '选择中...' : '选择位置'}
                 </Button>
                 <Button
-                  type='default'
                   className='location-btn-manual'
                   onClick={handleManualLocationInput}
                 >
@@ -515,16 +507,17 @@ function CreateDiary() {
         </View>
 
         <View className='form-actions'>
-          <View
-            className={`submit-button ${isSubmitting || uploadingImage || uploadingVideo ? 'disabled' : ''}`}
+          <Button
+            disabled={isSubmitting || uploadingImage || uploadingVideo}
             onClick={handleSubmit}
+            className={`submit-button ${isSubmitting || uploadingImage || uploadingVideo ? 'disabled' : ''}`}
             style={{
               backgroundColor: theme.primaryColor,
               boxShadow: `0 2px 8px ${hexToRgba(theme.primaryColor, 0.3)}`
             }}
           >
             <Text className='submit-text'>{isSubmitting ? '提交中...' : '提交游记'}</Text>
-          </View>
+          </Button>
         </View>
       </View>
     </ScrollView>
