@@ -33,4 +33,23 @@
   margin-top: 40px;
   width: 100%;
   border-radius: 8px;
+}
+
+/* 添加新的提交按钮样式 */
+.submit-button {
+  width: 100%;
+  text-align: center;
+  padding: 24px 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+  border-radius: 50px;
+  margin-top: 40px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  
+  &:active {
+    transform: translateY(1px);
+    opacity: 0.9;
+  }
 } 

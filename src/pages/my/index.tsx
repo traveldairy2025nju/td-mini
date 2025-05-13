@@ -128,6 +128,9 @@ function My() {
           try {
             Taro.showLoading({ title: '上传中...' });
             await useUserStore.getState().updateAvatar(tempFilePath);
+            
+            // 更新成功后，重新获取最新的用户资料
+            await updateProfile();
 
             Taro.showToast({
               title: '头像更新成功',
@@ -310,6 +313,7 @@ function My() {
         type='primary'
         className='my-login-button'
         onClick={() => router.navigateToLogin()}
+        style={{ backgroundColor: theme.primaryColor, borderColor: theme.primaryColor }}
       >
         去登录
       </Button>
@@ -422,6 +426,7 @@ function My() {
             type='primary'
             className='create-diary-btn'
             onClick={() => router.navigateToCreateDiary()}
+            style={{ backgroundColor: theme.primaryColor, borderColor: theme.primaryColor }}
           >
             创建游记
           </Button>
@@ -448,6 +453,7 @@ function My() {
             type='primary'
             className='create-diary-btn'
             onClick={() => router.switchToHome()}
+            style={{ backgroundColor: theme.primaryColor, borderColor: theme.primaryColor }}
           >
             探索游记
           </Button>

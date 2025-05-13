@@ -526,6 +526,149 @@
         "security": []
       }
     },
+    "/api/diaries/nearby": {
+      "get": {
+        "summary": "获取附近的游记",
+        "deprecated": false,
+        "description": "",
+        "operationId": "DiariesController_findNearbyDiaries",
+        "tags": [
+          "游记"
+        ],
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "query",
+            "description": "当前位置纬度",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "description": "当前位置经度",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/diaries/my-reviewed": {
+      "get": {
+        "summary": "获取当前管理员审核过的游记列表",
+        "deprecated": false,
+        "description": "",
+        "operationId": "DiariesController_getMyReviewedDiaries",
+        "tags": [
+          "游记"
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "description": "最近几天内审核的游记，默认30天",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
     "/api/diaries/{id}": {
       "get": {
         "summary": "获取游记详情",
@@ -1896,6 +2039,14 @@
             "examples": [
               "http://172.29.4.76:9000/travel-diary/video123.mp4"
             ]
+          },
+          "location": {
+            "description": "位置信息",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationDto"
+              }
+            ]
           }
         },
         "required": [
@@ -1927,6 +2078,14 @@
             "description": "视频URL(可选，通过上传接口获取)",
             "examples": [
               "http://172.29.4.76:9000/travel-diary/video123.mp4"
+            ]
+          },
+          "location": {
+            "description": "位置信息",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationDto"
+              }
             ]
           }
         }
@@ -2024,6 +2183,45 @@
         "required": [
           "approved",
           "reason"
+        ]
+      },
+      "LocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "位置名称",
+            "examples": [
+              "故宫博物院"
+            ]
+          },
+          "address": {
+            "type": "string",
+            "description": "位置地址",
+            "examples": [
+              "北京市东城区景山前街4号"
+            ]
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度",
+            "examples": [
+              39.9163
+            ]
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度",
+            "examples": [
+              116.3972
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "address",
+          "latitude",
+          "longitude"
         ]
       }
     },

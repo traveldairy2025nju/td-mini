@@ -73,12 +73,15 @@ const useUserStore = create<UserState>((set, get) => ({
   register: async (data, files) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.user.register(data, files);
+      // 调用注册API，传入用户数据和头像文件路径（如果有）
+      const avatarFilePath = files?.avatar;
+      const res = await api.user.register(data, avatarFilePath);
       
       if (res.success) {
         // 保存用户信息
-        setUserInfoUtil(res.data);
-        set({ userInfo: res.data, isLogin: true, isLoading: false });
+        const userInfo = res.data.user || res.data;
+        setUserInfoUtil(userInfo);
+        set({ userInfo, isLogin: true, isLoading: false });
         return true;
       }
       set({ isLoading: false });

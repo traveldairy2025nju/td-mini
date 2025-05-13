@@ -1,9 +1,8 @@
-import { View, Text, Image, ScrollView, Canvas, Video } from '@tarojs/components';
+import { View, Text, Image, ScrollView, Canvas, Video, Button } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro, { useRouter as useTaroRouter } from '@tarojs/taro';
 import api from '../../services/api';
 import Input from '../../components/taro-ui/Input';
-import Button from '../../components/taro-ui/Button';
 import Textarea from '../../components/taro-ui/Textarea';
 import { getThemeColors } from '../../utils/themeManager';
 import { hexToRgba } from '../../utils/colorUtils';

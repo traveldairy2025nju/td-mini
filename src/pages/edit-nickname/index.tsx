@@ -1,16 +1,30 @@
 import { View, Text } from '@tarojs/components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
-import { AtInput, AtButton } from 'taro-ui';
+import { AtInput } from 'taro-ui';
 import useUserStore from '../../store/user';
 import { useRouter } from '../../hooks';
+import { getThemeColors, ThemeColors } from '../../utils/themeManager';
 import './index.scss';
 
 function EditNickname() {
   const { userInfo, updateNickname, isLoading } = useUserStore();
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [error, setError] = useState('');
+  const [theme, setTheme] = useState<ThemeColors>(getThemeColors());
   const { navigateBack } = useRouter();
+
+  // 添加主题变化监听
+  useEffect(() => {
+    const themeChangeHandler = (newTheme: ThemeColors) => {
+      setTheme(newTheme);
+    };
+    Taro.eventCenter.on('themeChange', themeChangeHandler);
+
+    return () => {
+      Taro.eventCenter.off('themeChange', themeChangeHandler);
+    };
+  }, []);
 
   // 处理昵称变化
   const handleChange = (value) => {
@@ -74,14 +88,16 @@ function EditNickname() {
           </View>
         )}
         
-        <AtButton 
-          type='primary' 
-          className='edit-nickname-button'
-          loading={isLoading}
-          onClick={handleSubmit}
+        <View
+          className='submit-button'
+          onClick={!isLoading ? handleSubmit : undefined}
+          style={{
+            backgroundColor: theme.primaryColor,
+            boxShadow: `0 8px 16px ${theme.primaryColor}4d`
+          }}
         >
-          保存
-        </AtButton>
+          {isLoading ? '保存中...' : '保存'}
+        </View>
       </View>
     </View>
   );

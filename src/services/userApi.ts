@@ -2,47 +2,65 @@ import Taro from '@tarojs/taro';
 import { request } from './request';
 import uploadApi from './uploadApi';
 
+interface RegisterUserData {
+  username: string;
+  password: string;
+  nickname: string;
+  avatarUrl?: string;
+}
+
 // 用户相关接口
 const userApi = {
   // 用户注册
-  register: (formData) => {
-    return request({
-      url: '/api/users/register',
-      method: 'POST',
-      data: formData,
-      contentType: 'multipart/form-data'
-    });
-  },
-
-  // 带头像的用户注册
-  registerWithAvatar: async (data, avatarFilePath) => {
+  register: async (data, avatarFilePath) => {
     try {
-      // 创建表单数据
-      const formData = {
+      const userData: RegisterUserData = {
         username: data.username,
         password: data.password,
         nickname: data.nickname
       };
-
-      // 执行带文件的注册请求
-      const result = await Taro.uploadFile({
-        url: `${process.env.BASE_URL || ''}/api/users/register`,
-        filePath: avatarFilePath,
-        name: 'avatar',
-        formData
-      });
-
-      const response = JSON.parse(result.data);
-
-      if (result.statusCode >= 200 && result.statusCode < 300 && response.success) {
-        // 保存token
-        if (response.data && response.data.token) {
-          Taro.setStorageSync('token', response.data.token);
+      
+      // 如果有头像，先上传头像获取URL
+      if (avatarFilePath) {
+        const uploadRes = await uploadApi.uploadFile(avatarFilePath);
+        
+        if (!uploadRes.success || !uploadRes.data || !uploadRes.data.url) {
+          throw new Error('头像上传失败');
         }
-        return response;
-      } else {
-        throw new Error(response.message || '注册失败');
+        
+        // 将头像URL添加到注册数据中
+        userData.avatarUrl = uploadRes.data.url;
       }
+      
+      // 执行注册请求
+      const result = await request({
+        url: '/api/users/register',
+        method: 'POST',
+        data: userData
+      });
+      
+      if (result.success && result.data) {
+        // 保存token
+        if (result.data.token) {
+          Taro.setStorageSync('token', result.data.token);
+        }
+        
+        // 保存用户信息
+        if (result.data.user) {
+          // 确保存储的是对象而不是字符串
+          let userInfo = result.data.user;
+          if (typeof userInfo === 'string') {
+            try {
+              userInfo = JSON.parse(userInfo);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+            }
+          }
+          Taro.setStorageSync('userInfo', userInfo);
+        }
+      }
+      
+      return result;
     } catch (error) {
       console.error('注册错误:', error);
       throw error;
@@ -72,7 +90,16 @@ const userApi = {
         // 保存用户信息
         if (res.data.user) {
           console.log('保存用户信息到本地');
-          Taro.setStorageSync('userInfo', res.data.user);
+          // 确保存储的是对象而不是字符串
+          let userInfo = res.data.user;
+          if (typeof userInfo === 'string') {
+            try {
+              userInfo = JSON.parse(userInfo);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+            }
+          }
+          Taro.setStorageSync('userInfo', userInfo);
         }
       }
       
@@ -111,9 +138,18 @@ const userApi = {
       console.log('获取当前用户信息结果:', res);
       
       if (res.success && res.data) {
+        // 确保存储的是对象而不是字符串
+        let userInfo = res.data;
+        if (typeof userInfo === 'string') {
+          try {
+            userInfo = JSON.parse(userInfo);
+          } catch (e) {
+            console.error('解析用户信息失败:', e);
+          }
+        }
         // 更新本地存储的用户信息
-        Taro.setStorageSync('userInfo', res.data);
-        return res.data;
+        Taro.setStorageSync('userInfo', userInfo);
+        return userInfo;
       }
       
       return null;
@@ -142,8 +178,20 @@ const userApi = {
       
       // 如果更新成功，同时更新本地存储的用户信息
       if (updateRes.success && updateRes.data) {
-        const userInfo = Taro.getStorageSync('userInfo');
-        if (userInfo) {
+        const userInfoStr = Taro.getStorageSync('userInfo');
+        if (userInfoStr) {
+          // 确保userInfo是对象，如果是字符串则解析
+          let userInfo = userInfoStr;
+          if (typeof userInfoStr === 'string') {
+            try {
+              userInfo = JSON.parse(userInfoStr);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+              // 如果解析失败，使用API返回的用户信息
+              userInfo = updateRes.data;
+            }
+          }
+          
           userInfo.avatar = uploadRes.data.url;
           Taro.setStorageSync('userInfo', userInfo);
         }
@@ -167,8 +215,21 @@ const userApi = {
       
       // 如果更新成功，同时更新本地存储的用户信息
       if (updateRes.success && updateRes.data) {
-        const userInfo = Taro.getStorageSync('userInfo');
-        if (userInfo) {
+        const userInfoStr = Taro.getStorageSync('userInfo');
+        if (userInfoStr) {
+          // 确保userInfo是对象，如果是字符串则解析
+          let userInfo = userInfoStr;
+          if (typeof userInfoStr === 'string') {
+            try {
+              userInfo = JSON.parse(userInfoStr);
+            } catch (e) {
+              console.error('解析用户信息失败:', e);
+              // 如果解析失败，使用API返回的用户信息
+              userInfo = updateRes.data;
+            }
+          }
+          
+          // 更新昵称
           userInfo.nickname = nickname;
           Taro.setStorageSync('userInfo', userInfo);
         }
@@ -187,7 +248,23 @@ const userApi = {
     
     // 检查本地存储
     const token = Taro.getStorageSync('token');
-    const userInfo = Taro.getStorageSync('userInfo');
+    const userInfoStr = Taro.getStorageSync('userInfo');
+    
+    // 解析用户信息
+    let userInfo = null;
+    if (userInfoStr) {
+      if (typeof userInfoStr === 'string') {
+        try {
+          userInfo = JSON.parse(userInfoStr);
+        } catch (e) {
+          console.error('解析用户信息失败:', e);
+          // 解析失败时清除存储的信息，强制重新登录
+          Taro.removeStorageSync('userInfo');
+        }
+      } else {
+        userInfo = userInfoStr;
+      }
+    }
     
     console.log('本地token:', token ? '已存在' : '不存在');
     console.log('本地用户信息:', userInfo ? '已存在' : '不存在');
