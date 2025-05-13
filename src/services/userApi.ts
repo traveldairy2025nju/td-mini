@@ -2,47 +2,56 @@ import Taro from '@tarojs/taro';
 import { request } from './request';
 import uploadApi from './uploadApi';
 
+interface RegisterUserData {
+  username: string;
+  password: string;
+  nickname: string;
+  avatarUrl?: string;
+}
+
 // 用户相关接口
 const userApi = {
   // 用户注册
-  register: (formData) => {
-    return request({
-      url: '/api/users/register',
-      method: 'POST',
-      data: formData,
-      contentType: 'multipart/form-data'
-    });
-  },
-
-  // 带头像的用户注册
-  registerWithAvatar: async (data, avatarFilePath) => {
+  register: async (data, avatarFilePath) => {
     try {
-      // 创建表单数据
-      const formData = {
+      const userData: RegisterUserData = {
         username: data.username,
         password: data.password,
         nickname: data.nickname
       };
-
-      // 执行带文件的注册请求
-      const result = await Taro.uploadFile({
-        url: `${process.env.BASE_URL || ''}/api/users/register`,
-        filePath: avatarFilePath,
-        name: 'avatar',
-        formData
-      });
-
-      const response = JSON.parse(result.data);
-
-      if (result.statusCode >= 200 && result.statusCode < 300 && response.success) {
-        // 保存token
-        if (response.data && response.data.token) {
-          Taro.setStorageSync('token', response.data.token);
+      
+      // 如果有头像，先上传头像获取URL
+      if (avatarFilePath) {
+        const uploadRes = await uploadApi.uploadFile(avatarFilePath);
+        
+        if (!uploadRes.success || !uploadRes.data || !uploadRes.data.url) {
+          throw new Error('头像上传失败');
         }
-        return response;
-      } else {
-        throw new Error(response.message || '注册失败');
+        
+        // 将头像URL添加到注册数据中
+        userData.avatarUrl = uploadRes.data.url;
       }
+      
+      // 执行注册请求
+      const result = await request({
+        url: '/api/users/register',
+        method: 'POST',
+        data: userData
+      });
+      
+      if (result.success && result.data) {
+        // 保存token
+        if (result.data.token) {
+          Taro.setStorageSync('token', result.data.token);
+        }
+        
+        // 保存用户信息
+        if (result.data.user) {
+          Taro.setStorageSync('userInfo', result.data.user);
+        }
+      }
+      
+      return result;
     } catch (error) {
       console.error('注册错误:', error);
       throw error;

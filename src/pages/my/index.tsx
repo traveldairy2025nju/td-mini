@@ -310,6 +310,7 @@ function My() {
         type='primary'
         className='my-login-button'
         onClick={() => router.navigateToLogin()}
+        style={{ backgroundColor: theme.primaryColor, borderColor: theme.primaryColor }}
       >
         去登录
       </Button>
@@ -422,6 +423,7 @@ function My() {
             type='primary'
             className='create-diary-btn'
             onClick={() => router.navigateToCreateDiary()}
+            style={{ backgroundColor: theme.primaryColor, borderColor: theme.primaryColor }}
           >
             创建游记
           </Button>
@@ -448,6 +450,7 @@ function My() {
             type='primary'
             className='create-diary-btn'
             onClick={() => router.switchToHome()}
+            style={{ backgroundColor: theme.primaryColor, borderColor: theme.primaryColor }}
           >
             探索游记
           </Button>
